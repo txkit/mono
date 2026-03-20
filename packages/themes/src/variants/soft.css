@@ -1,0 +1,11 @@
+/* Soft variant - rounded corners, subtle shadows, gentle transitions */
+.txkit-soft {
+  --txkit-radius-sm: 8px;
+  --txkit-radius-md: 12px;
+  --txkit-radius-lg: 16px;
+
+  --txkit-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --txkit-shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+
+  --txkit-transition: 200ms ease-out;
+}

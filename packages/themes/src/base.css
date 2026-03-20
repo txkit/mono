@@ -1,0 +1,76 @@
+:root {
+  /* Colors - Indigo primary (brand) */
+  --txkit-color-primary: #4338CA;
+  --txkit-color-primary-hover: #3730A3;
+  --txkit-color-primary-active: #312E81;
+  --txkit-color-primary-text: #FFFFFF;
+
+  /* Semantic */
+  --txkit-color-success: #059669;
+  --txkit-color-success-text: #FFFFFF;
+  --txkit-color-warning: #D97706;
+  --txkit-color-warning-text: #FFFFFF;
+  --txkit-color-error: #DC2626;
+  --txkit-color-error-text: #FFFFFF;
+  --txkit-color-info: #2563EB;
+
+  /* Surfaces */
+  --txkit-color-bg: #FFFFFF;
+  --txkit-color-bg-secondary: #F8FAFC;
+  --txkit-color-bg-tertiary: #F1F5F9;
+
+  /* Text */
+  --txkit-color-text: #0F172A;
+  --txkit-color-text-secondary: #475569;
+  --txkit-color-text-tertiary: #64748B;
+
+  /* Borders */
+  --txkit-color-border: #E2E8F0;
+  --txkit-color-border-hover: #CBD5E1;
+
+  /* Typography */
+  --txkit-font-family: system-ui, -apple-system, sans-serif;
+  --txkit-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --txkit-font-size-xs: 0.75rem;
+  --txkit-font-size-sm: 0.875rem;
+  --txkit-font-size-md: 1rem;
+  --txkit-font-size-base: 1rem;
+  --txkit-font-size-lg: 1.125rem;
+
+  /* Spacing */
+  --txkit-space-xs: 0.25rem;
+  --txkit-space-sm: 0.5rem;
+  --txkit-space-md: 0.75rem;
+  --txkit-space-lg: 1rem;
+  --txkit-space-xl: 1.5rem;
+
+  /* Radii */
+  --txkit-radius-sm: 6px;
+  --txkit-radius-md: 8px;
+  --txkit-radius-lg: 12px;
+  --txkit-radius-xl: 20px;
+  --txkit-radius-full: 9999px;
+
+  /* Alpha */
+  --txkit-color-primary-alpha: rgba(67, 56, 202, 0.1);
+
+  /* Shadows */
+  --txkit-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --txkit-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --txkit-transition: 150ms ease;
+}
+
+.txkit-root {
+  font-family: var(--txkit-font-family);
+  color: var(--txkit-color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --txkit-transition: 0ms;
+  }
+}

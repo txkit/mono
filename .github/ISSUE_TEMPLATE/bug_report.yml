@@ -1,0 +1,105 @@
+name: Bug Report
+description: Something isn't working as expected
+labels: [bug]
+body:
+  - type: checkboxes
+    id: duplicates
+    attributes:
+      label: Duplicates
+      options:
+        - label: I've searched existing issues and this hasn't been reported yet
+          required: true
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      description: Which package is affected?
+      options:
+        - "@txkit/react"
+        - "@txkit/core"
+        - "@txkit/themes"
+        - Multiple packages
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: txKit version
+      description: Do not write "latest" - specify the exact version from package.json
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear description of the bug
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: |
+        A link to a CodeSandbox, StackBlitz, or a minimal reproduction repo is strongly preferred.
+        If you can't provide a link, list the minimal steps to reproduce.
+      placeholder: |
+        https://stackblitz.com/edit/...
+
+        Or:
+        1. Render `<TransactionButton />` with ...
+        2. Click ...
+        3. See error in console
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include console errors, screenshots, or screen recordings if applicable
+    validations:
+      required: true
+
+  - type: dropdown
+    id: wallet
+    attributes:
+      label: Wallet
+      description: Which wallet were you using? Skip if not relevant
+      options:
+        - MetaMask
+        - Coinbase Wallet
+        - WalletConnect
+        - Rainbow
+        - Rabby
+        - Other (specify in description)
+        - Not applicable
+
+  - type: input
+    id: chain
+    attributes:
+      label: Chain / Network
+      placeholder: "Ethereum Mainnet, Arbitrum, Sepolia"
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Dependency versions and browser info
+      value: |
+        - wagmi:
+        - viem:
+        - react:
+        - Browser:
+        - OS:

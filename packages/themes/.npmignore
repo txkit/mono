@@ -1,0 +1,5 @@
+src/
+postcss.config.cjs
+CLAUDE.md
+*.test.*
+*.spec.*

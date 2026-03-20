@@ -1,0 +1,57 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+.idea
+.vscode
+.DS_Store
+dist
+
+# dependencies
+node_modules
+
+# next.js
+.next/
+
+# misc
+.DS_Store
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env
+.env.local
+
+# turbo
+.turbo
+
+# vercel
+.vercel
+
+# types
+**/*/next-env.d.ts
+tsconfig.tsbuildinfo
+**/*/tsconfig.tsbuildinfo
+
+# GraphQL
+schema.graphql
+*GQL.d.ts
+*.graphql.ts
+
+# Storybook
+apps/storybook/storybook-static
+
+# next-video
+videos/*
+!videos/*.json
+!videos/*.js
+!videos/*.ts
+**/*/public/_next-video
+
+# AI
+.claude
+STATUS.md
+CLAUDE.md
+**/*/CLAUDE.md
+.mcp.json
+.firecrawl/

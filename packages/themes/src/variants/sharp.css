@@ -1,0 +1,11 @@
+/* Sharp variant - straight corners, defined borders, crisp look */
+.txkit-sharp {
+  --txkit-radius-sm: 2px;
+  --txkit-radius-md: 3px;
+  --txkit-radius-lg: 4px;
+
+  --txkit-shadow-sm: none;
+  --txkit-shadow-md: none;
+
+  --txkit-transition: 100ms linear;
+}

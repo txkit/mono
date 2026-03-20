@@ -1,0 +1,52 @@
+name: Feature Request
+description: Suggest a feature or improvement
+labels: [enhancement]
+body:
+  - type: checkboxes
+    id: duplicates
+    attributes:
+      label: Duplicates
+      options:
+        - label: I've searched existing issues and this hasn't been requested yet
+          required: true
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      description: Which package would this affect?
+      options:
+        - "@txkit/react"
+        - "@txkit/core"
+        - "@txkit/themes"
+        - New package
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this solve? What's the use case?
+      placeholder: "When I try to ... I have to ... because ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How should it work? Include API examples if possible
+      placeholder: |
+        ```tsx
+        <Component newProp="value" />
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds or alternative approaches you've tried

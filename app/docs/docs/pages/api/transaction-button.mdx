@@ -1,0 +1,173 @@
+# TransactionButton
+
+Full transaction lifecycle component - from simulation to on-chain confirmation. Handles 15+ edge cases including approval flows, anti-phishing safety, and error recovery.
+
+## Quick Start
+
+```tsx
+import { TransactionButton } from '@txkit/react/transaction'
+import { parseEther } from 'viem'
+
+// Raw ETH transfer
+<TransactionButton
+  tx={{ to: '0x...', value: parseEther('1') }}
+  onSuccess={({ hash, receipt }) => console.log('Confirmed!', hash)}
+/>
+
+// Contract call with ABI
+<TransactionButton
+  tx={{
+    address: '0x...',
+    abi: stakingAbi,
+    functionName: 'stake',
+    args: [ amount ],
+    value: parseEther('0.1'),
+  }}
+  approval={{
+    token: tokenAddress,
+    spender: stakingAddress,
+    amount,
+  }}
+  label="Stake"
+/>
+```
+
+## Three Tiers of Customization
+
+### Tier 1: Zero-Config
+
+```tsx
+<TransactionButton tx={{ to: '0x...', value: parseEther('1') }} />
+```
+
+### Tier 2: Custom Render
+
+```tsx
+<TransactionButton tx={{ to: '0x...', value: parseEther('1') }}>
+  {({ state, hash, submit, retry, reset }) => (
+    <div>
+      <p>Status: {state}</p>
+      {state === 'idle' && <button onClick={submit}>Send</button>}
+      {state === 'error' && <button onClick={retry}>Retry</button>}
+      {state === 'success' && <button onClick={reset}>Done</button>}
+    </div>
+  )}
+</TransactionButton>
+```
+
+### Tier 3: Headless Hook
+
+```tsx
+import { useTransactionState } from '@txkit/react/transaction'
+
+const { state, hash, submit, retry, reset } = useTransactionState({
+  tx: { to: '0x...', value: parseEther('1') },
+  onSuccess: ({ receipt }) => console.log(receipt.status),
+})
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `tx` | `RawTransactionProps \| ContractTransactionProps` | required | Transaction parameters |
+| `className` | `string` | - | CSS class |
+| `children` | `(data: RenderData) => ReactNode` | - | Custom render function |
+| `label` | `string` | `"Send"` | Button text |
+| `chainId` | `number` | current chain | Target chain (auto-switches) |
+| `gas` | `bigint` | - | Gas limit override |
+| `maxFeePerGas` | `bigint` | - | EIP-1559 max fee |
+| `maxPriorityFeePerGas` | `bigint` | - | EIP-1559 priority fee |
+| `confirmations` | `number` | `1` | Block confirmations to wait |
+| `resetDelay` | `number` | `0` | Auto-reset after success (ms) |
+| `labels` | `Partial<Labels>` | - | UI text overrides |
+| `approval` | `ApprovalConfig \| null` | - | ERC-20 approve before tx |
+| `safety` | `Partial<SafetyConfig>` | - | Anti-phishing config |
+| `disabled` | `boolean` | `false` | Disable button |
+| `showExplorerLink` | `boolean` | `true` | Show explorer link |
+| `simulateOnMount` | `boolean` | `false` | Pre-simulate on render |
+| `onSubmit` | `(hash) => void` | - | Called when tx hash available |
+| `onSuccess` | `({ hash, receipt }) => void` | - | Called on confirmation |
+| `onError` | `(error) => void` | - | Called on error |
+| `onStateChange` | `(state) => void` | - | Called on state change |
+
+## Transaction Params
+
+### Raw Transaction
+
+```ts
+type RawTransactionProps = {
+  to: `0x${string}`
+  value?: bigint
+  data?: `0x${string}`
+}
+```
+
+### Contract Call
+
+```ts
+type ContractTransactionProps = {
+  address: `0x${string}`
+  abi: Abi
+  functionName: string
+  args?: unknown[]
+  value?: bigint
+}
+```
+
+## State Machine
+
+```
+idle → simulating → awaiting-signature → pending → success → (reset) → idle
+                  → confirming-risk → (confirm) → awaiting-signature
+                                    → (cancel) → idle
+                  → simulation-failed → (retry) → simulating
+                                      → (force) → awaiting-signature
+       approving → simulating (after approve confirmed)
+awaiting-signature → rejected → (retry) → idle → simulating
+pending → error → (retry) → idle → simulating
+```
+
+## Safety Config
+
+```ts
+type SafetyConfig = {
+  simulate: boolean              // default: true
+  delayMs: number                // confirmation countdown ms
+  warnMaxApproval: boolean       // default: true
+  riskProvider: RiskProvider | null  // pluggable Blowfish/Blockaid
+}
+```
+
+### Risk Provider
+
+```tsx
+<TransactionButton
+  tx={...}
+  safety={{
+    riskProvider: {
+      assess: async ({ to, data, value, chainId, from }) => {
+        const result = await blowfishApi.scan({ to, data, value, chainId, from })
+        return {
+          level: result.riskLevel,
+          warnings: result.warnings,
+          blocked: result.action === 'BLOCK',
+        }
+      }
+    }
+  }}
+/>
+```
+
+## Approval Config
+
+```tsx
+<TransactionButton
+  tx={{ address: poolAddress, abi: poolAbi, functionName: 'stake', args: [amount] }}
+  approval={{
+    token: tokenAddress,
+    spender: poolAddress,
+    amount,  // exact amount, not MAX_UINT256
+  }}
+/>
+```

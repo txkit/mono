@@ -1,0 +1,7 @@
+src/
+tsconfig.json
+tsup.config.cjs
+postcss.config.cjs
+CLAUDE.md
+*.test.*
+*.spec.*

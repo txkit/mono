@@ -1,0 +1,137 @@
+{
+  "name": "@txkit/react",
+  "version": "0.1.0",
+  "description": "React components for Web3 - connect, transact, display",
+  "license": "MIT",
+  "author": "Michael Diamond",
+  "homepage": "https://txkit.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/txkit/mono.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/txkit/mono/issues"
+  },
+  "keywords": [
+    "txkit",
+    "react",
+    "web3",
+    "ethereum",
+    "components",
+    "wallet",
+    "connect-wallet",
+    "token-balance",
+    "transaction",
+    "defi",
+    "wagmi",
+    "viem",
+    "ui-kit",
+    "anti-phishing",
+    "dapp",
+    "hooks",
+    "erc20",
+    "arbitrum",
+    "optimism",
+    "base"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./connect": {
+      "import": {
+        "types": "./dist/connect/index.d.ts",
+        "default": "./dist/connect/index.js"
+      },
+      "require": {
+        "types": "./dist/connect/index.d.cts",
+        "default": "./dist/connect/index.cjs"
+      }
+    },
+    "./balance": {
+      "import": {
+        "types": "./dist/balance/index.d.ts",
+        "default": "./dist/balance/index.js"
+      },
+      "require": {
+        "types": "./dist/balance/index.d.cts",
+        "default": "./dist/balance/index.cjs"
+      }
+    },
+    "./transaction": {
+      "import": {
+        "types": "./dist/transaction/index.d.ts",
+        "default": "./dist/transaction/index.js"
+      },
+      "require": {
+        "types": "./dist/transaction/index.d.cts",
+        "default": "./dist/transaction/index.cjs"
+      }
+    },
+    "./contract": {
+      "import": {
+        "types": "./dist/contract/index.d.ts",
+        "default": "./dist/contract/index.js"
+      },
+      "require": {
+        "types": "./dist/contract/index.d.cts",
+        "default": "./dist/contract/index.cjs"
+      }
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "prepublishOnly": "pnpm run build",
+    "build": "tsup && postcss src/styles.css -o dist/styles.css",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@txkit/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": ">=5",
+    "react": ">=18",
+    "react-dom": ">=18",
+    "viem": ">=2",
+    "wagmi": ">=2"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "^5.66.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "postcss": "^8.5.3",
+    "postcss-cli": "^11.0.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.7.3",
+    "viem": "^2.23.13",
+    "wagmi": "^2.14.16"
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}

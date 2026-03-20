@@ -1,0 +1,265 @@
+# TokenBalance
+
+Token balance display with auto-formatting, fiat conversion, and polling. Supports native tokens (ETH, MATIC) and ERC-20 tokens.
+
+## Import
+
+```tsx
+import { TokenBalance } from '@txkit/react'
+```
+
+Subpath import:
+
+```tsx
+import { TokenBalance } from '@txkit/react/balance'
+```
+
+## Usage
+
+```tsx
+<TokenBalance />
+```
+
+Shows the connected wallet's native token balance with USD equivalent.
+
+For ERC-20 tokens, pass the contract address:
+
+```tsx
+<TokenBalance token="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" />
+```
+
+## Props
+
+| Prop | Type | Default |
+|------|------|---------|
+| `className` | `string` | - |
+| `children` | `(data: TokenBalanceRenderData) => ReactNode` | - |
+| `token` | `` `0x${string}` `` | - |
+| `icon` | `string` | - |
+| `address` | `` `0x${string}` `` | Connected wallet |
+| `chainId` | `number` | Current chain |
+| `fiatCurrency` | `string` | `'USD'` |
+| `price` | `number` | - |
+| `refetchInterval` | `number` | `pollingInterval` from config |
+| `formatOptions` | `TokenBalanceFormatOptions` | See [Formatting](#formatting) |
+| `labels` | `Partial<TokenBalanceLabels>` | See [Labels](#labels) |
+| `showFiat` | `boolean` | `true` |
+| `showIcon` | `boolean` | `true` |
+| `showSymbol` | `boolean` | `true` |
+| `onBalanceChange` | `(balance: bigint, prevBalance: bigint \| undefined) => void` | - |
+| `onError` | `(error: Error) => void` | - |
+
+- `token` - ERC-20 contract address. When omitted, shows the native token (ETH, MATIC, etc.).
+- `icon` - Token icon URL. Displayed as a 20px circle before the balance.
+- `address` - Override whose balance to show. Defaults to the connected wallet.
+- `price` - Manual USD price override. Skips the DeFiLlama price fetch.
+- `children` - Render function for full UI control. Receives [TokenBalanceRenderData](#render-data).
+
+## States
+
+| State | Shows | Behavior |
+|-------|-------|----------|
+| `loading` | Skeleton pulse animation | Fetching balance from RPC |
+| `ready` | Formatted balance + fiat | Auto-refetches on `refetchInterval` |
+| `error` | "Failed to load" text | Calls `onError` if provided |
+
+## Examples
+
+### ERC-20 Token
+
+```tsx
+<TokenBalance token="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" />
+```
+
+### With Icon
+
+```tsx
+<TokenBalance
+  token="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  icon="https://assets.coingecko.com/coins/images/6319/small/usdc.png"
+/>
+```
+
+### Custom Fiat Currency
+
+```tsx
+<TokenBalance fiatCurrency="EUR" />
+```
+
+Forex rates are fetched automatically. Supported currencies: any ISO 4217 code (EUR, GBP, JPY, etc.).
+
+### Manual Price Override
+
+```tsx
+<TokenBalance token="0x..." price={1.0} />
+```
+
+Useful for stablecoins or tokens not listed on DeFiLlama.
+
+### Hide Parts
+
+```tsx
+<TokenBalance showFiat={false} />
+<TokenBalance showIcon={false} showSymbol={false} />
+```
+
+### Custom Render
+
+```tsx
+<TokenBalance token="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48">
+  {({ formatted, symbol, fiatFormatted, isLoading }) => (
+    isLoading
+      ? <span>Loading...</span>
+      : <span>{formatted} {symbol} ({fiatFormatted})</span>
+  )}
+</TokenBalance>
+```
+
+### Balance Change Callback
+
+```tsx
+<TokenBalance
+  onBalanceChange={(balance, prev) => {
+    if (prev !== undefined && balance > prev) {
+      console.log('Received tokens!')
+    }
+  }}
+/>
+```
+
+### Multiple Tokens
+
+Multiple `TokenBalance` components with the same parameters share a single RPC call via TanStack Query deduplication:
+
+```tsx
+<TokenBalance token="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" />
+{/* Same token - no extra RPC call */}
+<TokenBalance token="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" />
+```
+
+### Specific Address
+
+```tsx
+<TokenBalance address="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" />
+```
+
+## Render Data
+
+When using the `children` render function, you receive a `TokenBalanceRenderData` object:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `balance` | `bigint \| undefined` | Raw balance in smallest unit (wei) |
+| `decimals` | `number \| undefined` | Token decimals (18 for ETH, 6 for USDC) |
+| `symbol` | `string \| undefined` | Token symbol (ETH, USDC) |
+| `formatted` | `string \| undefined` | Human-readable balance with progressive scaling |
+| `fiatValue` | `number \| undefined` | Fiat equivalent as raw number |
+| `fiatFormatted` | `string \| undefined` | Fiat with currency symbol (e.g. "$1,234.57") |
+| `isLoading` | `boolean` | True while fetching |
+| `isError` | `boolean` | True if fetch failed |
+| `error` | `Error \| null` | Error object if failed |
+| `refetch` | `() => void` | Manually trigger refetch |
+
+## Formatting
+
+TokenBalance uses progressive decimal scaling based on the amount:
+
+| Range | Decimals | Example |
+|-------|----------|---------|
+| 0 - 9 | 5 | `1.23456` |
+| 10 - 99 | 4 | `42.1234` |
+| 100 - 999 | 3 | `500.123` |
+| 1,000 - 9,999 | 2 | `2,500.12` |
+| 10,000+ | suffix | `42.5k`, `1.2m`, `3.4b` |
+
+### Dust Threshold
+
+Amounts below `0.0001` display as `< 0.0001`. Override via `formatOptions`:
+
+```tsx
+<TokenBalance formatOptions={{ dustThreshold: 0.001 }} />
+```
+
+### Locale
+
+Number formatting follows the browser locale by default. Override:
+
+```tsx
+<TokenBalance formatOptions={{ locale: 'de-DE' }} />
+```
+
+## Hooks
+
+### useTokenBalance
+
+Headless hook for single token balance.
+
+```tsx
+import { useTokenBalance } from '@txkit/react/balance'
+
+const { balance, decimals, symbol, formatted, isLoading, refetch } = useTokenBalance({
+  token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+})
+```
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `token` | `` `0x${string}` `` | ERC-20 address. Omit for native token. |
+| `address` | `` `0x${string}` `` | Wallet address. Default: connected wallet. |
+| `chainId` | `number` | Chain ID. Default: current chain. |
+| `refetchInterval` | `number` | Polling interval in ms. |
+| `enabled` | `boolean` | Disable fetching. Default: `true`. |
+
+### useTokenBalances
+
+Batch hook for multiple tokens. Optimizes ERC-20 calls into a single multicall request.
+
+```tsx
+import { useTokenBalances } from '@txkit/react/balance'
+
+const balances = useTokenBalances({
+  tokens: [ 'native', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' ],
+})
+
+balances.forEach(({ symbol, formatted }) => {
+  console.log(`${symbol}: ${formatted}`)
+})
+```
+
+### useTokenPrice
+
+Hook for token price in fiat. Uses DeFiLlama API with automatic forex conversion.
+
+```tsx
+import { useTokenPrice } from '@txkit/react/balance'
+
+const { price, isLoading } = useTokenPrice({
+  chainId: 1,
+  token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+  fiatCurrency: 'EUR',
+})
+```
+
+## Labels
+
+Override UI text by passing a partial `TokenBalanceLabels` object:
+
+```tsx
+<TokenBalance labels={{ loading: 'Fetching...', error: 'Unavailable' }} />
+```
+
+### All Label Keys
+
+| Key | Default |
+|-----|---------|
+| `loading` | `'Loading...'` |
+| `error` | `'Failed to load'` |
+
+## Accessibility
+
+TokenBalance includes built-in screen reader support:
+
+- `role="status"` and `aria-live="polite"` - announces balance updates without interrupting
+- `aria-atomic="true"` - reads the full balance on each update
+- `aria-busy` - set to `true` while loading
+- Hidden status text provides a full sentence for screen readers (e.g. "Balance: 1.5 ETH, $3,200.00")

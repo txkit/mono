@@ -1,0 +1,103 @@
+/* --- State Visualizer --- */
+
+.state-visualizer {
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+  background: #0d1525;
+  overflow-x: auto;
+}
+
+.bg-light .state-visualizer {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+}
+
+.state-flow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 0;
+}
+
+.state-node-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.state-node {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: transparent;
+  font: inherit;
+  white-space: nowrap;
+  cursor: default;
+  transition: all 200ms ease;
+}
+
+.state-node.clickable {
+  cursor: pointer;
+}
+
+.state-node.clickable:hover {
+  border-color: var(--state-color);
+  background: color-mix(in srgb, var(--state-color) 10%, transparent);
+}
+
+.bg-light .state-node {
+  border-color: #e2e8f0;
+}
+
+.state-node.active {
+  border-color: var(--state-color);
+  background: color-mix(in srgb, var(--state-color) 15%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--state-color) 30%, transparent);
+}
+
+.state-node.past {
+  opacity: 0.5;
+}
+
+.state-node.past.clickable:hover {
+  opacity: 0.8;
+}
+
+.state-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 200ms ease;
+}
+
+.state-node.active .state-dot {
+  width: 8px;
+  height: 8px;
+  box-shadow: 0 0 6px var(--state-color);
+}
+
+.state-label {
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #94a3b8;
+}
+
+.state-node.active .state-label {
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.bg-light .state-node.active .state-label {
+  color: #0f172a;
+}
+
+.state-connector {
+  width: 16px;
+  height: 2px;
+  flex-shrink: 0;
+  transition: background 200ms ease;
+}

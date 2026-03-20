@@ -1,0 +1,124 @@
+# TxKitProvider
+
+Root provider component that initializes wagmi, TanStack Query, and txKit context. Wrap your app with `TxKitProvider` to use any txKit component.
+
+## Import
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+```
+
+## Standalone Mode
+
+Default mode - txKit creates and manages WagmiProvider and QueryClientProvider internally.
+
+```tsx
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+import { mainnet, arbitrum } from 'viem/chains'
+import { http } from 'viem'
+
+const App = () => (
+  <TxKitProvider config={{
+    chains: [mainnet, arbitrum],
+    transports: {
+      [mainnet.id]: http(),
+      [arbitrum.id]: http(),
+    },
+  }}>
+    <ConnectWallet />
+  </TxKitProvider>
+)
+```
+
+### Config Props
+
+| Prop | Type | Default |
+|------|------|---------|
+| `chains` | `[Chain, ...Chain[]]` | Required |
+| `transports` | `Record<number, Transport>` | Required |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` |
+| `variant` | `'default' \| 'soft' \| 'sharp' \| 'rounded'` | `'default'` |
+| `wallets` | `WalletConfig[]` | injected + WC + Coinbase |
+| `walletConnectProjectId` | `string` | - |
+| `autoConnect` | `boolean` | `true` |
+| `pollingInterval` | `number` | `4000` |
+| `licenseKey` | `string` | - |
+
+- `chains` - At least one chain is required. Each chain needs a matching transport entry.
+- `transports` - Map of `chainId` to viem transport. Use `http()` for public RPC or `http('https://your-rpc.com')` for custom endpoints.
+- `walletConnectProjectId` - Required to enable WalletConnect. Get one at [cloud.reown.com](https://cloud.reown.com).
+- `variant` - Visual style preset. See [Theming - Visual Variants](/theming#visual-variants).
+- `autoConnect` - When `true`, reconnects the last used wallet on page reload.
+
+## Embedded Mode
+
+Use embedded mode when your app already has its own WagmiProvider and QueryClientProvider. txKit will use the existing providers instead of creating new ones.
+
+```tsx
+import { WagmiProvider, createConfig } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+import { injected } from 'wagmi/connectors'
+
+const wagmiConfig = createConfig({
+  chains: [mainnet],
+  transports: { [mainnet.id]: http() },
+  connectors: [injected()],
+})
+
+const queryClient = new QueryClient()
+
+const App = () => (
+  <WagmiProvider config={wagmiConfig}>
+    <QueryClientProvider client={queryClient}>
+      <TxKitProvider embedded config={{ theme: 'dark' }}>
+        <ConnectWallet />
+      </TxKitProvider>
+    </QueryClientProvider>
+  </WagmiProvider>
+)
+```
+
+### Embedded Config Props
+
+| Prop | Type | Default |
+|------|------|---------|
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` |
+| `variant` | `'default' \| 'soft' \| 'sharp' \| 'rounded'` | `'default'` |
+| `pollingInterval` | `number` | `4000` |
+| `licenseKey` | `string` | - |
+
+- `variant` - Visual style preset. See [Theming - Visual Variants](/theming#visual-variants).
+
+In embedded mode, chains, transports, and wallets are managed by the external WagmiProvider.
+
+## useTxKit
+
+Hook to access txKit context from any component inside TxKitProvider.
+
+```tsx
+import { useTxKit } from '@txkit/react'
+
+const MyComponent = () => {
+  const { theme, setTheme, config } = useTxKit()
+
+  return (
+    <button onClick={() => setTheme('dark')}>
+      Current theme: {theme}
+    </button>
+  )
+}
+```
+
+### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `theme` | `'light' \| 'dark'` | Resolved theme (never `'auto'`) |
+| `setTheme` | `(value: Theme) => void` | Set theme to `'light'`, `'dark'`, or `'auto'` |
+| `config` | `ResolvedConfig` | Resolved configuration with defaults applied |
+| `isProEnabled` | `boolean` | Whether a valid Pro license is active |
+
+Throws `ProviderNotFoundError` if used outside of TxKitProvider. See [ProviderNotFoundError](/errors/provider-not-found).

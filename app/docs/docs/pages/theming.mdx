@@ -1,0 +1,175 @@
+# Theming
+
+txKit uses CSS custom properties with the `--txkit-*` prefix. No CSS-in-JS, no Tailwind - just standard custom properties that cascade naturally.
+
+## CSS Import
+
+Import the theme package in your app entry point:
+
+```tsx
+import '@txkit/themes'
+```
+
+This single import includes light/dark themes and all visual variants. You can also import parts individually:
+
+```tsx
+import '@txkit/themes/base'              // light theme only
+import '@txkit/themes/dark'              // dark theme overrides
+import '@txkit/themes/variants/soft'     // soft variant only
+```
+
+## Theme Modes
+
+Pass `theme` to `TxKitProvider`:
+
+```tsx
+<TxKitProvider config={{
+  // ...
+  theme: 'dark', // 'light' | 'dark' | 'auto' (default)
+}}>
+```
+
+`'auto'` follows the user's system preference via `prefers-color-scheme`.
+
+### Switching at Runtime
+
+Use `setTheme` from the `useTxKit` hook:
+
+```tsx
+import { useTxKit } from '@txkit/react'
+
+const ThemeToggle = () => {
+  const { theme, setTheme } = useTxKit()
+
+  return (
+    <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+      {theme}
+    </button>
+  )
+}
+```
+
+## Visual Variants
+
+Pass `variant` to `TxKitProvider` to apply a visual style preset:
+
+```tsx
+<TxKitProvider config={{
+  // ...
+  variant: 'soft', // 'default' | 'soft' | 'sharp' | 'rounded'
+}}>
+```
+
+| Variant | Radii | Shadows | Transitions | Feel |
+|---------|-------|---------|-------------|------|
+| `default` | 6/8/12px | Standard | 150ms ease | Neutral |
+| `soft` | 8/12/16px | Subtle, diffused | 200ms ease-out | Gentle |
+| `sharp` | 2/3/4px | None | 100ms linear | Crisp |
+| `rounded` | 12/16/24px | Elevated | 200ms cubic-bezier | Playful |
+
+Variants override `--txkit-radius-*`, `--txkit-shadow-*`, and `--txkit-transition`. They combine with any theme mode (light/dark).
+
+## Customizing
+
+Override any `--txkit-*` variable in your CSS:
+
+```css
+.txkit-root {
+  --txkit-color-primary: #8B5CF6;
+  --txkit-radius-md: 12px;
+}
+```
+
+For dark mode overrides, target `.txkit-dark`:
+
+```css
+.txkit-dark {
+  --txkit-color-primary: #A78BFA;
+}
+```
+
+## CSS Custom Properties
+
+### Colors
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--txkit-color-primary` | `#4338CA` | `#818CF8` |
+| `--txkit-color-primary-hover` | `#3730A3` | `#6366F1` |
+| `--txkit-color-primary-active` | `#312E81` | `#4F46E5` |
+| `--txkit-color-primary-text` | `#FFFFFF` | `#FFFFFF` |
+
+### Semantic
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--txkit-color-success` | `#059669` | `#34D399` |
+| `--txkit-color-warning` | `#D97706` | `#FBBF24` |
+| `--txkit-color-error` | `#DC2626` | `#F87171` |
+| `--txkit-color-info` | `#2563EB` | `#60A5FA` |
+
+### Surfaces
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--txkit-color-bg` | `#FFFFFF` | `#0F172A` |
+| `--txkit-color-bg-secondary` | `#F8FAFC` | `#1E293B` |
+| `--txkit-color-bg-tertiary` | `#F1F5F9` | `#334155` |
+
+### Text
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--txkit-color-text` | `#0F172A` | `#F1F5F9` |
+| `--txkit-color-text-secondary` | `#475569` | `#94A3B8` |
+| `--txkit-color-text-tertiary` | `#94A3B8` | `#64748B` |
+
+### Borders
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--txkit-color-border` | `#E2E8F0` | `#334155` |
+| `--txkit-color-border-hover` | `#CBD5E1` | `#475569` |
+
+### Typography
+
+| Variable | Value |
+|----------|-------|
+| `--txkit-font-family` | `system-ui, -apple-system, sans-serif` |
+| `--txkit-font-mono` | `'IBM Plex Mono', ui-monospace, monospace` |
+| `--txkit-font-size-xs` | `0.75rem` |
+| `--txkit-font-size-sm` | `0.875rem` |
+| `--txkit-font-size-base` | `1rem` |
+| `--txkit-font-size-lg` | `1.125rem` |
+
+### Spacing
+
+| Variable | Value |
+|----------|-------|
+| `--txkit-space-xs` | `0.25rem` |
+| `--txkit-space-sm` | `0.5rem` |
+| `--txkit-space-md` | `0.75rem` |
+| `--txkit-space-lg` | `1rem` |
+| `--txkit-space-xl` | `1.5rem` |
+
+### Radii
+
+| Variable | Value |
+|----------|-------|
+| `--txkit-radius-sm` | `6px` |
+| `--txkit-radius-md` | `8px` |
+| `--txkit-radius-lg` | `12px` |
+| `--txkit-radius-full` | `9999px` |
+
+### Shadows
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--txkit-shadow-sm` | `0 1px 2px rgba(0,0,0,0.05)` | `0 1px 2px rgba(0,0,0,0.3)` |
+| `--txkit-shadow-md` | `0 4px 6px -1px rgba(0,0,0,0.1)` | `0 4px 6px -1px rgba(0,0,0,0.4)` |
+
+### Transitions
+
+| Variable | Value |
+|----------|-------|
+| `--txkit-transition` | `150ms ease` |

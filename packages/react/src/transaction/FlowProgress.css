@@ -1,0 +1,70 @@
+.txkit-fp {
+  display: flex;
+  flex-direction: column;
+  gap: var(--txkit-space-xs);
+}
+
+.txkit-fp-bar {
+  width: 100%;
+  height: 3px;
+  background: var(--txkit-color-bg-secondary);
+  border-radius: var(--txkit-radius-full);
+  overflow: hidden;
+}
+
+.txkit-fp-fill {
+  height: 100%;
+  background: var(--txkit-color-primary);
+  border-radius: var(--txkit-radius-full);
+  transition: width 300ms ease;
+}
+
+.txkit-fp-fill[data-status="running"] {
+  position: relative;
+  overflow: hidden;
+}
+
+.txkit-fp-fill[data-status="running"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: txkit-fp-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes txkit-fp-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.txkit-fp-fill[data-status="completed"] {
+  background: var(--txkit-color-success);
+}
+
+.txkit-fp-fill[data-status="error"],
+.txkit-fp-fill[data-status="rejected"] {
+  background: var(--txkit-color-error);
+}
+
+.txkit-fp-label {
+  font-family: var(--txkit-font-family);
+  font-size: var(--txkit-font-size-xs);
+  color: var(--txkit-color-text-secondary);
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .txkit-fp-fill {
+    transition: none;
+  }
+
+  .txkit-fp-fill[data-status="running"]::after {
+    animation: none;
+  }
+}

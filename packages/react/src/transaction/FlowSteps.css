@@ -1,0 +1,170 @@
+.txkit-fs {
+  display: flex;
+  align-items: center;
+}
+
+.txkit-fs-list {
+  display: flex;
+  gap: var(--txkit-space-sm);
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.txkit-fs-list[data-orientation="vertical"] {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.txkit-fs-item {
+  display: flex;
+  gap: var(--txkit-space-xs);
+  align-items: center;
+  font-family: var(--txkit-font-family);
+  font-size: var(--txkit-font-size-sm);
+  color: var(--txkit-color-text-secondary);
+  transition: color var(--txkit-transition);
+}
+
+.txkit-fs-item[aria-current="step"] {
+  color: var(--txkit-color-primary);
+  font-weight: 600;
+}
+
+.txkit-fs-item[data-status="completed"] {
+  color: var(--txkit-color-success);
+}
+
+.txkit-fs-item[data-status="error"],
+.txkit-fs-item[data-status="simulation-failed"] {
+  color: var(--txkit-color-error);
+}
+
+.txkit-fs-item[data-status="rejected"],
+.txkit-fs-item[data-status="canceled"] {
+  color: var(--txkit-color-text-tertiary);
+}
+
+.txkit-fs-item[data-status="skipped"] {
+  color: var(--txkit-color-text-tertiary);
+  text-decoration: line-through;
+}
+
+/* --- Indicator circles --- */
+
+.txkit-fs-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  font-size: var(--txkit-font-size-xs);
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: all var(--txkit-transition);
+}
+
+.txkit-fs-item[aria-current="step"] .txkit-fs-indicator {
+  background: var(--txkit-color-primary);
+  border-color: var(--txkit-color-primary);
+  color: #fff;
+}
+
+.txkit-fs-item[data-status="completed"] .txkit-fs-indicator {
+  background: var(--txkit-color-success);
+  border-color: var(--txkit-color-success);
+  color: #fff;
+}
+
+.txkit-fs-item[data-status="error"] .txkit-fs-indicator,
+.txkit-fs-item[data-status="simulation-failed"] .txkit-fs-indicator {
+  background: var(--txkit-color-error);
+  border-color: var(--txkit-color-error);
+  color: #fff;
+}
+
+/* Pulse on active processing step */
+
+.txkit-fs-item[aria-current="step"]:not([data-status="completed"]):not([data-status="error"]):not([data-status="simulation-failed"]) .txkit-fs-indicator {
+  animation: txkit-fs-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes txkit-fs-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--txkit-color-primary-alpha); }
+  50% { box-shadow: 0 0 0 4px var(--txkit-color-primary-alpha); }
+}
+
+.txkit-fs-label {
+  white-space: nowrap;
+}
+
+/* --- Connector lines (horizontal) --- */
+
+.txkit-fs-list:not([data-orientation="vertical"]) .txkit-fs-item + .txkit-fs-item::before {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 2px;
+  margin-right: var(--txkit-space-xs);
+  background: var(--txkit-color-border);
+  flex-shrink: 0;
+  transition: background var(--txkit-transition);
+}
+
+.txkit-fs-list:not([data-orientation="vertical"]) .txkit-fs-item[data-status="completed"] + .txkit-fs-item::before {
+  background: var(--txkit-color-success);
+}
+
+/* --- Connector lines (vertical) --- */
+
+.txkit-fs-list[data-orientation="vertical"] .txkit-fs-item + .txkit-fs-item::before {
+  content: '';
+  display: block;
+  width: 2px;
+  height: 16px;
+  margin-left: 11px;
+  margin-bottom: var(--txkit-space-xs);
+  background: var(--txkit-color-border);
+  flex-shrink: 0;
+  transition: background var(--txkit-transition);
+}
+
+.txkit-fs-list[data-orientation="vertical"] .txkit-fs-item[data-status="completed"] + .txkit-fs-item::before {
+  background: var(--txkit-color-success);
+}
+
+/* --- Screen reader only --- */
+
+.txkit-fs-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .txkit-fs-item {
+    transition: none;
+  }
+
+  .txkit-fs-indicator {
+    transition: none;
+    animation: none;
+  }
+
+  .txkit-fs-list:not([data-orientation="vertical"]) .txkit-fs-item + .txkit-fs-item::before,
+  .txkit-fs-list[data-orientation="vertical"] .txkit-fs-item + .txkit-fs-item::before {
+    transition: none;
+  }
+}

@@ -1,0 +1,26 @@
+# InvalidConfigError
+
+> Invalid TxKitProvider configuration.
+
+## Cause
+
+Thrown when the config passed to `<TxKitProvider>` is not a valid object.
+
+## Solution
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+
+function App() {
+  return (
+    <TxKitProvider config={{
+      chains: [mainnet],
+      transports: { [mainnet.id]: http() },
+    }}>
+      {/* ... */}
+    </TxKitProvider>
+  )
+}
+```

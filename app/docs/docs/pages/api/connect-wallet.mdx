@@ -1,0 +1,186 @@
+# ConnectWallet
+
+Wallet connection button with a built-in 5-state machine: disconnected, connecting, connected, wrong chain, and error. Handles ENS resolution, balance display, chain switching, and account dropdown.
+
+## Import
+
+```tsx
+import { ConnectWallet } from '@txkit/react'
+```
+
+## Usage
+
+```tsx
+<ConnectWallet />
+```
+
+## Props
+
+| Prop | Type | Default |
+|------|------|---------|
+| `className` | `string` | - |
+| `label` | `string` | `'Connect Wallet'` |
+| `chainId` | `number` | - |
+| `labels` | `Partial<ConnectWalletLabels>` | See [Labels](#labels) |
+| `showBalance` | `boolean` | `true` |
+| `showAvatar` | `boolean` | `true` |
+| `showEns` | `boolean` | `true` |
+| `onConnect` | `(data: { address: string; connector: string }) => void` | - |
+| `onDisconnect` | `() => void` | - |
+| `onError` | `(error: Error) => void` | - |
+| `formatAddress` | `(address: string, ensName?: string) => string` | - |
+
+- `chainId` - When set, forces the user to be on this chain. If they are on a different chain, the button shows "Wrong Network" and clicking it triggers a chain switch.
+- `formatAddress` - Custom address formatting function. Receives the raw address and resolved ENS name (if available). Return value is displayed in the button.
+- `labels` - Override any UI text string. See [Labels](#labels) below.
+
+## States
+
+ConnectWallet is a state machine with 5 states:
+
+| State | Button Shows | On Click |
+|-------|-------------|----------|
+| `disconnected` | Label text | Opens wallet selection modal |
+| `connecting` | Spinner | Disabled |
+| `connected` | Address / ENS + balance | Opens account dropdown |
+| `wrong-chain` | "Wrong Network" | Triggers chain switch |
+| `error` | "Try Again" | Opens wallet selection modal |
+
+## Examples
+
+### Custom Label
+
+```tsx
+<ConnectWallet label="Sign In" />
+```
+
+### With Callbacks
+
+```tsx
+<ConnectWallet
+  onConnect={(data) => console.log('Connected:', data.address)}
+  onDisconnect={() => console.log('Disconnected')}
+  onError={(error) => console.error(error.message)}
+/>
+```
+
+### Custom Address Format
+
+```tsx
+<ConnectWallet
+  formatAddress={(address) => `${address.slice(0, 6)}..${address.slice(-2)}`}
+/>
+```
+
+### Force Chain
+
+```tsx
+import { arbitrum } from 'viem/chains'
+
+<ConnectWallet chainId={arbitrum.id} />
+```
+
+### Hide Balance and Avatar
+
+```tsx
+<ConnectWallet showBalance={false} showAvatar={false} />
+```
+
+## Custom Render
+
+Use the `children` render function for full UI control:
+
+```tsx
+<ConnectWallet>
+  {({ state, displayAddress, connect, connectors, disconnect, openModal }) => (
+    state === 'connected'
+      ? <button onClick={disconnect}>{displayAddress}</button>
+      : <button onClick={openModal}>Sign In</button>
+  )}
+</ConnectWallet>
+```
+
+### Render Data
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `state` | `WalletState` | Current connection state |
+| `address` | `` `0x${string}` \| undefined `` | Connected wallet address |
+| `displayAddress` | `string \| undefined` | Shortened address or ENS name |
+| `ensName` | `string \| null \| undefined` | ENS name |
+| `ensAvatar` | `string \| null \| undefined` | ENS avatar URL |
+| `formattedBalance` | `string \| undefined` | Native balance with symbol (e.g. "1.23 ETH") |
+| `chain` | `Chain \| undefined` | Current chain |
+| `connectors` | `readonly Connector[]` | Available wallet connectors |
+| `connect` | `(connector: Connector) => void` | Connect a specific wallet |
+| `disconnect` | `() => void` | Disconnect and close panel |
+| `switchChain` | `(chainId: number) => void` | Switch to a different chain |
+| `openModal` | `() => void` | Open wallet selection modal |
+| `closePanel` | `() => void` | Close any open panel |
+| `error` | `Error \| null` | Connection error |
+| `isPending` | `boolean` | True while connection is pending |
+
+## Hook
+
+### useWalletState
+
+Headless hook for wallet connection state. Use this for complete UI control without the ConnectWallet component.
+
+```tsx
+import { useWalletState } from '@txkit/react/connect'
+
+const MyWalletButton = () => {
+  const { state, displayAddress, connect, connectors, disconnect } = useWalletState()
+
+  if (state === 'connected') {
+    return <button onClick={disconnect}>{displayAddress}</button>
+  }
+
+  return (
+    <div>
+      {connectors.map((connector) => (
+        <button key={connector.uid} onClick={() => connect({ connector })}>
+          {connector.name}
+        </button>
+      ))}
+    </div>
+  )
+}
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `chainId` | `number` | - | Force specific chain. Shows wrong-chain state if mismatch. |
+| `showBalance` | `boolean` | `true` | Fetch and display native balance. |
+| `showEns` | `boolean` | `true` | Resolve ENS name and avatar. |
+
+Returns the same fields as [Render Data](#render-data) above (except `openModal` and `closePanel` which are component-specific).
+
+## Labels
+
+Override UI text by passing a partial `ConnectWalletLabels` object:
+
+```tsx
+<ConnectWallet
+  labels={{
+    connect: 'Sign In',
+    connecting: 'Signing in...',
+    disconnect: 'Sign Out',
+  }}
+/>
+```
+
+### All Label Keys
+
+| Key | Default |
+|-----|---------|
+| `connect` | `'Connect Wallet'` |
+| `connecting` | `'Connecting...'` |
+| `wrongChain` | `'Wrong Network'` |
+| `switchChain` | `'Switch Network'` |
+| `disconnect` | `'Disconnect'` |
+| `copyAddress` | `'Copy Address'` |
+| `copied` | `'Copied!'` |
+| `error` | `'Connection Failed'` |
+| `retry` | `'Try Again'` |
+| `selectWallet` | `'Select Wallet'` |

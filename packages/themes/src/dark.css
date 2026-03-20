@@ -1,0 +1,30 @@
+.txkit-dark {
+  --txkit-color-primary: #5B54E8;
+  --txkit-color-primary-hover: #818CF8;
+  --txkit-color-primary-active: #4F46E5;
+  --txkit-color-primary-text: #FFFFFF;
+
+  --txkit-color-success: #34D399;
+  --txkit-color-success-text: #022C22;
+  --txkit-color-warning: #FBBF24;
+  --txkit-color-warning-text: #451A03;
+  --txkit-color-error: #EF4444;
+  --txkit-color-error-text: #FFFFFF;
+  --txkit-color-info: #60A5FA;
+
+  --txkit-color-bg: #0F172A;
+  --txkit-color-bg-secondary: #1E293B;
+  --txkit-color-bg-tertiary: #334155;
+
+  --txkit-color-text: #F1F5F9;
+  --txkit-color-text-secondary: #94A3B8;
+  --txkit-color-text-tertiary: #7C8DA0;
+
+  --txkit-color-primary-alpha: rgba(91, 84, 232, 0.15);
+
+  --txkit-color-border: #334155;
+  --txkit-color-border-hover: #475569;
+
+  --txkit-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --txkit-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+}

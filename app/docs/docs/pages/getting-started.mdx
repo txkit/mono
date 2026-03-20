@@ -1,0 +1,87 @@
+# Getting Started
+
+## Installation
+
+:::code-group
+
+```bash [npm]
+npm install @txkit/react @txkit/themes viem wagmi @tanstack/react-query
+```
+
+```bash [pnpm]
+pnpm add @txkit/react @txkit/themes viem wagmi @tanstack/react-query
+```
+
+```bash [yarn]
+yarn add @txkit/react @txkit/themes viem wagmi @tanstack/react-query
+```
+
+:::
+
+### Peer Dependencies
+
+| Package | Version |
+|---------|---------|
+| `react` | `>= 18` |
+| `react-dom` | `>= 18` |
+| `viem` | `>= 2` |
+| `wagmi` | `>= 2` |
+| `@tanstack/react-query` | `>= 5` |
+
+txKit is fully typed - no additional `@types/*` packages needed.
+
+## Setup
+
+Import the theme CSS and wrap your app with `TxKitProvider`:
+
+```tsx
+import '@txkit/themes'
+
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+
+const App = () => (
+  <TxKitProvider config={{
+    chains: [ mainnet ],
+    transports: { [mainnet.id]: http() },
+  }}>
+    <ConnectWallet />
+  </TxKitProvider>
+)
+```
+
+That's it. `TxKitProvider` creates WagmiProvider and QueryClientProvider internally - you don't need to set them up.
+
+:::warning
+Without `import '@txkit/themes'`, components render without styles. This import provides light/dark themes and all visual variants.
+:::
+
+## Config Options
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `chains` | `[Chain, ...Chain[]]` | Required | Supported chains |
+| `transports` | `Record<number, Transport>` | Required | RPC transport per chain |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Color theme |
+| `variant` | `'default' \| 'soft' \| 'sharp' \| 'rounded'` | `'default'` | Visual style preset |
+| `walletConnectProjectId` | `string` | - | Enables WalletConnect |
+| `autoConnect` | `boolean` | `true` | Reconnect on reload |
+
+For the full config reference, see [TxKitProvider](/api/txkit-provider).
+
+## Already Using wagmi?
+
+If your app already has WagmiProvider and QueryClientProvider, use embedded mode to avoid duplicate providers:
+
+```tsx
+<WagmiProvider config={yourConfig}>
+  <QueryClientProvider client={yourQueryClient}>
+    <TxKitProvider embedded>
+      <ConnectWallet />
+    </TxKitProvider>
+  </QueryClientProvider>
+</WagmiProvider>
+```
+
+See [TxKitProvider - Embedded Mode](/api/txkit-provider#embedded-mode) for details.
