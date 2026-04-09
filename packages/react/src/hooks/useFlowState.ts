@@ -1,0 +1,51 @@
+import { createContext, useContext, useRef, useSyncExternalStore, useCallback } from 'react'
+
+import type { FlowStore, FlowEntry } from '../helpers/flowStore'
+
+
+// --- Context ---
+
+export const FlowStoreContext = createContext<FlowStore | null>(null)
+
+export const DEFAULT_FLOW_ID = '__default__'
+
+
+// --- Public hooks ---
+
+/** Read flow state by flowId. Re-renders when store is notified */
+export const useFlowState = (flowId = DEFAULT_FLOW_ID): FlowEntry | undefined => {
+  const store = useContext(FlowStoreContext)
+  const versionRef = useRef(store?.version ?? 0)
+
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => {
+      if (!store) {
+        return () => {}
+      }
+      store.listeners.add(onStoreChange)
+      return () => store.listeners.delete(onStoreChange)
+    },
+    [ store ],
+  )
+
+  const getSnapshot = useCallback(
+    () => {
+      if (!store) {
+        return undefined
+      }
+      // Return new object ref only if version changed (prevents unnecessary re-renders)
+      if (store.version !== versionRef.current) {
+        versionRef.current = store.version
+      }
+      return store.entries.get(flowId)
+    },
+    [ store, flowId ],
+  )
+
+  return useSyncExternalStore(subscribe, getSnapshot, () => undefined)
+}
+
+/** Access flow store for registration */
+export const useFlowStore = (): FlowStore | null => {
+  return useContext(FlowStoreContext)
+}

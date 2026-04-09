@@ -50,46 +50,6 @@
         "default": "./dist/index.cjs"
       }
     },
-    "./connect": {
-      "import": {
-        "types": "./dist/connect/index.d.ts",
-        "default": "./dist/connect/index.js"
-      },
-      "require": {
-        "types": "./dist/connect/index.d.cts",
-        "default": "./dist/connect/index.cjs"
-      }
-    },
-    "./balance": {
-      "import": {
-        "types": "./dist/balance/index.d.ts",
-        "default": "./dist/balance/index.js"
-      },
-      "require": {
-        "types": "./dist/balance/index.d.cts",
-        "default": "./dist/balance/index.cjs"
-      }
-    },
-    "./transaction": {
-      "import": {
-        "types": "./dist/transaction/index.d.ts",
-        "default": "./dist/transaction/index.js"
-      },
-      "require": {
-        "types": "./dist/transaction/index.d.cts",
-        "default": "./dist/transaction/index.cjs"
-      }
-    },
-    "./contract": {
-      "import": {
-        "types": "./dist/contract/index.d.ts",
-        "default": "./dist/contract/index.js"
-      },
-      "require": {
-        "types": "./dist/contract/index.d.cts",
-        "default": "./dist/contract/index.cjs"
-      }
-    },
     "./styles.css": "./dist/styles.css"
   },
   "main": "./dist/index.cjs",

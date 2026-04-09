@@ -2,10 +2,6 @@
 module.exports = {
   entry: [
     'src/index.ts',
-    'src/connect/index.ts',
-    'src/balance/index.ts',
-    'src/transaction/index.ts',
-    'src/contract/index.ts',
   ],
   format: ['esm', 'cjs'],
   dts: true,
