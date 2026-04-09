@@ -1,22 +1,22 @@
 // --- TransactionButton ---
-export { default as TransactionButton } from './TransactionButton'
+export { default as TransactionButton } from './TransactionButton/TransactionButton'
 
 // --- Compound Components ---
-export { default as FlowSteps } from './FlowSteps'
-export { default as FlowProgress } from './FlowProgress'
-export { default as FlowToast } from './FlowToast'
+export { default as FlowSteps } from './FlowSteps/FlowSteps'
+export { default as FlowProgress } from './FlowProgress/FlowProgress'
+export { default as FlowToast } from './FlowToast/FlowToast'
 
 // --- Flow Hook ---
 export { default as useTransactionFlow } from './useTransactionFlow'
 
 // --- Flow Helpers ---
-export { txStep, approveAndExecute, multiApproveAndExecute, signAndSubmit } from './flow-helpers'
+export { txStep, approveAndExecute, multiApproveAndExecute, signAndSubmit } from './shared/flow-helpers'
 
 // --- Flow Context ---
-export { useFlowState } from './FlowContext'
+export { useFlowState } from './shared/FlowContext'
 
 // --- Labels ---
-export type { TransactionButtonLabels } from './labels'
+export type { TransactionButtonLabels } from './shared/labels'
 
 // --- Types ---
 export type {

@@ -1,0 +1,148 @@
+# ContractForm
+
+ABI-driven form generation - pass a contract address, ABI, and function name, get a fully typed form with validation, security warnings, and calldata preview.
+
+## Quick Start
+
+```tsx
+import { ContractForm } from '@txkit/react/contract'
+
+<ContractForm
+  address="0x..."
+  abi={contractAbi}
+  functionName="transfer"
+  onSuccess={(receipt) => console.log('Confirmed:', receipt.transactionHash)}
+/>
+```
+
+## Three Tiers of Customization
+
+### Tier 1: Zero-Config
+
+```tsx
+<ContractForm address={TOKEN} abi={erc20Abi} functionName="approve" />
+```
+
+### Tier 2: Custom Render
+
+```tsx
+<ContractForm address={TOKEN} abi={erc20Abi} functionName="transfer">
+  {({ fields, values, errors, warnings, isValid, setFieldValue, setFieldTouched }) => (
+    <div>
+      {fields.map((field) => (
+        <label key={field.name}>
+          {field.name} ({field.solidityType})
+          <input
+            value={values[field.name] || ''}
+            onChange={(e) => setFieldValue(field.name, e.target.value)}
+            onBlur={() => setFieldTouched(field.name)}
+          />
+          {errors[field.name] && <span className="error">{errors[field.name]}</span>}
+        </label>
+      ))}
+      {warnings.map((w, i) => (
+        <div key={i} className={`warning-${w.level}`}>{w.message}</div>
+      ))}
+    </div>
+  )}
+</ContractForm>
+```
+
+### Tier 3: Headless Hook
+
+```tsx
+import { useContractForm } from '@txkit/react/contract'
+
+const { fields, values, errors, warnings, isValid, steps, setFieldValue } = useContractForm({
+  address: TOKEN,
+  abi: erc20Abi,
+  functionName: 'approve',
+  defaultParams: { spender: ROUTER_ADDRESS },
+  hiddenParams: [ 'spender' ],
+})
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `address` | `` `0x${string}` `` | required | Contract address |
+| `abi` | `Abi` | required | Contract ABI |
+| `functionName` | `string` | required | Function to call |
+| `className` | `string` | - | CSS class |
+| `children` | `(data: RenderData) => ReactNode` | - | Custom render function |
+| `data-testid` | `string` | - | Test ID for automated testing |
+| `chainId` | `number` | current chain | Target chain |
+| `label` | `string` | `functionName` | Submit button label |
+| `labels` | `Partial<Labels>` | - | UI text overrides |
+| `safety` | `Partial<SafetyConfig>` | - | Anti-phishing config |
+| `disabled` | `boolean` | `false` | Disable form |
+| `onSuccess` | `(receipt) => void` | - | Called on confirmation |
+| `onError` | `(error) => void` | - | Called on error |
+
+## Supported Solidity Types
+
+| Solidity Type | Input Type | Validation |
+|---------------|-----------|------------|
+| `address` | Text input | Hex format, 42 chars, checksum |
+| `uint8`-`uint256` | Number input | Range check, non-negative |
+| `int8`-`int256` | Number input | Signed range check |
+| `bool` | Checkbox | - |
+| `string` | Text input | - |
+| `bytes` | Text input | Hex format |
+| `bytesN` | Text input | Hex format, exact length |
+| `T[]` | JSON input | Per-element validation |
+| `T[N]` | JSON input | Fixed length + per-element validation |
+| `tuple` | Nested fields | Recursive component rendering |
+
+## Security Warnings
+
+ContractForm automatically detects and warns about dangerous functions:
+
+- **Danger**: `approve`, `setApprovalForAll`, `transferFrom`, `delegateCall`, `selfdestruct`, `burn`, `renounceOwnership`, `upgradeTo`, `permit`
+- **Warning**: `transfer`, `multicall` and 8 more
+
+MAX_UINT256 detection on approve amounts shows a specific "unlimited approval" warning.
+
+## Calldata Preview
+
+The default UI includes a collapsible calldata preview section showing the encoded function call with full addresses (not shortened) to prevent address poisoning attacks.
+
+## Render Data
+
+```ts
+type ContractFormRenderData = {
+  fields: FieldDescriptor[]
+  values: Record<string, string>
+  errors: Record<string, string | null>
+  touched: Record<string, boolean>
+  warnings: SecurityWarning[]
+  calldataPreview: string | undefined
+  isValid: boolean
+  isPayable: boolean
+  formError: string | undefined
+  setFieldValue: (name: string, value: string) => void
+  setFieldTouched: (name: string) => void
+}
+```
+
+## useContractForm Hook
+
+The headless hook accepts additional options for widget integration:
+
+```ts
+const result = useContractForm({
+  address, abi, functionName,
+  // Pre-fill form fields
+  defaultParams: { recipient: '0x...' },
+  // Programmatically set values (not shown in form)
+  computedParams: { amount: () => calculateAmount() },
+  // Hide fields from the form UI
+  hiddenParams: [ 'recipient' ],
+})
+
+// result includes everything from RenderData plus:
+// abiFunction: AbiFunction | undefined
+// steps: FlowStep[] (ready to pass to TransactionButton)
+// txParams: ContractTransactionProps | undefined
+```

@@ -28,7 +28,7 @@ export type {
   FlowProgressRenderData,
   FlowToastProps,
   FlowToastRenderData,
-} from './flow-types'
+} from './shared/flow-types'
 
 // Re-export default props for internal use
-export type { TransactionButtonDefaultProps } from './TransactionButtonDefault'
+export type { TransactionButtonDefaultProps } from './TransactionButton/TransactionButtonDefault'

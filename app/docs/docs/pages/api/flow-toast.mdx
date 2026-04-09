@@ -1,0 +1,60 @@
+# FlowToast
+
+Toast notification for transaction flow events (success, error, step completion). Renders via portal, automatically connects to TransactionButton through TxKitProvider context.
+
+## Quick Start
+
+```tsx
+import { TransactionButton, FlowToast, txStep } from '@txkit/react/transaction'
+
+<TransactionButton
+  steps={[ txStep('send', 'Send', { to: '0x...', value: parseEther('1') }) ]}
+/>
+<FlowToast position="bottom-right" />
+```
+
+## Three Tiers of Customization
+
+### Tier 1: Zero-Config
+
+```tsx
+<FlowToast />
+```
+
+### Tier 2: Custom Render
+
+```tsx
+<FlowToast>
+  {({ visible, message, type, dismiss }) => (
+    visible && (
+      <div className={`toast toast-${type}`}>
+        <span>{message}</span>
+        <button onClick={dismiss}>x</button>
+      </div>
+    )
+  )}
+</FlowToast>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | - | CSS class |
+| `children` | `(data: RenderData) => ReactNode` | - | Custom render function |
+| `data-testid` | `string` | - | Test ID for automated testing |
+| `flowId` | `string` | `'__default__'` | Flow ID to display |
+| `autoDismiss` | `number` | `5000` | Auto-dismiss in ms (0 = manual) |
+| `position` | `'top-right' \| 'top-left' \| 'bottom-right' \| 'bottom-left'` | `'bottom-right'` | Toast position |
+
+## Render Data
+
+```ts
+type FlowToastRenderData = {
+  visible: boolean
+  message: string
+  type: 'success' | 'error' | 'info'
+  stepId: string | undefined
+  dismiss: () => void
+}
+```

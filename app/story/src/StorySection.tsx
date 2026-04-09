@@ -11,6 +11,7 @@ type StorySectionProps = {
   children: ReactNode
   description?: string
   code?: string
+  headless?: boolean
 }
 
 const slugify = (text: string) =>
@@ -22,6 +23,7 @@ const StorySection: React.FC<StorySectionProps> = ({
   children,
   description,
   code,
+  headless,
 }) => {
   const [ showCode, setShowCode ] = useState(false)
   const sectionId = id ?? slugify(title)
@@ -36,6 +38,7 @@ const StorySection: React.FC<StorySectionProps> = ({
       <div className="story-section-header">
         <h3
           className="story-section-title"
+          data-linkable=""
           onClick={handleTitleClick}
           title="Click to copy permalink"
         >
@@ -59,7 +62,7 @@ const StorySection: React.FC<StorySectionProps> = ({
           <p className="story-description">{description}</p>
         )
       }
-      <div className="story-card">
+      <div className={`story-card${headless ? ' story-card--headless' : ''}`}>
         {children}
       </div>
       {

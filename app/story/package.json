@@ -9,17 +9,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.66.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "viem": "^2.23.13",
-    "wagmi": "^2.14.16",
-    "@tanstack/react-query": "^5.66.0"
+    "wagmi": "^2.14.16"
   },
   "devDependencies": {
+    "@paulmillr/qr": "^0.2.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.0",
     "typescript": "^5.7.3",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vite-plugin-node-polyfills": "^0.26.0"
   }
 }

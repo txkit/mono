@@ -95,23 +95,41 @@ const SearchModal: React.FC<SearchModalProps> = ({ open, onClose, onSelect, item
           {
             filtered.length === 0
               ? <div className="search-empty">No results</div>
-              : filtered.slice(0, 15).map((item, i) => (
-                <button
-                  key={`${item.story}-${item.section}`}
-                  type="button"
-                  className={`search-result ${i === activeIndex ? 'active' : ''}`}
-                  onClick={() => { onSelect(item.story); onClose() }}
-                  onMouseEnter={() => setActiveIndex(i)}
-                >
-                  <span className="search-result-story">{item.story}</span>
-                  <span className="search-result-section">{item.section}</span>
-                  {
-                    item.description && (
-                      <span className="search-result-desc">{item.description}</span>
-                    )
-                  }
-                </button>
-              ))
+              : (() => {
+                const grouped = new Map<string, typeof filtered>()
+                for (const item of filtered.slice(0, 20)) {
+                  const group = grouped.get(item.story) ?? []
+                  group.push(item)
+                  grouped.set(item.story, group)
+                }
+                let globalIndex = 0
+                return Array.from(grouped.entries()).map(([ storyName, items ]) => (
+                  <div key={storyName} className="search-group">
+                    <div className="search-group-header">{storyName}</div>
+                    {
+                      items.map((item) => {
+                        const index = globalIndex++
+                        return (
+                          <button
+                            key={`${item.story}-${item.section}`}
+                            type="button"
+                            className={`search-result ${index === activeIndex ? 'active' : ''}`}
+                            onClick={() => { onSelect(item.story); onClose() }}
+                            onMouseEnter={() => setActiveIndex(index)}
+                          >
+                            <span className="search-result-section">{item.section}</span>
+                            {
+                              item.description && (
+                                <span className="search-result-desc">{item.description}</span>
+                              )
+                            }
+                          </button>
+                        )
+                      })
+                    }
+                  </div>
+                ))
+              })()
           }
         </div>
       </div>

@@ -19,6 +19,7 @@ module.exports = {
     'wagmi/connectors',
     'viem',
     '@tanstack/react-query',
+    '@paulmillr/qr',
   ],
   noExternal: ['@txkit/core'],
 }

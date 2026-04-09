@@ -1,3 +1,6 @@
-@import './connect/ConnectWallet.css';
-@import './balance/TokenBalance.css';
-@import './transaction/TransactionButton.css';
+@import './connect/ConnectWallet/ConnectWallet.css';
+@import './balance/TokenBalance/TokenBalance.css';
+@import './transaction/TransactionButton/TransactionButton.css';
+@import './transaction/FlowSteps/FlowSteps.css';
+@import './transaction/FlowProgress/FlowProgress.css';
+@import './transaction/FlowToast/FlowToast.css';

@@ -1,34 +1,40 @@
 # TransactionButton
 
-Full transaction lifecycle component - from simulation to on-chain confirmation. Handles 15+ edge cases including approval flows, anti-phishing safety, and error recovery.
+Multi-step transaction flow component - from simulation to on-chain confirmation. Handles approval flows, anti-phishing safety, signature steps, and error recovery.
 
 ## Quick Start
 
 ```tsx
-import { TransactionButton } from '@txkit/react/transaction'
+import { TransactionButton, txStep } from '@txkit/react/transaction'
 import { parseEther } from 'viem'
 
-// Raw ETH transfer
+// Simple ETH transfer
 <TransactionButton
-  tx={{ to: '0x...', value: parseEther('1') }}
-  onSuccess={({ hash, receipt }) => console.log('Confirmed!', hash)}
+  steps={[ txStep('send', 'Send ETH', { to: '0x...', value: parseEther('1') }) ]}
+  label="Send 1 ETH"
+  onFlowComplete={(results) => console.log('Done!', results)}
 />
+```
 
-// Contract call with ABI
+### Approve + Execute (ERC-20)
+
+```tsx
+import { TransactionButton, approveAndExecute } from '@txkit/react/transaction'
+import { parseUnits } from 'viem'
+
 <TransactionButton
-  tx={{
-    address: '0x...',
-    abi: stakingAbi,
-    functionName: 'stake',
-    args: [ amount ],
-    value: parseEther('0.1'),
-  }}
-  approval={{
-    token: tokenAddress,
-    spender: stakingAddress,
-    amount,
-  }}
-  label="Stake"
+  steps={approveAndExecute({
+    token: USDC_ADDRESS,
+    spender: ROUTER_ADDRESS,
+    amount: parseUnits('100', 6),
+    tx: {
+      address: ROUTER_ADDRESS,
+      abi: routerAbi,
+      functionName: 'swap',
+      args: [ USDC_ADDRESS, WETH_ADDRESS, parseUnits('100', 6), minOut ],
+    },
+  })}
+  label="Swap 100 USDC"
 />
 ```
 
@@ -37,19 +43,24 @@ import { parseEther } from 'viem'
 ### Tier 1: Zero-Config
 
 ```tsx
-<TransactionButton tx={{ to: '0x...', value: parseEther('1') }} />
+<TransactionButton
+  steps={[ txStep('send', 'Send', { to: '0x...', value: parseEther('1') }) ]}
+/>
 ```
 
 ### Tier 2: Custom Render
 
 ```tsx
-<TransactionButton tx={{ to: '0x...', value: parseEther('1') }}>
-  {({ state, hash, submit, retry, reset }) => (
+<TransactionButton
+  steps={[ txStep('send', 'Send', { to: '0x...', value: parseEther('1') }) ]}
+>
+  {({ flow, currentStep, start, retry, reset, explorerUrl }) => (
     <div>
-      <p>Status: {state}</p>
-      {state === 'idle' && <button onClick={submit}>Send</button>}
-      {state === 'error' && <button onClick={retry}>Retry</button>}
-      {state === 'success' && <button onClick={reset}>Done</button>}
+      <p>Status: {flow.status}</p>
+      {flow.status === 'idle' && <button onClick={start}>Send</button>}
+      {flow.status === 'error' && <button onClick={retry}>Retry</button>}
+      {flow.status === 'completed' && <button onClick={reset}>Done</button>}
+      {explorerUrl && <a href={explorerUrl}>View on Explorer</a>}
     </div>
   )}
 </TransactionButton>
@@ -58,11 +69,13 @@ import { parseEther } from 'viem'
 ### Tier 3: Headless Hook
 
 ```tsx
-import { useTransactionState } from '@txkit/react/transaction'
+import { useTransactionFlow, txStep } from '@txkit/react/transaction'
+import { parseEther } from 'viem'
 
-const { state, hash, submit, retry, reset } = useTransactionState({
-  tx: { to: '0x...', value: parseEther('1') },
-  onSuccess: ({ receipt }) => console.log(receipt.status),
+const { flow, start, retry, reset } = useTransactionFlow({
+  steps: [ txStep('send', 'Send', { to: '0x...', value: parseEther('1') }) ],
+  onFlowComplete: (results) => console.log('All steps done!', results),
+  onStepError: (error, stepId) => console.error(`Step ${stepId} failed:`, error.message),
 })
 ```
 
@@ -70,71 +83,131 @@ const { state, hash, submit, retry, reset } = useTransactionState({
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `tx` | `RawTransactionProps \| ContractTransactionProps` | required | Transaction parameters |
+| `steps` | `FlowStep[]` | required | Step definitions for this transaction flow |
 | `className` | `string` | - | CSS class |
 | `children` | `(data: RenderData) => ReactNode` | - | Custom render function |
+| `data-testid` | `string` | - | Test ID for automated testing |
+| `flowId` | `string` | `'__default__'` | Flow ID for parallel flows |
 | `label` | `string` | `"Send"` | Button text |
+| `labels` | `Partial<Labels>` | - | UI text overrides |
 | `chainId` | `number` | current chain | Target chain (auto-switches) |
-| `gas` | `bigint` | - | Gas limit override |
-| `maxFeePerGas` | `bigint` | - | EIP-1559 max fee |
-| `maxPriorityFeePerGas` | `bigint` | - | EIP-1559 priority fee |
+| `safety` | `Partial<SafetyConfig>` | - | Anti-phishing config |
 | `confirmations` | `number` | `1` | Block confirmations to wait |
 | `resetDelay` | `number` | `0` | Auto-reset after success (ms) |
-| `labels` | `Partial<Labels>` | - | UI text overrides |
-| `approval` | `ApprovalConfig \| null` | - | ERC-20 approve before tx |
-| `safety` | `Partial<SafetyConfig>` | - | Anti-phishing config |
 | `disabled` | `boolean` | `false` | Disable button |
 | `showExplorerLink` | `boolean` | `true` | Show explorer link |
-| `simulateOnMount` | `boolean` | `false` | Pre-simulate on render |
-| `onSubmit` | `(hash) => void` | - | Called when tx hash available |
-| `onSuccess` | `({ hash, receipt }) => void` | - | Called on confirmation |
-| `onError` | `(error) => void` | - | Called on error |
-| `onStateChange` | `(state) => void` | - | Called on state change |
+| `onFlowComplete` | `(results: Record<string, StepResult>) => void` | - | Called when entire flow completes |
+| `onStepComplete` | `(stepId: string, result: StepResult) => void` | - | Called on any step completion |
+| `onError` | `(error: TransactionError, stepId: string) => void` | - | Called on any step error |
+| `onFlowStatusChange` | `(status: FlowStatus) => void` | - | Called on every flow status change |
 
-## Transaction Params
+## Step Definitions
 
-### Raw Transaction
+### Transaction Step (on-chain)
 
 ```ts
-type RawTransactionProps = {
-  to: `0x${string}`
-  value?: bigint
-  data?: `0x${string}`
-}
+txStep('approve', 'Approve USDC', {
+  address: USDC_ADDRESS,
+  abi: erc20Abi,
+  functionName: 'approve',
+  args: [ SPENDER, amount ],
+})
 ```
 
-### Contract Call
+### Dynamic Step (access previous results)
 
 ```ts
-type ContractTransactionProps = {
-  address: `0x${string}`
-  abi: Abi
-  functionName: string
-  args?: unknown[]
-  value?: bigint
-}
+txStep('stake', 'Stake', (context) => ({
+  address: STAKING,
+  abi: stakingAbi,
+  functionName: 'stake',
+  args: [ context.results['approve'].receipt.transactionHash ],
+}), {
+  shouldSkip: (ctx) => !autoStake,
+})
+```
+
+### Signature Step (off-chain)
+
+```ts
+import { signAndSubmit } from '@txkit/react/transaction'
+
+signAndSubmit({
+  id: 'place-order',
+  label: 'Place Order',
+  signData: {
+    method: 'eth_signTypedData_v4',
+    domain: orderDomain,
+    types: orderTypes,
+    value: orderData,
+  },
+  onSign: async (signature, ctx) => {
+    const orderId = await submitOrder(signature)
+    return { data: { orderId } }
+  },
+  waitForCondition: async (ctx, signal) => {
+    await pollUntil(() => checkOrderFilled(orderId), { signal })
+  },
+})
+```
+
+## Flow Helpers
+
+| Helper | Description |
+|--------|-------------|
+| `txStep(id, label, tx, options?)` | Create a single transaction step |
+| `approveAndExecute({ token, spender, amount, tx })` | ERC-20 approve + action (handles USDT approve-to-zero) |
+| `multiApproveAndExecute({ approvals, tx })` | Multiple token approvals + action |
+| `signAndSubmit({ id, label, signData, onSign })` | Off-chain signature + submission |
+
+## Compound Components
+
+FlowSteps, FlowProgress, and FlowToast connect to TransactionButton through TxKitProvider context. Place them anywhere in the component tree:
+
+```tsx
+<TxKitProvider config={config}>
+  <header>
+    <FlowProgress />
+  </header>
+
+  <main>
+    <FlowSteps orientation="vertical" />
+    <TransactionButton
+      steps={approveAndExecute({ token, spender, amount, tx: swapTx })}
+      label="Swap"
+    />
+  </main>
+
+  <FlowToast position="bottom-right" autoDismiss={5000} />
+</TxKitProvider>
 ```
 
 ## State Machine
 
+### Step Statuses (12)
+
 ```
-idle → simulating → awaiting-signature → pending → success → (reset) → idle
-                  → confirming-risk → (confirm) → awaiting-signature
-                                    → (cancel) → idle
-                  → simulation-failed → (retry) → simulating
-                                      → (force) → awaiting-signature
-       approving → simulating (after approve confirmed)
-awaiting-signature → rejected → (retry) → idle → simulating
-pending → error → (retry) → idle → simulating
+pending → simulating → confirming-risk → (confirm) → signing/tx-pending → waiting → completed
+                     → simulation-failed → (retry) → simulating
+                                         → (force) → signing/tx-pending
+         signing → tx-pending → waiting → completed
+                             → error → (retry) → simulating
+         → rejected → (retry) → simulating
+         → skipped (via shouldSkip)
+         → canceled (cascade from failed step)
 ```
+
+### Flow Statuses (7)
+
+`idle` | `simulating-all` | `running` | `paused` | `completed` | `error` | `rejected`
 
 ## Safety Config
 
 ```ts
 type SafetyConfig = {
-  simulate: boolean              // default: true
-  delayMs: number                // confirmation countdown ms
-  warnMaxApproval: boolean       // default: true
+  simulate: boolean              // @default true - simulate before signing
+  delayMs: number                // confirmation countdown ms (0 = no delay)
+  warnMaxApproval: boolean       // @default true - warn on MAX_UINT256
   riskProvider: RiskProvider | null  // pluggable Blowfish/Blockaid
 }
 ```
@@ -143,7 +216,7 @@ type SafetyConfig = {
 
 ```tsx
 <TransactionButton
-  tx={...}
+  steps={steps}
   safety={{
     riskProvider: {
       assess: async ({ to, data, value, chainId, from }) => {
@@ -153,21 +226,8 @@ type SafetyConfig = {
           warnings: result.warnings,
           blocked: result.action === 'BLOCK',
         }
-      }
-    }
-  }}
-/>
-```
-
-## Approval Config
-
-```tsx
-<TransactionButton
-  tx={{ address: poolAddress, abi: poolAbi, functionName: 'stake', args: [amount] }}
-  approval={{
-    token: tokenAddress,
-    spender: poolAddress,
-    amount,  // exact amount, not MAX_UINT256
+      },
+    },
   }}
 />
 ```

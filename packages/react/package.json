@@ -106,9 +106,11 @@
     "dev": "tsup --watch",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@paulmillr/qr": "^0.2.1",
     "@txkit/core": "workspace:^"
   },
   "peerDependencies": {

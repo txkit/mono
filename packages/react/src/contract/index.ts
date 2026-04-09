@@ -1,5 +1,5 @@
 // --- ContractForm ---
-export { default as ContractForm } from './ContractForm'
+export { default as ContractForm } from './ContractForm/ContractForm'
 export type { ContractFormLabels } from './labels'
 export type {
   ContractFormProps,

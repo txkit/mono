@@ -1,0 +1,1050 @@
+# txKit - Complete API Reference
+
+> Embeddable Web3 UI components for React - connect wallets, display balances, send transactions. Think Stripe Elements, but for Web3.
+
+txKit is a set of React components with built-in Web3 logic. Drop in a component, get a production-ready UI with wallet connection, token balances, and transaction handling. Works standalone or alongside RainbowKit, AppKit, ConnectKit, or any wagmi-based setup.
+
+- Docs: https://txkit.dev
+- GitHub: https://github.com/txkit/mono
+- npm: https://www.npmjs.com/package/@txkit/react
+- Version: 0.1.0
+
+## Quick Start
+
+```bash
+npm install @txkit/react @txkit/themes
+```
+
+Peer dependencies: `react >= 18`, `wagmi >= 2`, `viem >= 2`, `@tanstack/react-query >= 5`.
+
+### Standalone Mode
+
+txKit creates and manages WagmiProvider + QueryClientProvider:
+
+```tsx
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+import '@txkit/themes'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+
+function App() {
+  return (
+    <TxKitProvider
+      config={{
+        chains: [ mainnet ],
+        transports: { [mainnet.id]: http() },
+      }}
+    >
+      <ConnectWallet />
+    </TxKitProvider>
+  )
+}
+```
+
+### Embedded Mode
+
+Use inside an existing WagmiProvider (RainbowKit, AppKit, etc.):
+
+```tsx
+import { TxKitProvider, TransactionButton, txStep } from '@txkit/react'
+import { parseEther } from 'viem'
+import '@txkit/themes'
+
+function SendButton() {
+  return (
+    <TxKitProvider embedded>
+      <TransactionButton
+        steps={[ txStep('send', 'Send ETH', { to: '0x...', value: parseEther('0.01') }) ]}
+        label="Send 0.01 ETH"
+      />
+    </TxKitProvider>
+  )
+}
+```
+
+### Subpath Imports (Tree-Shaking)
+
+```tsx
+import { ConnectWallet } from '@txkit/react/connect'
+import { TokenBalance } from '@txkit/react/balance'
+import { TransactionButton } from '@txkit/react/transaction'
+import { ContractForm } from '@txkit/react/contract'
+```
+
+### Three Customization Tiers
+
+Every component supports three levels:
+
+```tsx
+// Tier 1: Zero-config
+<TokenBalance token="0xA0b8..." />
+
+// Tier 2: Custom render via children
+<TokenBalance token="0xA0b8...">
+  {({ balance, symbol, fiatFormatted }) => (
+    <span>{symbol}: {fiatFormatted}</span>
+  )}
+</TokenBalance>
+
+// Tier 3: Headless hook
+const { balance, decimals, symbol } = useTokenBalance({ token: '0xA0b8...' })
+```
+
+---
+
+## @txkit/core
+
+Framework-agnostic utilities, types, constants, and error classes.
+
+```bash
+npm install @txkit/core
+```
+
+### Utility Functions
+
+```ts
+// Conditional className builder (like clsx)
+cx(...args: CxValue[]): string
+
+// Truncate address: "0x1234...5678"
+shortenAddress(address: string, chars?: number): string
+
+// Progressive token formatting with dust threshold
+// 0-9: 5 decimals, 10-99: 4, 100-999: 3, 1k-9k: 2, 10k+: k/m/b suffixes
+formatTokenAmount(value: bigint, decimals: number, options?: {
+  dustThreshold?: number  // default: 0.0001
+  locale?: string
+}): string
+
+// Split into integer/fraction parts for styling
+formatTokenAmountSplit(value: bigint, decimals: number, options?: {
+  dustThreshold?: number
+  locale?: string
+}): { integer: string; fraction: string; full: string }
+
+// Fiat currency formatting
+formatFiatAmount(value: number, currency?: string, locale?: string): string
+
+// Block explorer URL for tx or address
+getExplorerUrl(chainId: number, hash: string, type?: 'tx' | 'address'): string | undefined
+
+// Classify Web3 errors by type
+classifyError(error: unknown): TransactionErrorCode
+
+// Human-readable error message
+getErrorMessage(code: TransactionErrorCode): string
+
+// Check for MAX_UINT256 approval
+isMaxApproval(amount: bigint): boolean
+
+// Format decoded calldata for display
+formatDecodedCalldata(decoded: DecodedCalldata): string
+
+// Deep equality comparison
+deepEqual(a: unknown, b: unknown): boolean
+
+// Poll until truthy value or timeout
+type PollUntilOptions = {
+  interval?: number   // default: 2000
+  timeout?: number    // default: 120000
+  signal?: AbortSignal
+}
+
+pollUntil<T>(fn: () => T | Promise<T>, options?: PollUntilOptions): Promise<NonNullable<T>>
+```
+
+### Constants
+
+```ts
+// DeFiLlama price API
+DEFILLAMA_PRICE_URL: 'https://coins.llama.fi/prices/current'
+
+// Frankfurter forex API
+FRANKFURTER_API_URL: 'https://api.frankfurter.dev/latest'
+
+// Chain ID to DeFiLlama platform name
+CHAIN_TO_DEFILLAMA: Record<number, string>
+// { 1: 'ethereum', 10: 'optimism', 137: 'polygon', 8453: 'base', 42161: 'arbitrum' }
+
+// Native token price identifiers per chain
+NATIVE_PRICE_IDS: Record<number, string>
+// { 1: 'coingecko:ethereum', 10: 'coingecko:ethereum', ... }
+```
+
+### Error Classes
+
+```ts
+// Base error with documentation link
+class TxKitError extends Error {
+  shortMessage: string
+  docsPath?: string
+  details?: string
+}
+
+// Invalid TxKitProvider configuration
+class InvalidConfigError extends TxKitError
+
+// Hook used outside TxKitProvider
+class ProviderNotFoundError extends TxKitError
+
+// Embedded mode without WagmiProvider
+class MissingWagmiProviderError extends TxKitError
+```
+
+### Types
+
+```ts
+// ERC-20 token metadata
+type TokenInfo = {
+  address: `0x${string}`
+  symbol: string
+  name: string
+  decimals: number
+  chainId: number
+  logoURI?: string
+}
+
+// Transaction button state machine (10 states)
+type TransactionButtonState =
+  | 'idle' | 'simulating' | 'confirming-risk' | 'simulation-failed'
+  | 'approving' | 'awaiting-signature' | 'pending' | 'success' | 'error' | 'rejected'
+
+// Categorized error codes
+type TransactionErrorCode =
+  | 'USER_REJECTED' | 'INSUFFICIENT_FUNDS' | 'SIMULATION_FAILED' | 'EXECUTION_REVERTED'
+  | 'GAS_ESTIMATION_FAILED' | 'NETWORK_ERROR' | 'TIMEOUT' | 'CHAIN_MISMATCH'
+  | 'APPROVAL_FAILED' | 'RISK_BLOCKED' | 'UNKNOWN'
+
+// Structured transaction error
+type TransactionError = {
+  code: TransactionErrorCode
+  message: string
+  cause?: Error
+}
+
+// Minimal transaction receipt
+type TransactionReceipt = {
+  blockNumber: bigint
+  transactionHash: `0x${string}`
+  status: 'success' | 'reverted'
+  gasUsed?: bigint
+  effectiveGasPrice?: bigint
+}
+
+// Decoded contract function call
+type DecodedCalldata = {
+  functionName: string
+  args: DecodedArg[]
+}
+
+type DecodedArg = {
+  name: string
+  type: string
+  value: unknown
+}
+
+// Risk assessment result
+type RiskResult = {
+  level: 'low' | 'medium' | 'high' | 'critical'
+  warnings: string[]
+  blocked?: boolean
+}
+
+// Per-step status (12 states)
+type StepStatus =
+  | 'pending' | 'skipped' | 'simulating' | 'confirming-risk' | 'simulation-failed'
+  | 'signing' | 'tx-pending' | 'waiting' | 'completed' | 'error' | 'rejected' | 'canceled'
+
+// Overall flow status (7 states)
+type FlowStatus = 'idle' | 'simulating-all' | 'running' | 'paused' | 'completed' | 'error' | 'rejected'
+```
+
+---
+
+## @txkit/react
+
+React components and headless hooks for Web3.
+
+### TxKitProvider
+
+Root provider. Two modes: standalone (manages wagmi) and embedded (uses existing wagmi).
+
+```ts
+// Standalone props
+type TxKitProviderStandaloneProps = {
+  children: ReactNode
+  config: TxKit.Config
+  embedded?: false
+}
+
+// Embedded props
+type TxKitProviderEmbeddedProps = {
+  children: ReactNode
+  config?: TxKit.EmbeddedConfig
+  embedded: true
+}
+
+// Config for standalone mode
+type TxKit.Config = {
+  chains: [Chain, ...Chain[]]
+  transports: Record<number, Transport>
+  wallets?: WalletConfig[]
+  walletConnectProjectId?: string
+  theme?: 'light' | 'dark' | 'auto'
+  variant?: 'default' | 'soft' | 'sharp' | 'rounded'
+  autoConnect?: boolean
+  pollingInterval?: number
+  blockWatching?: { enabled?: boolean; throttleMs?: number }
+  licenseKey?: string
+}
+
+// Config for embedded mode (all optional)
+type TxKit.EmbeddedConfig = Pick<TxKit.Config, 'theme' | 'variant' | 'licenseKey' | 'pollingInterval' | 'blockWatching'>
+
+// Context hook
+const useTxKit = (): TxKit.Context
+// Returns: { config, theme, setTheme, isProEnabled }
+```
+
+### ConnectWallet
+
+Multi-wallet connection with ENS, balance display, chain switching. State machine: `disconnected` | `connecting` | `connected` | `wrong-chain` | `error`.
+
+```ts
+type ConnectWalletProps = {
+  className?: string
+  children?: (data: ConnectWalletRenderData) => ReactNode
+  'data-testid'?: string
+  label?: string                    // default: "Connect Wallet"
+  chainId?: number                  // force specific chain
+  labels?: Partial<ConnectWalletLabels>
+  showEns?: boolean                 // default: true
+  showAvatar?: boolean              // default: true
+  showBalance?: boolean             // default: true
+  onError?: (error: Error) => void
+  onConnect?: (data: { address: string; connector: string }) => void
+  onDisconnect?: () => void
+  formatAddress?: (address: string, ensName?: string) => string
+}
+
+type ConnectWalletRenderData = {
+  state: 'disconnected' | 'connecting' | 'connected' | 'wrong-chain' | 'error'
+  address: `0x${string}` | undefined
+  displayAddress: string | undefined
+  ensName: string | null | undefined
+  ensAvatar: string | null | undefined
+  formattedBalance: string | undefined
+  chain: Chain | undefined
+  connectors: readonly Connector[]
+  connect: (connector: Connector) => void
+  disconnect: () => void
+  switchChain: (chainId: number) => void
+  openModal: () => void
+  closePanel: () => void
+  error: Error | null
+  isPending: boolean
+}
+
+// Headless hook
+const useWalletState = (options?: {
+  chainId?: number
+  showBalance?: boolean
+  showEns?: boolean
+}): UseWalletStateReturn
+```
+
+### TokenBalance
+
+Native + ERC-20 balance display with fiat pricing and auto-formatting.
+
+```ts
+type TokenBalanceProps = {
+  className?: string
+  children?: (data: TokenBalanceRenderData) => ReactNode
+  'data-testid'?: string
+  variant?: 'inline' | 'row'
+  icon?: string
+  name?: string
+  token?: `0x${string}`              // omit for native (ETH)
+  address?: `0x${string}`            // defaults to connected wallet
+  fiatCurrency?: string              // default: 'USD'
+  price?: number                     // override auto-fetched price
+  chainId?: number
+  refetchInterval?: number
+  labels?: Partial<TokenBalanceLabels>
+  formatOptions?: { dustThreshold?: number; locale?: string }
+  showFiat?: boolean
+  showIcon?: boolean
+  showSymbol?: boolean
+  onError?: (error: Error) => void
+  onBalanceChange?: (balance: bigint, prevBalance: bigint | undefined) => void
+}
+
+type TokenBalanceRenderData = {
+  icon: string | undefined
+  balance: bigint | undefined
+  decimals: number | undefined
+  symbol: string | undefined
+  formatted: string | undefined
+  integerPart: string | undefined
+  fractionPart: string | undefined
+  isZero: boolean
+  fiatValue: number | undefined
+  fiatFormatted: string | undefined
+  isLoading: boolean
+  isError: boolean
+  error: Error | null
+  refetch: () => void
+}
+
+// Headless hooks
+const useTokenBalance = (options?: {
+  token?: `0x${string}`
+  address?: `0x${string}`
+  chainId?: number
+  refetchInterval?: number
+  enabled?: boolean
+}): {
+  balance: bigint | undefined
+  decimals: number | undefined
+  symbol: string | undefined
+  isLoading: boolean
+  isError: boolean
+  error: Error | null
+  refetch: () => void
+}
+
+const useTokenBalances = (options: {
+  tokens: Array<`0x${string}` | 'native'>
+  address?: `0x${string}`
+  chainId?: number
+  refetchInterval?: number
+  enabled?: boolean
+}): {
+  balances: TokenBalanceItem[]
+  isLoading: boolean
+  isError: boolean
+  refetch: () => void
+}
+
+const useTokenPrice = (options?: {
+  token?: `0x${string}`
+  chainId?: number
+  fiatCurrency?: string
+  enabled?: boolean
+}): { price: number | undefined; isLoading: boolean; isError: boolean }
+
+// Balance invalidation (for custom refresh logic)
+const useBalanceInvalidation = (): {
+  invalidateAffected: (logs: LogEntry[], senderAddress: `0x${string}`) => void
+  invalidateAll: () => void
+}
+```
+
+### TransactionButton
+
+Multi-step transaction flow with simulation, approval, confirmation delays, and anti-phishing.
+
+```ts
+type TransactionButtonProps = {
+  className?: string
+  children?: (data: TransactionButtonRenderData) => ReactNode
+  'data-testid'?: string
+  steps: FlowStep[]                  // transaction steps to execute
+  flowId?: string                    // default: '__default__'
+  safety?: Partial<SafetyConfig>
+  chainId?: number
+  label?: string
+  labels?: Partial<TransactionButtonLabels>
+  confirmations?: number             // default: 1
+  resetDelay?: number                // default: 0
+  disabled?: boolean
+  showExplorerLink?: boolean         // default: true
+  onFlowComplete?: (results: Record<string, StepResult>) => void
+  onStepComplete?: (stepId: string, result: StepResult) => void
+  onError?: (error: TransactionError, stepId: string) => void
+  onFlowStatusChange?: (status: FlowStatus) => void
+}
+
+type TransactionButtonRenderData = {
+  flow: FlowState
+  currentStep: StepState | undefined
+  steps: FlowStep[]
+  explorerUrl: string | undefined
+  start: () => void
+  confirm: () => void
+  cancel: () => void
+  retry: () => void
+  retryFrom: (stepId: string) => void
+  forceSubmit: () => void
+  reset: () => void
+  skipStep: () => void
+}
+```
+
+#### Flow Step Types
+
+```ts
+// Step transaction params (raw or dynamic)
+type StepTx = TxParams | ((context: StepContext) => TxParams | Promise<TxParams>)
+
+// Transaction step (on-chain)
+type FlowStepTx = {
+  type: 'tx'
+  id: string
+  label: string
+  tx: StepTx
+  safety?: Partial<SafetyConfig>
+  gas?: bigint
+  shouldSkip?: (context: StepContext) => boolean | Promise<boolean>
+  waitAfterMs?: number
+  waitForCondition?: (context: StepContext, signal: AbortSignal) => Promise<void>
+  optional?: boolean
+  onStart?: (context: StepContext) => void
+  onComplete?: (context: StepContext & { hash: `0x${string}`; receipt: TransactionReceipt }) => void
+  onError?: (context: StepContext & { error: TransactionError }) => void
+  onCancel?: (context: StepContext) => Promise<void> | void
+}
+
+// Signature step (off-chain - EIP-712, personal_sign)
+type FlowStepSign = {
+  type: 'sign'
+  id: string
+  label: string
+  sign: {
+    signData: SignData | ((context: StepContext) => SignData | Promise<SignData>)
+    onSign: (signature: `0x${string}`, context: StepContext) => Promise<{ data?: unknown }>
+  }
+  shouldSkip?: (context: StepContext) => boolean | Promise<boolean>
+  waitForCondition?: (context: StepContext, signal: AbortSignal) => Promise<void>
+  optional?: boolean
+  onStart?: (context: StepContext) => void
+  onComplete?: (context: StepContext & { signature: `0x${string}` }) => void
+  onError?: (context: StepContext & { error: TransactionError }) => void
+  onCancel?: (context: StepContext) => Promise<void> | void
+}
+
+type FlowStep = FlowStepTx | FlowStepSign
+
+// Transaction params
+type TxParams =
+  | { to: `0x${string}`; value?: bigint; data?: `0x${string}` }                                    // raw
+  | { address: `0x${string}`; abi: Abi; functionName: string; args?: unknown[]; value?: bigint }    // typed
+
+// Signature data
+type SignData =
+  | { method: 'eth_signTypedData_v4'; domain: TypedDataDomain; types: Record<string, ...>; value: Record<string, unknown> }
+  | { method: 'personal_sign'; message: string }
+
+// Step context (passed to callbacks)
+type StepContext = {
+  results: Record<string, StepResult>
+  previousResult: StepResult | undefined
+  address: `0x${string}`
+  chainId: number
+  publicClient: PublicClient
+}
+
+type StepResult =
+  | { type: 'tx'; hash: `0x${string}`; receipt: TransactionReceipt }
+  | { type: 'sign'; signature: `0x${string}`; data?: unknown }
+
+// Result returned from sign step's onSign callback
+type SignResult = { data?: unknown }
+
+// Safety configuration
+type SafetyConfig = {
+  simulate: boolean                              // simulate before sending
+  delayMs: number                                // confirmation countdown (ms)
+  warnMaxApproval: boolean                       // warn on MAX_UINT256 approve
+  riskProvider: TransactionRiskProvider | null    // Blowfish/Blockaid integration
+}
+
+// Runtime state
+type FlowState = {
+  status: FlowStatus
+  currentStepIndex: number
+  totalSteps: number
+  steps: StepState[]
+}
+
+type StepState = {
+  id: string
+  status: StepStatus
+  hash?: `0x${string}`
+  receipt?: TransactionReceipt
+  signature?: `0x${string}`
+  error?: TransactionError
+  gasEstimate?: bigint
+  riskResult?: RiskResult
+  decodedCalldata?: DecodedCalldata
+  confirmCountdown: number
+}
+```
+
+#### Flow Helper Functions
+
+```ts
+// Create a single transaction step
+txStep(
+  id: string,
+  label: string,
+  tx: StepTx,
+  options?: Partial<Omit<FlowStepTx, 'id' | 'label' | 'tx' | 'type'>>
+): FlowStepTx
+
+// ERC-20 approve + execute (auto-handles USDT approve-to-zero)
+approveAndExecute(params: {
+  token: `0x${string}`
+  spender: `0x${string}`
+  amount: bigint
+  tx: StepTx
+  label?: string
+  safety?: Partial<SafetyConfig>
+  gas?: bigint
+}): FlowStep[]
+
+// Multiple ERC-20 approvals + execute
+multiApproveAndExecute(params: {
+  approvals: Array<{ token: `0x${string}`; spender: `0x${string}`; amount: bigint; label?: string }>
+  tx: StepTx
+  label?: string
+  safety?: Partial<SafetyConfig>
+}): FlowStep[]
+
+// Off-chain signature + submission (COW Protocol, Permit2, etc.)
+signAndSubmit(params: {
+  id: string
+  label: string
+  signData: SignData | ((context: StepContext) => SignData | Promise<SignData>)
+  onSign: (signature: `0x${string}`, context: StepContext) => Promise<{ data?: unknown }>
+  waitForCondition?: (context: StepContext, signal: AbortSignal) => Promise<void>
+  onCancel?: (context: StepContext) => Promise<void> | void
+}): FlowStepSign
+```
+
+#### Headless Hook
+
+```ts
+const useTransactionFlow = (options: {
+  steps: FlowStep[]
+  flowId?: string
+  safety?: Partial<SafetyConfig>
+  chainId?: number
+  confirmations?: number
+  resetDelay?: number
+  onFlowStatusChange?: (status: FlowStatus) => void
+  onFlowComplete?: (results: Record<string, StepResult>) => void
+  onStepError?: (error: TransactionError, stepId: string) => void
+  onStepComplete?: (stepId: string, result: StepResult) => void
+}): {
+  flow: FlowState
+  steps: FlowStep[]
+  start: () => void
+  confirm: () => void
+  cancel: () => void
+  retry: () => void
+  retryFrom: (stepId: string) => void
+  forceSubmit: () => void
+  reset: () => void
+  skipStep: () => void
+}
+
+// Read flow state from any component (compound pattern)
+const useFlowState = (flowId?: string): {
+  flow: FlowState
+  steps: FlowStep[]
+  actions: FlowActions
+} | undefined
+```
+
+### Compound Flow Components
+
+These components auto-connect to TransactionButton's flow state via TxKitProvider context. Place them anywhere in the component tree.
+
+```ts
+// Step indicator
+type FlowStepsProps = {
+  className?: string
+  children?: (data: FlowStepsRenderData) => ReactNode
+  'data-testid'?: string
+  flowId?: string
+  orientation?: 'horizontal' | 'vertical'  // default: 'horizontal'
+  showCompleted?: boolean                   // default: true
+}
+
+type FlowStepsRenderData = {
+  steps: Array<{ id: string; label: string; status: StepStatus; isCurrent: boolean }>
+  currentStepIndex: number
+  totalSteps: number
+  completedCount: number
+}
+
+// Progress bar
+type FlowProgressProps = {
+  className?: string
+  children?: (data: FlowProgressRenderData) => ReactNode
+  'data-testid'?: string
+  flowId?: string
+}
+
+type FlowProgressRenderData = {
+  progress: number
+  status: FlowStatus
+  currentStepLabel: string | undefined
+}
+
+// Toast notification (renders via portal)
+type FlowToastProps = {
+  className?: string
+  children?: (data: FlowToastRenderData) => ReactNode
+  'data-testid'?: string
+  flowId?: string
+  autoDismiss?: number  // default: 5000 (ms)
+  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
+}
+
+type FlowToastRenderData = {
+  visible: boolean
+  message: string
+  type: 'success' | 'error' | 'info'
+  stepId: string | undefined
+  dismiss: () => void
+}
+```
+
+### ContractForm
+
+ABI-driven form generation with validation, security warnings, and calldata preview.
+
+```ts
+type ContractFormProps = {
+  className?: string
+  children?: (data: ContractFormRenderData) => ReactNode
+  'data-testid'?: string
+  address: `0x${string}`
+  abi: Abi
+  functionName: string
+  chainId?: number
+  label?: string
+  labels?: Partial<ContractFormLabels>
+  safety?: Partial<SafetyConfig>
+  disabled?: boolean
+  onSuccess?: (receipt: TransactionReceipt) => void
+  onError?: (error: TransactionError) => void
+}
+
+type ContractFormRenderData = {
+  fields: FieldDescriptor[]
+  values: Record<string, string>
+  errors: Record<string, string | null>
+  touched: Record<string, boolean>
+  warnings: SecurityWarning[]
+  calldataPreview: string | undefined
+  isValid: boolean
+  isPayable: boolean
+  formError: string | undefined
+  setFieldValue: (name: string, value: string) => void
+  setFieldTouched: (name: string) => void
+}
+
+type FieldDescriptor = {
+  name: string
+  solidityType: string
+  fieldType: 'address' | 'uint' | 'int' | 'bool' | 'string' | 'bytes' | 'bytesN' | 'array' | 'tuple' | 'tupleArray' | 'unsupported'
+  bitSize?: number
+  byteLength?: number
+  isPayableValue?: boolean
+  internalType?: string
+  arrayElementType?: string
+  arrayFixedLength?: number
+  components?: FieldDescriptor[]
+}
+
+type SecurityWarningLevel = 'warning' | 'danger'
+
+type SecurityWarning = {
+  level: SecurityWarningLevel
+  message: string
+}
+
+// Headless hook (with extra options for widget integration)
+const useContractForm = (options: ContractFormProps & {
+  computedParams?: Record<string, () => unknown>
+  defaultParams?: Record<string, unknown>
+  hiddenParams?: string[]
+}): ContractFormRenderData & {
+  abiFunction: AbiFunction | undefined
+  steps: FlowStep[]
+  txParams: ContractTransactionProps | undefined
+}
+```
+
+Security warnings are shown for 19 dangerous functions: `approve`, `setApprovalForAll`, `transfer`, `transferFrom`, `delegateCall`, `selfdestruct`, `burn`, `renounceOwnership`, `upgradeTo`, `permit`, `multicall`, etc. MAX_UINT256 detection on approve amounts.
+
+---
+
+## @txkit/themes
+
+CSS themes with custom properties. No JavaScript - pure CSS.
+
+```bash
+npm install @txkit/themes
+```
+
+```tsx
+import '@txkit/themes'  // applies light theme by default
+```
+
+### Theme Classes
+
+- `.txkit-light` - Light theme (default, set on `:root`)
+- `.txkit-dark` - Dark theme
+- `.txkit-root` - Sets font-family and color
+
+### Visual Variants
+
+- `.txkit-soft` - Softer shadows and larger radii
+- `.txkit-sharp` - Sharp corners, minimal shadows
+- `.txkit-rounded` - Extra rounded corners
+
+Set via `config.variant` on TxKitProvider.
+
+### CSS Custom Properties
+
+All properties use the `--txkit-` prefix and can be overridden:
+
+```css
+/* Colors */
+--txkit-color-primary: #4338CA
+--txkit-color-primary-hover: #3730A3
+--txkit-color-primary-active: #312E81
+--txkit-color-primary-text: #FFFFFF
+--txkit-color-primary-alpha: rgba(67, 56, 202, 0.1)
+
+/* Semantic colors */
+--txkit-color-success: #059669
+--txkit-color-success-text: #FFFFFF
+--txkit-color-warning: #D97706
+--txkit-color-warning-text: #FFFFFF
+--txkit-color-error: #DC2626
+--txkit-color-error-text: #FFFFFF
+--txkit-color-info: #2563EB
+
+/* Surfaces */
+--txkit-color-bg: #FFFFFF
+--txkit-color-bg-secondary: #F8FAFC
+--txkit-color-bg-tertiary: #F1F5F9
+
+/* Text */
+--txkit-color-text: #0F172A
+--txkit-color-text-secondary: #475569
+--txkit-color-text-tertiary: #64748B
+
+/* Borders */
+--txkit-color-border: #E2E8F0
+--txkit-color-border-hover: #CBD5E1
+
+/* Typography */
+--txkit-font-family: system-ui, -apple-system, sans-serif
+--txkit-font-mono: 'IBM Plex Mono', ui-monospace, monospace
+--txkit-font-size-xs: 0.75rem
+--txkit-font-size-sm: 0.875rem
+--txkit-font-size-md: 1rem
+--txkit-font-size-base: 1rem   /* alias for font-size-md */
+--txkit-font-size-lg: 1.125rem
+
+/* Spacing */
+--txkit-space-xs: 0.25rem
+--txkit-space-sm: 0.5rem
+--txkit-space-md: 0.75rem
+--txkit-space-lg: 1rem
+--txkit-space-xl: 1.5rem
+
+/* Border radius */
+--txkit-radius-sm: 6px
+--txkit-radius-md: 8px
+--txkit-radius-lg: 12px
+--txkit-radius-xl: 20px
+--txkit-radius-full: 9999px
+
+/* Shadows */
+--txkit-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05)
+--txkit-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1)
+
+/* Transitions */
+--txkit-transition: 150ms ease
+```
+
+### Dark Theme Overrides
+
+```css
+.txkit-dark {
+  --txkit-color-primary: #5B54E8
+  --txkit-color-bg: #0F172A
+  --txkit-color-bg-secondary: #1E293B
+  --txkit-color-text: #F1F5F9
+  --txkit-color-text-secondary: #94A3B8
+  --txkit-color-border: #334155
+  /* ... all colors adjusted for dark backgrounds */
+}
+```
+
+### Custom Theme Example
+
+```css
+.my-brand {
+  --txkit-color-primary: #E11D48;
+  --txkit-color-primary-hover: #BE123C;
+  --txkit-radius-md: 16px;
+  --txkit-font-family: 'Inter', sans-serif;
+}
+```
+
+---
+
+## Common Patterns
+
+### ERC-20 Approve + Swap
+
+```tsx
+import { TransactionButton, approveAndExecute } from '@txkit/react/transaction'
+
+<TransactionButton
+  steps={approveAndExecute({
+    token: USDC_ADDRESS,
+    spender: ROUTER_ADDRESS,
+    amount: parseUnits('100', 6),
+    tx: {
+      address: ROUTER_ADDRESS,
+      abi: routerAbi,
+      functionName: 'swap',
+      args: [ USDC_ADDRESS, WETH_ADDRESS, parseUnits('100', 6), minOut ],
+    },
+  })}
+  label="Swap 100 USDC"
+  onFlowComplete={(results) => console.log('Done!', results)}
+/>
+```
+
+### Multi-Step with Sign (COW Protocol style)
+
+```tsx
+import { TransactionButton, signAndSubmit, txStep } from '@txkit/react/transaction'
+
+<TransactionButton
+  steps={[
+    txStep('approve', 'Approve USDC', {
+      address: USDC_ADDRESS,
+      abi: erc20Abi,
+      functionName: 'approve',
+      args: [ VAULT_ADDRESS, amount ],
+    }),
+    signAndSubmit({
+      id: 'place-order',
+      label: 'Place Order',
+      signData: (ctx) => ({
+        method: 'eth_signTypedData_v4',
+        domain: orderDomain,
+        types: orderTypes,
+        value: orderData,
+      }),
+      onSign: async (signature, ctx) => {
+        const orderId = await submitOrder(signature)
+        return { data: { orderId } }
+      },
+      waitForCondition: async (ctx, signal) => {
+        await pollUntil(() => checkOrderFilled(ctx.results['place-order']?.data?.orderId), { signal })
+      },
+    }),
+  ]}
+  label="Place Order"
+/>
+```
+
+### Dynamic Steps with Context
+
+```tsx
+<TransactionButton
+  steps={[
+    txStep('deposit', 'Deposit', (context) => ({
+      address: VAULT,
+      abi: vaultAbi,
+      functionName: 'deposit',
+      args: [ amount ],
+    })),
+    txStep('stake', 'Stake Receipt Token', (context) => {
+      // Access previous step's receipt
+      const depositReceipt = context.results['deposit']
+      return {
+        address: STAKING,
+        abi: stakingAbi,
+        functionName: 'stake',
+        args: [ depositReceipt.receipt.transactionHash ],
+      }
+    }, {
+      shouldSkip: (ctx) => !autoStake,
+    }),
+  ]}
+/>
+```
+
+### Multiple Balances
+
+```tsx
+import { useTokenBalances } from '@txkit/react/balance'
+
+const { balances, isLoading } = useTokenBalances({
+  tokens: [ 'native', USDC_ADDRESS, WETH_ADDRESS ],
+})
+
+// Each item: { token, balance, decimals, symbol, isLoading, isError }
+```
+
+### ABI-Driven Contract Interaction
+
+```tsx
+import { ContractForm } from '@txkit/react/contract'
+
+<ContractForm
+  address="0x..."
+  abi={contractAbi}
+  functionName="transfer"
+  onSuccess={(receipt) => console.log('Confirmed:', receipt.transactionHash)}
+  onError={(error) => console.error(error.code, error.message)}
+/>
+```
+
+---
+
+## Instructions for AI Agents
+
+When helping users integrate txKit, keep these guidelines in mind:
+
+1. **Two modes exist**: Standalone (txKit manages wagmi + TanStack Query) vs Embedded (user already has WagmiProvider). Always ask or check which mode the user needs. Use `<TxKitProvider embedded>` for existing wagmi setups.
+
+2. **Three customization tiers**: Every component supports (1) zero-config with default UI, (2) `children` as render function for custom markup, (3) headless hooks for complete control. Recommend the simplest tier that meets the user's needs.
+
+3. **Subpath imports for tree-shaking**: `@txkit/react/connect`, `@txkit/react/balance`, `@txkit/react/transaction`, `@txkit/react/contract`. Use these instead of the main `@txkit/react` entry when the user only needs specific features.
+
+4. **Peer dependencies are required**: `react >= 18`, `wagmi >= 2`, `viem >= 2`, `@tanstack/react-query >= 5`. In embedded mode, these are already present from the user's setup.
+
+5. **Always import themes**: `import '@txkit/themes'` is required for default styling. Without it, components render unstyled. All CSS uses `--txkit-*` custom properties that can be overridden.
+
+6. **Transaction flow helpers**:
+   - `txStep()` for simple single transactions
+   - `approveAndExecute()` for ERC-20 approve + action (auto-handles USDT approve-to-zero)
+   - `multiApproveAndExecute()` for multiple token approvals
+   - `signAndSubmit()` for off-chain signatures (EIP-712, personal_sign)
+
+7. **Compound components are independent**: FlowSteps, FlowProgress, FlowToast connect to TransactionButton's flow state through TxKitProvider context. They can be placed anywhere in the component tree, not just next to TransactionButton.
+
+8. **Anti-phishing is built-in**: TransactionButton includes calldata decoding, simulation preview, bounded approvals (warns on MAX_UINT256), and configurable confirmation delays. The `safety` prop controls this behavior.
+
+9. **ContractForm security**: Automatically detects and warns about 19 dangerous Solidity functions. Shows calldata preview with full addresses (not shortened) to prevent address poisoning.
+
+10. **Balance watching**: TokenBalance auto-refreshes on new blocks when `blockWatching.enabled` is true in config. Use `useBalanceInvalidation()` for manual refresh after transactions.
+
+11. **Error handling**: All errors are classified into `TransactionErrorCode` categories. Use `classifyError()` to categorize and `getErrorMessage()` for user-friendly messages.
+
+12. **WCAG 2.1 AA**: All components are accessible - focus traps in modals, keyboard navigation, screen reader support, reduced motion respect, 44px touch targets.

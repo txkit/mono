@@ -11,6 +11,10 @@ type ControlPanelProps = {
   onReset: () => void
 }
 
+/** Convert camelCase to human-readable label: "showBalance" -> "Show Balance" */
+const humanizeLabel = (key: string): string =>
+  key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()).trim()
+
 const BooleanInput: React.FC<{ entry: ControlEntry }> = ({ entry }) => (
   <button
     type="button"
@@ -100,7 +104,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ entries, onReset }) => {
             {
               entries.map((entry) => (
                 <div key={entry.key} className="control-item">
-                  <label className="control-label">{entry.key}</label>
+                  <label className="control-label">{humanizeLabel(entry.key)}</label>
                   <div className="control-value">
                     {entry.def.type === 'boolean' && <BooleanInput entry={entry} />}
                     {entry.def.type === 'string' && <StringInput entry={entry} />}

@@ -10,12 +10,45 @@ body {
   color: #e2e8f0;
 }
 
+.bg-light body,
+.bg-light {
+  color-scheme: light;
+}
+
+/* Override txKit internal theme class to match playground theme.
+   TxKitProvider defaults to auto/dark, but playground toolbar controls theme via CSS. */
+.bg-light .txkit-root.txkit-dark {
+  --txkit-color-primary: #4338CA;
+  --txkit-color-primary-hover: #3730A3;
+  --txkit-color-primary-active: #312E81;
+  --txkit-color-primary-text: #FFFFFF;
+  --txkit-color-bg: #FFFFFF;
+  --txkit-color-bg-secondary: #F8FAFC;
+  --txkit-color-bg-tertiary: #F1F5F9;
+  --txkit-color-text: #0F172A;
+  --txkit-color-text-secondary: #475569;
+  --txkit-color-text-tertiary: #64748B;
+  --txkit-color-border: #E2E8F0;
+  --txkit-color-border-hover: #CBD5E1;
+  --txkit-color-success: #059669;
+  --txkit-color-warning: #D97706;
+  --txkit-color-error: #DC2626;
+  --txkit-alpha-hover: 0.04;
+  --txkit-alpha-active: 0.08;
+  --txkit-color-primary-alpha: rgba(67, 56, 202, 0.1);
+  --txkit-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --txkit-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --txkit-skeleton-from: #F1F5F9;
+  --txkit-skeleton-to: #E2E8F0;
+}
+
 /* --- Layout --- */
 
 .playground {
   display: grid;
   grid-template-columns: 240px 1fr;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* --- Sidebar --- */
@@ -24,6 +57,15 @@ body {
   padding: 24px 16px;
   border-right: 1px solid #1e293b;
   background: #0b1120;
+  height: 100vh;
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+}
+
+.bg-light .playground-sidebar {
+  background: #f1f5f9;
+  border-right-color: #e2e8f0;
 }
 
 .playground-logo {
@@ -35,10 +77,25 @@ body {
   padding: 0 8px;
 }
 
+.bg-light .playground-logo {
+  color: #4338ca;
+}
+
 .playground-sidebar .search-trigger {
   width: 100%;
   margin-bottom: 16px;
   justify-content: center;
+}
+
+.bg-light .search-trigger {
+  border-color: #cbd5e1;
+  color: #64748b;
+  background: #ffffff;
+}
+
+.bg-light .search-trigger:hover {
+  border-color: #4338ca;
+  color: #4338ca;
 }
 
 .playground-nav-item {
@@ -69,6 +126,21 @@ body {
   border-left-color: #818cf8;
 }
 
+.bg-light .playground-nav-item {
+  color: #64748b;
+}
+
+.bg-light .playground-nav-item:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.bg-light .playground-nav-item.active {
+  background: #e2e8f0;
+  color: #4338ca;
+  border-left-color: #4338ca;
+}
+
 .playground-nav-count {
   font-size: 11px;
   color: #94a3b8;
@@ -79,18 +151,38 @@ body {
   color: #6366f1;
 }
 
+.bg-light .playground-nav-count {
+  color: #94a3b8;
+}
+
+.bg-light .playground-nav-item.active .playground-nav-count {
+  color: #4338ca;
+}
+
 /* --- Main area --- */
 
 .playground-toolbar-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   margin-bottom: 16px;
 }
 
+.playground-toolbar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  margin-right: auto;
+}
+
+.bg-light .playground-toolbar-title {
+  color: #0f172a;
+}
+
 .playground-main {
   padding: 32px;
+  overflow-y: auto;
   transition: background 200ms ease;
 }
 
@@ -112,8 +204,9 @@ body {
 }
 
 .playground-title {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .bundle-badges {
@@ -144,6 +237,31 @@ body {
   color: #0f172a;
 }
 
+.playground-description {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: -16px 0 20px;
+  max-width: 600px;
+}
+
+.bg-dark .playground-description {
+  color: #94a3b8;
+}
+
+.bg-light .playground-description {
+  color: #475569;
+}
+
+.playground-docs-link {
+  color: #818cf8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.playground-docs-link:hover {
+  text-decoration: underline;
+}
+
 /* --- Toolbar --- */
 
 .playground-toolbar {
@@ -151,15 +269,16 @@ body {
   flex-wrap: wrap;
   gap: 16px;
   padding: 12px 16px;
-  margin-bottom: 24px;
   border-radius: 8px;
   border: 1px solid #1e293b;
-  background: #0b1120;
+  background: rgba(11, 17, 32, 0.95);
+  backdrop-filter: blur(8px);
 }
 
 .bg-light .playground-toolbar {
   border-color: #e2e8f0;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
 }
 
 .playground-toolbar-group {
@@ -170,11 +289,15 @@ body {
 
 .playground-toolbar-label {
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   white-space: nowrap;
+}
+
+.bg-light .playground-toolbar-label {
+  color: #64748b;
 }
 
 .playground-toolbar-buttons {
@@ -214,9 +337,48 @@ body {
   color: #ffffff;
 }
 
+/* --- Color scheme picker --- */
+
+.playground-color-buttons {
+  gap: 4px;
+}
+
+.playground-color-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+
+.playground-color-btn:hover {
+  border-color: #475569;
+}
+
+.playground-color-btn.active {
+  border-color: #e2e8f0;
+}
+
+.bg-light .playground-color-btn.active {
+  border-color: #0f172a;
+}
+
+.playground-color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
 /* --- Story sections --- */
 
 .story-section {
+  margin-top: 32px;
   margin-bottom: 40px;
 }
 
@@ -229,14 +391,18 @@ body {
 
 .story-section h3 {
   font-size: 14px;
-  font-weight: 500;
-  color: #94a3b8;
+  font-weight: 600;
+  color: #cbd5e1;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0;
 }
 
-.story-section-title {
+.bg-light .story-section h3 {
+  color: #334155;
+}
+
+.story-section-title[data-linkable] {
   cursor: pointer;
 }
 
@@ -247,7 +413,7 @@ body {
   transition: opacity 150ms ease;
 }
 
-.story-section-title:hover .story-section-anchor {
+.story-section-title[data-linkable]:hover .story-section-anchor {
   opacity: 1;
 }
 
@@ -273,10 +439,14 @@ body {
 }
 
 .story-description {
-  font-size: 12px;
+  font-size: 13px;
   color: #94a3b8;
   margin-bottom: 12px;
   margin-top: -8px;
+}
+
+.bg-light .story-description {
+  color: #475569;
 }
 
 .story-card {
@@ -297,6 +467,15 @@ body {
 }
 
 .bg-light .story-card:hover {
+  border-color: #cbd5e1;
+}
+
+.story-card--headless {
+  border-style: dashed;
+  border-color: #475569;
+}
+
+.bg-light .story-card--headless {
   border-color: #cbd5e1;
 }
 
@@ -582,6 +761,30 @@ body {
   background: #cbd5e1;
 }
 
+/* --- Focus visible (a11y) --- */
+
+.playground-nav-item:focus-visible,
+.playground-toolbar-btn:focus-visible,
+.playground-color-btn:focus-visible,
+.story-code-toggle:focus-visible,
+.search-trigger:focus-visible,
+.headless-wallet-btn:focus-visible,
+.headless-tx-btn:focus-visible,
+.custom-render-btn:focus-visible,
+.custom-render-disconnect:focus-visible,
+.headless-wallet-disconnect:focus-visible,
+.theme-info-btn:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
+}
+
+.bg-light .playground-nav-item:focus-visible,
+.bg-light .playground-toolbar-btn:focus-visible,
+.bg-light .story-code-toggle:focus-visible,
+.bg-light .search-trigger:focus-visible {
+  outline-color: #4338ca;
+}
+
 /* --- Info grid (headless examples) --- */
 
 .story-info-grid {
@@ -605,6 +808,10 @@ body {
   color: #94a3b8;
 }
 
+.bg-light .story-info-key {
+  color: #64748b;
+}
+
 .story-info-value {
   color: #e2e8f0;
   font-weight: 500;
@@ -612,4 +819,23 @@ body {
 
 .bg-light .story-info-value {
   color: #0f172a;
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .playground-main,
+  .story-card,
+  .story-code-toggle,
+  .playground-nav-item,
+  .playground-toolbar-btn,
+  .custom-render-btn,
+  .headless-tx-btn,
+  .headless-wallet-btn {
+    transition: none;
+  }
+
+  .responsive-viewport {
+    transition: none;
+  }
 }

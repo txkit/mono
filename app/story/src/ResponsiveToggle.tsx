@@ -10,10 +10,10 @@ type ResponsiveToggleProps = {
   onChange: (viewport: Viewport) => void
 }
 
-const viewports: { id: Viewport; label: string; width: string }[] = [
-  { id: 'desktop', label: '🖥', width: '100%' },
-  { id: 'tablet', label: '📱', width: '768px' },
-  { id: 'mobile', label: '📲', width: '375px' },
+const viewports: { id: Viewport; icon: string; label: string; width: string }[] = [
+  { id: 'desktop', icon: '🖥', label: 'Desktop', width: '100%' },
+  { id: 'tablet', icon: '📱', label: '768px', width: '768px' },
+  { id: 'mobile', icon: '📲', label: '375px', width: '375px' },
 ]
 
 const ResponsiveToggle: React.FC<ResponsiveToggleProps> = ({ viewport, onChange }) => (
@@ -25,9 +25,11 @@ const ResponsiveToggle: React.FC<ResponsiveToggleProps> = ({ viewport, onChange 
           type="button"
           className={cx('responsive-toggle-btn', { active: viewport === v.id })}
           onClick={() => onChange(v.id)}
+          aria-label={`${v.id} viewport (${v.width})`}
           title={`${v.id} (${v.width})`}
         >
-          {v.label}
+          <span aria-hidden="true">{v.icon}</span>
+          <span className="responsive-toggle-label">{v.label}</span>
         </button>
       ))
     }

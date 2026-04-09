@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useSyncExternalStore } from 'react'
+import { useRef, useState, useSyncExternalStore } from 'react'
 
 
 type ThemeInput = 'light' | 'dark' | 'auto'

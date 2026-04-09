@@ -18,6 +18,10 @@ yarn add @txkit/react @txkit/themes viem wagmi @tanstack/react-query
 
 :::
 
+:::tip
+`@txkit/themes` is optional. Skip it if you use headless hooks (`useContractForm`, `useTokenBalance`, `useWalletState`) or render custom UI via children render functions - you'll provide your own styles. Install it when you want txKit's built-in look out of the box.
+:::
+
 ### Peer Dependencies
 
 | Package | Version |
@@ -54,7 +58,7 @@ const App = () => (
 That's it. `TxKitProvider` creates WagmiProvider and QueryClientProvider internally - you don't need to set them up.
 
 :::warning
-Without `import '@txkit/themes'`, components render without styles. This import provides light/dark themes and all visual variants.
+Without `import '@txkit/themes'`, default component UI renders without styles. Skip it only if you provide your own styling via headless hooks or custom render functions.
 :::
 
 ## Config Options

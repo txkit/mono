@@ -8,12 +8,19 @@ import { usePlayground } from './PlaygroundContext'
 const themes: TxKit.Theme[] = [ 'light', 'dark', 'auto' ]
 const variants: TxKit.Variant[] = [ 'default', 'soft', 'sharp', 'rounded' ]
 
+const colorSchemes = [
+  { id: 'indigo' as const, color: '#4338CA', label: 'Indigo' },
+  { id: 'violet' as const, color: '#7C3AED', label: 'Violet' },
+]
+
 const PlaygroundToolbar: React.FC = () => {
   const {
     theme,
     variant,
+    colorScheme,
     setTheme,
     setVariant,
+    setColorScheme,
   } = usePlayground()
 
   return (
@@ -48,6 +55,29 @@ const PlaygroundToolbar: React.FC = () => {
                 onClick={() => setVariant(v)}
               >
                 {v}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <div className="playground-toolbar-group">
+        <span className="playground-toolbar-label">Color</span>
+        <div className="playground-toolbar-buttons playground-color-buttons">
+          {
+            colorSchemes.map((cs) => (
+              <button
+                key={cs.id}
+                type="button"
+                className={cx('playground-color-btn', { active: colorScheme === cs.id })}
+                onClick={() => setColorScheme(cs.id)}
+                aria-label={cs.label}
+                title={cs.label}
+              >
+                <span
+                  className="playground-color-dot"
+                  style={{ background: cs.color }}
+                />
               </button>
             ))
           }

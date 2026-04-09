@@ -1,38 +1,80 @@
-import { useState, useEffect, useCallback } from 'react'
+import React, { Component, useState, useEffect, useCallback } from 'react'
+import type { ReactNode, ErrorInfo } from 'react'
 
 import { cx } from '@txkit/core'
 
 import PropsTable from './PropsTable'
 import SearchModal from './SearchModal'
 import PlaygroundToolbar from './PlaygroundToolbar'
+import ContractFormStory from './stories/ContractForm'
 import TokenBalanceStory from './stories/TokenBalance'
 import TxKitProviderStory from './stories/TxKitProvider'
 import ConnectWalletStory from './stories/ConnectWallet'
 import ResponsiveToggle from './ResponsiveToggle'
 import TransactionButtonStory from './stories/TransactionButton'
 import { PlaygroundProvider, usePlayground } from './PlaygroundContext'
-import TxKitProviderEmbeddedStory from './stories/TxKitProviderEmbedded'
-import { searchItems, componentProps, bundleSizes } from './storyData'
+import { searchItems, componentProps, bundleSizes, componentDescriptions } from './storyData'
 
 import type { Viewport } from './ResponsiveToggle'
+
+
+type StoryErrorBoundaryState = { hasError: boolean; error: Error | null }
+
+class StoryErrorBoundary extends Component<{ children: ReactNode; storyKey: string }, StoryErrorBoundaryState> {
+  state: StoryErrorBoundaryState = { hasError: false, error: null }
+
+  static getDerivedStateFromError(error: Error): StoryErrorBoundaryState {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('[Playground] Story error:', error, info.componentStack)
+  }
+
+  componentDidUpdate(prevProps: { storyKey: string }) {
+    if (prevProps.storyKey !== this.props.storyKey) {
+      this.setState({ hasError: false, error: null })
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="story-card" style={{ padding: 24, textAlign: 'center' }}>
+          <p style={{ color: '#ef4444', marginBottom: 12 }}>
+            <strong>Story Error:</strong> {this.state.error?.message}
+          </p>
+          <button
+            type="button"
+            className="story-code-toggle"
+            onClick={() => this.setState({ hasError: false, error: null })}
+          >
+            Try Again
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 
 const stories = {
   ConnectWallet: ConnectWalletStory,
   TokenBalance: TokenBalanceStory,
   TransactionButton: TransactionButtonStory,
+  ContractForm: ContractFormStory,
   TxKitProvider: TxKitProviderStory,
-  'Embedded Mode': TxKitProviderEmbeddedStory,
 } as const
 
 type StoryName = keyof typeof stories
 
 const storyCount: Record<StoryName, number> = {
-  ConnectWallet: 10,
-  TokenBalance: 11,
+  ConnectWallet: 9,
+  TokenBalance: 13,
   TransactionButton: 7,
-  TxKitProvider: 3,
-  'Embedded Mode': 3,
+  ContractForm: 6,
+  TxKitProvider: 6,
 }
 
 const viewportWidths: Record<Viewport, string> = {
@@ -59,12 +101,22 @@ const getInitialStory = (): StoryName => {
   return 'ConnectWallet'
 }
 
+/** Memoized story renderer - prevents wagmi useSyncExternalStore crash
+ *  when playground theme/colorScheme changes trigger parent re-render.
+ *  Variant is passed as prop so stories don't subscribe to PlaygroundContext
+ *  (context subscription bypasses React.memo and triggers wagmi infinite loops). */
+const MemoizedStory = React.memo(({ name, variant }: { name: StoryName; variant: TxKit.Variant }) => {
+  const Story = stories[name]
+  return <Story variant={variant} />
+})
+MemoizedStory.displayName = 'MemoizedStory'
+
+
 const AppContent = () => {
   const [ active, setActive ] = useState<StoryName>(getInitialStory)
   const [ viewport, setViewport ] = useState<Viewport>('desktop')
   const [ searchOpen, setSearchOpen ] = useState(false)
-  const { theme } = usePlayground()
-  const ActiveStory = stories[active]
+  const { theme, variant, colorScheme } = usePlayground()
 
   const navigate = useCallback((name: StoryName) => {
     setActive(name)
@@ -105,7 +157,7 @@ const AppContent = () => {
   const propsData = componentProps[active as keyof typeof componentProps]
 
   return (
-    <div className="playground">
+    <div className={cx('playground', bgClass)}>
       <aside className="playground-sidebar">
         <h1 className="playground-logo">txKit</h1>
         <button
@@ -146,6 +198,28 @@ const AppContent = () => {
           }
         </div>
         {
+          componentDescriptions[active] && (
+            <p className="playground-description">
+              {componentDescriptions[active].summary}
+              {
+                componentDescriptions[active].docsPath && (
+                  <>
+                    {' '}
+                    <a
+                      href={`https://docs.txkit.dev${componentDescriptions[active].docsPath}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="playground-docs-link"
+                    >
+                      Docs&nbsp;&#8599;
+                    </a>
+                  </>
+                )
+              }
+            </p>
+          )
+        }
+        {
           propsData && (
             <PropsTable
               componentName={active}
@@ -155,10 +229,14 @@ const AppContent = () => {
           )
         }
         <div
-          className="responsive-viewport"
+          className={cx('responsive-viewport', {
+            'txkit-color-violet': colorScheme === 'violet',
+          })}
           style={{ maxWidth: viewportWidths[viewport] }}
         >
-          <ActiveStory />
+          <StoryErrorBoundary storyKey={active}>
+            <MemoizedStory name={active} variant={variant} />
+          </StoryErrorBoundary>
         </div>
       </main>
       <SearchModal

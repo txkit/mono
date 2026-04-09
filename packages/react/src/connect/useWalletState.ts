@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import type { Chain } from 'viem'
+import { useMemo, useState, useEffect, useRef } from 'react'
+import { UserRejectedRequestError, type Chain } from 'viem'
 import {
   useAccount,
   useConnect,
@@ -12,6 +12,8 @@ import {
 } from 'wagmi'
 import { shortenAddress, formatTokenAmount } from '@txkit/core'
 
+import { CONNECTION_TIMEOUT_MS, QR_TIMEOUT_MS } from './shared/constants'
+
 
 /** Wallet connection state machine states */
 export type WalletState = 'disconnected' | 'connecting' | 'connected' | 'wrong-chain' | 'error'
@@ -23,6 +25,8 @@ export type UseWalletStateOptions = {
   showBalance?: boolean
   /** Resolve ENS name and avatar. @default true */
   showEns?: boolean
+  /** ID of the connector currently being connected (for timeout selection) */
+  connectingConnectorId?: string
 }
 
 export type UseWalletStateReturn = {
@@ -54,15 +58,36 @@ export type UseWalletStateReturn = {
   error: Error | null
   /** True while connection is pending */
   isPending: boolean
+  /** True when connecting has exceeded timeout threshold */
+  isTimedOut: boolean
 }
 
 const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateReturn => {
-  const { chainId, showBalance = true, showEns = true } = options
+  const { chainId, showBalance = true, showEns = true, connectingConnectorId } = options
+
+  const [ isTimedOut, setIsTimedOut ] = useState(false)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const { disconnect } = useDisconnect()
   const { switchChain } = useSwitchChain()
   const { address, isConnected, chain, connector } = useAccount()
   const { connect, connectors, isPending, error: connectError } = useConnect()
+
+  // Connection timeout detection - WalletConnect QR flow needs longer timeout
+  const timeoutMs = connectingConnectorId === 'walletConnect' ? QR_TIMEOUT_MS : CONNECTION_TIMEOUT_MS
+
+  useEffect(() => {
+    if (isPending) {
+      setIsTimedOut(false)
+      timeoutRef.current = setTimeout(() => setIsTimedOut(true), timeoutMs)
+    }
+    else {
+      setIsTimedOut(false)
+      clearTimeout(timeoutRef.current)
+    }
+
+    return () => clearTimeout(timeoutRef.current)
+  }, [ isPending, timeoutMs ])
 
   const { data: ensName } = useEnsName({
     address,
@@ -81,8 +106,15 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
     query: { enabled: showBalance && Boolean(address) },
   })
 
+  // User rejection (EIP-1193 code 4001) is not an error - user explicitly
+  // declined the connection in their wallet. Return to disconnected silently.
+  const isUserRejection = Boolean(
+    connectError && connectError instanceof UserRejectedRequestError
+  )
+
+
   const state: WalletState = useMemo(() => {
-    if (connectError && !isPending && !isConnected) {
+    if (connectError && !isPending && !isConnected && !isUserRejection) {
       return 'error'
     }
     if (isPending) {
@@ -95,7 +127,7 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
       return 'connected'
     }
     return 'disconnected'
-  }, [ connectError, isPending, isConnected, chainId, chain?.id ])
+  }, [ connectError, isPending, isConnected, isUserRejection, chainId, chain?.id ])
 
   const formattedBalance = useMemo(() => {
     if (!balanceData) {
@@ -126,8 +158,9 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
     connect,
     disconnect,
     switchChain,
-    error: connectError,
+    error: isUserRejection ? null : connectError,
     isPending,
+    isTimedOut,
   }
 }
 

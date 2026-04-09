@@ -17,7 +17,6 @@ import StorySection from '../StorySection'
 import StateVisualizer from './StateVisualizer'
 import useControls from '../controls/useControls'
 import ControlPanel from '../controls/ControlPanel'
-import { usePlayground } from '../PlaygroundContext'
 import { defaultConfig, useStoryConfig, USDC_ADDRESS, VITALIK_ADDRESS } from '../config'
 
 
@@ -113,22 +112,77 @@ const InteractiveTransactionButton = () => {
   )
 }
 
-const TransactionButtonStory = () => {
-  const { theme, variant } = usePlayground()
-  const config = useStoryConfig(defaultConfig, theme, variant)
+const stateLabels: Record<string, string> = {
+  pending: 'Send 0.001 ETH',
+  simulating: 'Simulating...',
+  'confirming-risk': 'Confirm Risk',
+  'simulation-failed': 'Simulation Failed',
+  signing: 'Confirm in Wallet',
+  'tx-pending': 'Transaction Pending',
+  waiting: 'Waiting...',
+  completed: 'Completed',
+  skipped: 'Skipped',
+  error: 'Error - Try Again',
+  rejected: 'Rejected',
+  canceled: 'Canceled',
+}
+
+const stateDataState: Record<string, string> = {
+  pending: 'idle',
+  simulating: 'simulating',
+  'confirming-risk': 'confirming-risk',
+  'simulation-failed': 'simulation-failed',
+  signing: 'signing',
+  'tx-pending': 'tx-pending',
+  waiting: 'waiting',
+  completed: 'completed',
+  skipped: 'completed',
+  error: 'error',
+  rejected: 'rejected',
+  canceled: 'canceled',
+}
+
+const TxbStateMachineSection = () => {
   const [ activeState, setActiveState ] = useState('pending')
+
+  return (
+    <div className="story-section">
+      <div className="story-section-header">
+        <h3 className="story-section-title">State Machine</h3>
+      </div>
+      <p className="story-description">Click a state to see how the button looks in each lifecycle stage</p>
+      <StateVisualizer currentState={activeState} onStateClick={setActiveState} />
+      <div className="story-card" style={{ marginTop: 16 }}>
+        <div className="txkit-root txkit-dark" style={{ display: 'inline-block' }}>
+          <div className="txkit-txb">
+            <button
+              type="button"
+              className="txkit-txb-button"
+              data-state={stateDataState[activeState] ?? 'idle'}
+              disabled={activeState === 'signing' || activeState === 'tx-pending' || activeState === 'waiting'}
+              style={{ pointerEvents: 'none' }}
+            >
+              {stateLabels[activeState] ?? 'Send 0.001 ETH'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const TransactionButtonStory = ({ variant }: { variant: TxKit.Variant }) => {
+  const config = useStoryConfig(defaultConfig, 'dark', variant)
 
   return (
     <TxKitProvider config={config}>
       <div>
-        <div className="story-section">
-          <h3>State Machine</h3>
-          <p className="story-description">Click a state to highlight it in the lifecycle flow</p>
-          <StateVisualizer currentState={activeState} onStateClick={setActiveState} />
-        </div>
+        <TxbStateMachineSection />
 
         <div className="story-section">
-          <h3>Interactive</h3>
+          <div className="story-section-header">
+            <h3 className="story-section-title">Interactive</h3>
+          </div>
           <p className="story-description">Toggle props to see changes live</p>
           <InteractiveTransactionButton />
         </div>
@@ -320,7 +374,8 @@ const TransactionButtonStory = () => {
 
         <StorySection
           title="Headless Hook (Tier 3)"
-          description="Full control via useTransactionFlow hook"
+          description="Headless - your UI, txKit logic. Full control via useTransactionFlow hook"
+          headless
         >
           <HeadlessFlowExample />
         </StorySection>

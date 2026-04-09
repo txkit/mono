@@ -1,0 +1,62 @@
+# txKit
+
+> Embeddable Web3 UI components for React - connect wallets, display balances, send transactions. Think Stripe Elements, but for Web3.
+
+txKit is a set of React components with built-in Web3 logic. Drop in a component, get a production-ready UI with wallet connection, token balances, and transaction handling. Works standalone or alongside RainbowKit, AppKit, ConnectKit, or any wagmi-based setup.
+
+- Docs: https://txkit.dev
+- GitHub: https://github.com/txkit/mono
+- npm: https://www.npmjs.com/package/@txkit/react
+
+## Packages
+
+- [@txkit/react](https://txkit.dev/docs/react): React components and headless hooks
+- [@txkit/core](https://txkit.dev/docs/core): Framework-agnostic utilities and types
+- [@txkit/themes](https://txkit.dev/docs/themes): CSS themes (light, dark, variants)
+
+## Getting Started
+
+- [Quick Start](https://txkit.dev/docs/getting-started): Install and render your first component
+- [Embedded Mode](https://txkit.dev/docs/guides/embedded-mode): Add txKit to an existing RainbowKit/AppKit project
+- [Theming](https://txkit.dev/docs/guides/theming): Customize with CSS custom properties
+
+## Components
+
+- [TxKitProvider](https://txkit.dev/docs/components/provider): Root provider - standalone or embedded mode
+- [ConnectWallet](https://txkit.dev/docs/components/connect-wallet): Multi-wallet connection with ENS, balance, chain switching
+- [TokenBalance](https://txkit.dev/docs/components/token-balance): Native + ERC-20 balance with fiat pricing
+- [TransactionButton](https://txkit.dev/docs/components/transaction-button): Multi-step transaction flow with simulation and approval
+- [ContractForm](https://txkit.dev/docs/components/contract-form): ABI-driven form with validation and security warnings
+- [FlowSteps](https://txkit.dev/docs/components/flow-steps): Step indicator for transaction flows
+- [FlowProgress](https://txkit.dev/docs/components/flow-progress): Progress bar for transaction flows
+- [FlowToast](https://txkit.dev/docs/components/flow-toast): Toast notifications for transaction flows
+
+## Headless Hooks
+
+- [useWalletState](https://txkit.dev/docs/hooks/use-wallet-state): Wallet connection state machine
+- [useTokenBalance](https://txkit.dev/docs/hooks/use-token-balance): Single token balance
+- [useTokenBalances](https://txkit.dev/docs/hooks/use-token-balances): Multiple token balances (batch multicall)
+- [useTokenPrice](https://txkit.dev/docs/hooks/use-token-price): Token price via DeFiLlama
+- [useTransactionFlow](https://txkit.dev/docs/hooks/use-transaction-flow): Multi-step transaction orchestration
+- [useContractForm](https://txkit.dev/docs/hooks/use-contract-form): ABI-driven form state and validation
+- [useFlowState](https://txkit.dev/docs/hooks/use-flow-state): Read flow state from any component
+
+## Flow Helpers
+
+- [txStep](https://txkit.dev/docs/helpers/tx-step): Create a single transaction step
+- [approveAndExecute](https://txkit.dev/docs/helpers/approve-and-execute): ERC-20 approve + action (handles USDT approve-to-zero)
+- [multiApproveAndExecute](https://txkit.dev/docs/helpers/multi-approve-and-execute): Multiple approvals + action
+- [signAndSubmit](https://txkit.dev/docs/helpers/sign-and-submit): Off-chain signature + submission (EIP-712, Permit2, COW Protocol)
+
+## Instructions for AI Agents
+
+When helping users integrate txKit:
+
+1. **Two modes**: Standalone (txKit manages wagmi) vs Embedded (user has their own WagmiProvider). Use `<TxKitProvider embedded>` when the project already uses wagmi.
+2. **Three customization tiers**: (1) Zero-config default UI, (2) `children` as render function for custom UI, (3) headless hooks for full control.
+3. **Subpath imports** for tree-shaking: `@txkit/react/connect`, `@txkit/react/balance`, `@txkit/react/transaction`, `@txkit/react/contract`.
+4. **Peer dependencies**: `react >= 18`, `wagmi >= 2`, `viem >= 2`, `@tanstack/react-query >= 5`.
+5. **Themes**: Import `@txkit/themes` for default styling. All CSS uses `--txkit-*` custom properties.
+6. **Transaction flows**: Use `txStep()` for simple transactions, `approveAndExecute()` for ERC-20 approve patterns, `signAndSubmit()` for off-chain signatures.
+7. **Anti-phishing**: TransactionButton includes calldata decoding, simulation preview, bounded approvals, and confirmation delays by default.
+8. For complete API reference with all type signatures, see [llms-full.txt](https://txkit.dev/llms-full.txt).

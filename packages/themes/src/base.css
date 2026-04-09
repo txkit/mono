@@ -55,11 +55,28 @@
   --txkit-color-primary-alpha: rgba(67, 56, 202, 0.1);
 
   /* Shadows */
-  --txkit-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --txkit-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --txkit-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.03);
+  --txkit-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --txkit-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.04);
 
   /* Transitions */
   --txkit-transition: 150ms ease;
+
+  /* Motion tokens */
+  --txkit-ease-default: cubic-bezier(0.2, 0, 0, 1);
+  --txkit-ease-enter: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --txkit-ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --txkit-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --txkit-ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --txkit-duration-fast: 100ms;
+  --txkit-duration-normal: 200ms;
+  --txkit-duration-moderate: 300ms;
+  --txkit-duration-slow: 400ms;
+
+  /* Skeleton shimmer */
+  --txkit-skeleton-from: var(--txkit-color-bg-secondary);
+  --txkit-skeleton-to: var(--txkit-color-bg-tertiary);
 }
 
 .txkit-root {

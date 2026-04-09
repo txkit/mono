@@ -1,0 +1,35 @@
+.txkit-error-boundary {
+  padding: var(--txkit-space-lg, 1rem);
+  color: var(--txkit-color-error, #DC2626);
+  background-color: var(--txkit-color-bg-secondary, #F9FAFB);
+  border-radius: var(--txkit-radius-md, 0.375rem);
+  font-size: var(--txkit-font-size-sm, 0.875rem);
+}
+
+.txkit-error-boundary__message {
+  margin: 0;
+}
+
+.txkit-error-boundary__retry {
+  min-height: 44px;
+  padding: var(--txkit-space-sm, 0.5rem) var(--txkit-space-md, 1rem);
+  margin-top: var(--txkit-space-md, 1rem);
+  background: none;
+  color: var(--txkit-color-error, #DC2626);
+  border: 1px solid var(--txkit-color-error, #DC2626);
+  border-radius: var(--txkit-radius-sm, 0.25rem);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--txkit-font-size-sm, 0.875rem);
+}
+
+.txkit-error-boundary__retry:focus-visible {
+  outline: 2px solid var(--txkit-color-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .txkit-error-boundary__retry {
+    transition: none;
+  }
+}

@@ -15,7 +15,7 @@ const defaultWallets = (projectId: string | null): TxKit.WalletConfig[] => [
       id: 'walletConnect',
       name: 'WalletConnect',
       icon: '/icons/walletconnect.svg',
-      createConnector: walletConnect({ projectId }),
+      createConnector: walletConnect({ projectId, showQrModal: false }),
     }]
     : []),
   {

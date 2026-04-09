@@ -1,5 +1,5 @@
 // --- TokenBalance ---
-export { default as TokenBalance } from './TokenBalance'
+export { default as TokenBalance } from './TokenBalance/TokenBalance'
 export type { TokenBalanceLabels } from './labels'
 export type {
   TokenBalanceProps,
@@ -20,8 +20,8 @@ export { default as useTokenPrice } from './useTokenPrice'
 export type { UseTokenPriceOptions, UseTokenPriceReturn } from './useTokenPrice'
 
 // --- Balance Invalidation ---
-export { default as useBalanceInvalidation } from './useBalanceInvalidation'
-export type { UseBalanceInvalidationReturn } from './useBalanceInvalidation'
-export { useBalanceContext } from './BalanceContext'
-export type { BalanceContextValue } from './BalanceContext'
-export type { AffectedBalance } from './parseAffectedBalances'
+export { default as useBalanceInvalidation } from './shared/useBalanceInvalidation'
+export type { UseBalanceInvalidationReturn } from './shared/useBalanceInvalidation'
+export { useBalanceContext } from './shared/BalanceContext'
+export type { BalanceContextValue } from './shared/BalanceContext'
+export type { AffectedBalance } from './shared/parseAffectedBalances'

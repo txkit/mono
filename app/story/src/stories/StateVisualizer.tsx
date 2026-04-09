@@ -1,7 +1,13 @@
 import React from 'react'
 
 
-const STATES = [
+type StateNode = {
+  id: string
+  label: string
+  color: string
+}
+
+const DEFAULT_STATES: readonly StateNode[] = [
   { id: 'pending', label: 'Pending', color: '#64748b' },
   { id: 'simulating', label: 'Simulating', color: '#f59e0b' },
   { id: 'confirming-risk', label: 'Confirming', color: '#f59e0b' },
@@ -14,20 +20,21 @@ const STATES = [
   { id: 'error', label: 'Error', color: '#ef4444' },
   { id: 'rejected', label: 'Rejected', color: '#f97316' },
   { id: 'canceled', label: 'Canceled', color: '#6b7280' },
-] as const
+]
 
 type StateVisualizerProps = {
+  states?: readonly StateNode[]
   currentState?: string
   onStateClick?: (stateId: string) => void
 }
 
-const StateVisualizer: React.FC<StateVisualizerProps> = ({ currentState = 'idle', onStateClick }) => (
+const StateVisualizer: React.FC<StateVisualizerProps> = ({ states = DEFAULT_STATES, currentState = 'idle', onStateClick }) => (
   <div className="state-visualizer">
     <div className="state-flow">
       {
-        STATES.map((s, i) => {
+        states.map((s, i) => {
           const isActive = s.id === currentState
-          const isPast = STATES.findIndex((st) => st.id === currentState) > i
+          const isPast = states.findIndex((st) => st.id === currentState) > i
           const isClickable = Boolean(onStateClick)
 
           return (
@@ -49,7 +56,7 @@ const StateVisualizer: React.FC<StateVisualizerProps> = ({ currentState = 'idle'
                 <span className="state-label">{s.label}</span>
               </button>
               {
-                i < STATES.length - 1 && (
+                i < states.length - 1 && (
                   <div
                     className="state-connector"
                     style={{ background: isPast ? s.color : '#334155' }}

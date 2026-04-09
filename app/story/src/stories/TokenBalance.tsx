@@ -5,7 +5,6 @@ import { TxKitProvider, TokenBalance, ConnectWallet, useTokenBalance, useBalance
 import StorySection from '../StorySection'
 import useControls from '../controls/useControls'
 import ControlPanel from '../controls/ControlPanel'
-import { usePlayground } from '../PlaygroundContext'
 import { USDC_ADDRESS, VITALIK_ADDRESS, mainnetOnlyConfig, useStoryConfig } from '../config'
 
 
@@ -88,22 +87,23 @@ const HeadlessBalanceExample = () => {
 }
 
 
-const TokenBalanceStory = () => {
-  const { theme, variant } = usePlayground()
-  const config = useStoryConfig(mainnetOnlyConfig, theme, variant)
+const TokenBalanceStory = ({ variant }: { variant: TxKit.Variant }) => {
+  const config = useStoryConfig(mainnetOnlyConfig, 'dark', variant)
 
   return (
     <TxKitProvider config={config}>
       <div>
         <div className="story-section">
-          <h3>Interactive</h3>
+          <div className="story-section-header">
+            <h3 className="story-section-title">Interactive</h3>
+          </div>
           <p className="story-description">Toggle props to see changes live</p>
           <InteractiveTokenBalance />
         </div>
 
         <StorySection
           title="Shimmer Loading (Inline)"
-          description="Shimmer gradient sweep animation while fetching balance data"
+          description="Demo - Shimmer gradient sweep animation while fetching balance data"
         >
           <div
             className="txkit-root txkit-dark"
@@ -121,7 +121,7 @@ const TokenBalanceStory = () => {
 
         <StorySection
           title="Shimmer Loading (Row)"
-          description="Row variant skeleton with name and values placeholders"
+          description="Demo - Row variant skeleton with name and values placeholders"
         >
           <div
             className="txkit-root txkit-dark"
@@ -319,8 +319,40 @@ const TokenBalanceStory = () => {
         </StorySection>
 
         <StorySection
+          title="Error State"
+          description="Demo - How the component looks when balance fetch fails"
+        >
+          <div
+            className="txkit-root txkit-dark"
+            style={{ display: 'inline-block' }}
+          >
+            <span className="txkit-tb" data-state="error">
+              <span className="txkit-tb-amount" style={{ color: 'var(--txkit-color-error, #ef4444)' }}>
+                Failed to load
+              </span>
+            </span>
+          </div>
+        </StorySection>
+
+        <StorySection
+          title="Zero Balance"
+          description="Demo - Zero balance with dimmed styling"
+        >
+          <div
+            className="txkit-root txkit-dark"
+            style={{ display: 'inline-block' }}
+          >
+            <span className="txkit-tb" data-state="ready" style={{ opacity: 0.5 }}>
+              <span className="txkit-tb-amount">0.0000 ETH</span>
+              <span className="txkit-tb-fiat">$0.00</span>
+            </span>
+          </div>
+        </StorySection>
+
+        <StorySection
           title="Headless Hook (useTokenBalance)"
-          description="Full data access via useTokenBalance hook"
+          description="Headless - your UI, txKit logic. Full data access via useTokenBalance hook"
+          headless
           code={`const data = useTokenBalance({ token: USDC })
 // data.formatted, data.symbol, data.fiatFormatted, ...`}
         >

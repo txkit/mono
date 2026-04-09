@@ -3,7 +3,7 @@ import type { Abi, AbiFunction } from 'viem'
 
 import type { TransactionError, TransactionReceipt } from '@txkit/core'
 
-import type { ContractTransactionProps, FlowStep, SafetyConfig } from '../transaction/flow-types'
+import type { ContractTransactionProps, FlowStep, SafetyConfig } from '../transaction/shared/flow-types'
 
 import type { ContractFormLabels } from './labels'
 

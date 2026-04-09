@@ -20,11 +20,15 @@ const PropsTable: React.FC<PropsTableProps> = ({ componentName, importPath, prop
   const [ expanded, setExpanded ] = useState(false)
   const [ copied, setCopied ] = useState(false)
 
+  const importStatement = `import { ${componentName} } from '${importPath}'`
+
   const handleCopyImport = async () => {
-    await navigator.clipboard.writeText(`import { ${componentName} } from '${importPath}'`)
+    await navigator.clipboard.writeText(importStatement)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+
+  const requiredCount = props.filter((p) => p.required).length
 
   return (
     <div className="props-table-wrapper">
@@ -37,13 +41,20 @@ const PropsTable: React.FC<PropsTableProps> = ({ componentName, importPath, prop
           <span className={`props-table-chevron ${expanded ? '' : 'collapsed'}`}>&#9660;</span>
           <span className="props-table-title">Props</span>
           <span className="props-table-count">{props.length}</span>
+          {
+            requiredCount > 0 && (
+              <span className="props-table-required-count">{requiredCount} required</span>
+            )
+          }
         </button>
         <button
           type="button"
-          className="props-table-copy-import"
+          className="props-table-import"
           onClick={handleCopyImport}
+          title="Copy import statement"
         >
-          {copied ? 'Copied!' : 'Copy Import'}
+          <code>{importStatement}</code>
+          <span>{copied ? 'Copied!' : '⎘'}</span>
         </button>
       </div>
       {
@@ -60,10 +71,14 @@ const PropsTable: React.FC<PropsTableProps> = ({ componentName, importPath, prop
             <tbody>
               {
                 props.map((p) => (
-                  <tr key={p.name}>
+                  <tr key={p.name} className={p.required ? 'props-table-row-required' : ''}>
                     <td className="props-table-name">
                       {p.name}
-                      {p.required && <span className="props-table-required">*</span>}
+                      {
+                        p.required && (
+                          <span className="props-table-required" title="Required">*</span>
+                        )
+                      }
                     </td>
                     <td className="props-table-type">{p.type}</td>
                     <td className="props-table-default">{p.default ?? '-'}</td>

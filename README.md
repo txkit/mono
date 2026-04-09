@@ -34,7 +34,7 @@ Works standalone or alongside **RainbowKit**, **AppKit**, **ConnectKit**, or any
 ## Quick Start
 
 ```bash
-npm install @txkit/react @txkit/themes
+npm install @txkit/react @txkit/themes wagmi viem @tanstack/react-query
 ```
 
 ```tsx
@@ -56,6 +56,17 @@ function App() {
   )
 }
 ```
+
+### Peer Dependencies
+
+| Package | Version |
+|---------|---------|
+| `react` / `react-dom` | >= 18 |
+| `wagmi` | >= 2 |
+| `viem` | >= 2 |
+| `@tanstack/react-query` | >= 5 |
+
+If you're adding txKit to an existing dApp (RainbowKit, AppKit, etc.), you likely already have these installed.
 
 ## Add to Existing dApp
 
@@ -96,10 +107,12 @@ Every component supports three customization levels:
 
 ## Features
 
-- Built on [wagmi](https://wagmi.sh) + [viem](https://viem.sh) - no vendor lock-in
-- CSS custom properties for full style control
+- Built on [wagmi](https://wagmi.sh) + [viem](https://viem.sh) - zero vendor lock-in, bring your own RPC
+- **Anti-phishing** - calldata preview, bounded approvals, simulation, risk scoring
+- **WCAG 2.1 AA** - focus traps, keyboard navigation, screen reader support, 44px touch targets
+- CSS custom properties (`--txkit-*`) for full style control
 - Tree-shakeable subpath imports (`@txkit/react/connect`, `/balance`, `/transaction`, `/contract`)
-- WCAG 2.1 AA accessible
+- Light + dark themes with visual variants (soft, sharp, rounded)
 - ESM + CJS + TypeScript declarations
 
 ## Development

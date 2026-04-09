@@ -11,7 +11,7 @@ import {
   useWriteContract,
   useSendTransaction,
 } from 'wagmi'
-import useBalanceInvalidation from '../balance/useBalanceInvalidation'
+import useBalanceInvalidation from '../balance/shared/useBalanceInvalidation'
 
 import {
   classifyError,
@@ -28,7 +28,7 @@ import type {
 
 import useObjectState from '../hooks/useObjectState'
 import useDeepMemo from '../hooks/useDeepMemo'
-import { useFlowStore, setFlowEntry, notifyFlowListeners } from './FlowContext'
+import { useFlowStore, setFlowEntry, notifyFlowListeners } from './shared/FlowContext'
 import type {
   FlowStep,
   FlowStepTx,
@@ -41,7 +41,7 @@ import type {
   UseTransactionFlowReturn,
   ContractTransactionProps,
   TxParams,
-} from './flow-types'
+} from './shared/flow-types'
 import {
   advanceStep,
   cancelFlow as cancelFlowTransition,
@@ -55,7 +55,7 @@ import {
   skipStep,
   startFlow,
   updateStep,
-} from './flow-transitions'
+} from './shared/flow-transitions'
 
 
 const DEFAULT_SAFETY: SafetyConfig = {

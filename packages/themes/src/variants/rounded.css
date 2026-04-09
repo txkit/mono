@@ -1,8 +1,9 @@
 /* Rounded variant - pill-shaped buttons, large radii, playful feel */
 .txkit-rounded {
-  --txkit-radius-sm: 12px;
-  --txkit-radius-md: 16px;
-  --txkit-radius-lg: 24px;
+  --txkit-radius-sm: 16px;
+  --txkit-radius-md: 20px;
+  --txkit-radius-lg: 28px;
+  --txkit-radius-button: 999px;
 
   --txkit-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
   --txkit-shadow-md: 0 6px 16px -4px rgba(0, 0, 0, 0.12);

@@ -21,15 +21,18 @@
     "clean": "turbo run clean",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "pnpm": {
-    "overrides": {
-      "@walletconnect/logger>pino": "10.0.0"
-    }
+    "overrides": {}
   },
   "packageManager": "pnpm@10.0.0",
   "devDependencies": {
+    "@changesets/changelog-github": "^0.6.0",
+    "@changesets/cli": "^2.30.0",
     "@eslint/js": "^10.0.1",
     "eslint": "^10.1.0",
     "eslint-plugin-react-hooks": "^7.0.1",

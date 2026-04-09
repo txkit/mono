@@ -3,6 +3,7 @@ import type { Chain } from 'viem'
 import type { Connector } from 'wagmi'
 
 import type { WalletState } from './useWalletState'
+import type { WalletGroups } from './shared/useWalletGroups'
 import type { ConnectWalletLabels } from './labels'
 
 
@@ -20,10 +21,18 @@ export type ConnectWalletRenderData = {
   ensAvatar: string | null | undefined
   /** Formatted native balance with symbol */
   formattedBalance: string | undefined
+  /** Fiat-formatted balance (e.g. "$3,456.78") */
+  fiatBalance: string | undefined
   /** Current chain */
   chain: Chain | undefined
+  /** Available chains for switching */
+  chains: readonly Chain[]
   /** Available wallet connectors */
   connectors: readonly Connector[]
+  /** Connectors grouped by category (installed, recent, popular, other) */
+  groupedConnectors: WalletGroups
+  /** Name of currently connecting wallet */
+  connectingWallet: string | undefined
   /** Connect a specific wallet */
   connect: (connector: Connector) => void
   /** Disconnect and close panel */
@@ -38,6 +47,8 @@ export type ConnectWalletRenderData = {
   error: Error | null
   /** True while connection is pending */
   isPending: boolean
+  /** True when connecting has exceeded timeout threshold */
+  isTimedOut: boolean
 }
 
 export type ConnectWalletDefaultProps = {
@@ -50,17 +61,30 @@ export type ConnectWalletDefaultProps = {
   buttonLabel: string | null
   statusMessage: string
   formattedBalance: string | undefined
+  fiatBalance: string | undefined
   resolvedDisplayAddress: string | undefined
   chain: Chain | undefined
+  chains: readonly Chain[]
   connectors: readonly Connector[]
+  groupedConnectors: WalletGroups
+  recentIds: string[]
+  connectingWallet: string | undefined
+  isTimedOut: boolean
   mergedLabels: Required<ConnectWalletLabels>
+  size: 'default' | 'compact'
+  variant: 'default' | 'outline' | 'ghost' | 'soft'
   showAvatar: boolean
   showBalance: boolean
+  showFiat: boolean
+  showChainSelector: boolean
+  avatarStyle: 'gradient' | 'pixel'
   onModalClose: () => void
   onDisconnect: () => void
   onPanelClose: () => void
   onButtonClick: () => void
   onModalSelect: (connector: Connector) => void
+  onChainSwitch: (chainId: number) => void
+  onCancelConnect: () => void
 }
 
 export type ConnectWalletProps = {
@@ -88,4 +112,14 @@ export type ConnectWalletProps = {
   onDisconnect?: () => void
   /** Custom address display formatter */
   formatAddress?: (address: string, ensName?: string) => string
+  /** Button size variant. @default 'default' */
+  size?: 'default' | 'compact'
+  /** Button visual variant. @default 'default' */
+  variant?: 'default' | 'outline' | 'ghost' | 'soft'
+  /** Show fiat equivalent next to native balance. @default false */
+  showFiat?: boolean
+  /** Show chain selector in dropdown. @default true */
+  showChainSelector?: boolean
+  /** Avatar fallback style. @default 'gradient' */
+  avatarStyle?: 'gradient' | 'pixel'
 }
