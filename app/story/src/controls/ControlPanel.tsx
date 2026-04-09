@@ -1,7 +1,9 @@
 import React from 'react'
 
-import { cx } from '@txkit/core'
-
+import BooleanInput from './BooleanInput'
+import StringInput from './StringInput'
+import NumberInput from './NumberInput'
+import SelectInput from './SelectInput'
 import type { ControlEntry } from './useControls'
 
 
@@ -13,63 +15,6 @@ type ControlPanelProps = {
 /** Convert camelCase to human-readable label: "showBalance" -> "Show Balance" */
 const humanizeLabel = (key: string): string =>
   key.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()).trim()
-
-const BooleanInput: React.FC<{ entry: ControlEntry }> = ({ entry }) => (
-  <button
-    type="button"
-    aria-label={`${entry.key}: ${entry.value ? 'true' : 'false'}`}
-    className={cx('control-toggle', { active: entry.value as boolean })}
-    onClick={() => entry.setValue(!entry.value)}
-  >
-    {entry.value ? 'true' : 'false'}
-  </button>
-)
-
-const StringInput: React.FC<{ entry: ControlEntry }> = ({ entry }) => (
-  <input
-    type="text"
-    aria-label={entry.key}
-    className="control-input"
-    value={entry.value as string}
-    onChange={(e) => entry.setValue(e.target.value)}
-  />
-)
-
-const NumberInput: React.FC<{ entry: ControlEntry }> = ({ entry }) => {
-  const def = entry.def as { type: 'number'; min?: number; max?: number; step?: number }
-
-  return (
-    <input
-      type="number"
-      aria-label={entry.key}
-      className="control-input control-input--number"
-      value={entry.value as number}
-      min={def.min}
-      max={def.max}
-      step={def.step ?? 1}
-      onChange={(e) => entry.setValue(Number(e.target.value))}
-    />
-  )
-}
-
-const SelectInput: React.FC<{ entry: ControlEntry }> = ({ entry }) => {
-  const def = entry.def as { type: 'select'; options: string[] }
-
-  return (
-    <select
-      aria-label={entry.key}
-      className="control-select"
-      value={entry.value as string}
-      onChange={(e) => entry.setValue(e.target.value)}
-    >
-      {
-        def.options.map((opt) => (
-          <option key={opt} value={opt}>{opt}</option>
-        ))
-      }
-    </select>
-  )
-}
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ entries, onReset }) => {
   if (entries.length === 0) {

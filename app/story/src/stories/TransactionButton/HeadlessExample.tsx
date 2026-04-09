@@ -2,6 +2,7 @@ import { parseEther } from 'viem'
 import { sepolia } from 'viem/chains'
 import { useTransactionFlow, txStep } from '@txkit/react'
 
+import InfoGrid from '../shared/InfoGrid'
 import { VITALIK_ADDRESS } from '../../config'
 
 
@@ -26,20 +27,20 @@ const HeadlessFlowExample = () => {
 
   return (
     <div>
-      <div className="story-info-grid">
-        <span className="story-info-key">Flow Status</span>
-        <span className="story-info-value">{flow.status}</span>
-        <span className="story-info-key">Step Status</span>
-        <span className="story-info-value">{currentStep?.status ?? '-'}</span>
-        <span className="story-info-key">Hash</span>
-        <span className="story-info-value" style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12 }}>
-          {currentStep?.hash ? `${currentStep.hash.slice(0, 10)}...${currentStep.hash.slice(-8)}` : '-'}
-        </span>
-        <span className="story-info-key">Error</span>
-        <span className="story-info-value" style={{ color: currentStep?.error ? '#ef4444' : undefined }}>
-          {currentStep?.error ? currentStep.error.message : '-'}
-        </span>
-      </div>
+      <InfoGrid entries={[
+        { label: 'Flow Status', value: flow.status },
+        { label: 'Step Status', value: currentStep?.status ?? '-' },
+        {
+          label: 'Hash',
+          value: currentStep?.hash ? `${currentStep.hash.slice(0, 10)}...${currentStep.hash.slice(-8)}` : '-',
+          mono: true,
+        },
+        {
+          label: 'Error',
+          value: currentStep?.error ? currentStep.error.message : '-',
+          color: currentStep?.error ? '#ef4444' : undefined,
+        },
+      ]} />
       <div className="headless-tx-actions" style={{ marginTop: 8 }}>
         {
           flow.status === 'idle' && (

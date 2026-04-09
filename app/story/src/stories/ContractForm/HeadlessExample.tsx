@@ -1,6 +1,7 @@
 import { erc20Abi } from 'viem'
 import { useContractForm } from '@txkit/react'
 
+import InfoGrid from '../shared/InfoGrid'
 import { USDC_ADDRESS } from '../../config'
 
 
@@ -24,16 +25,12 @@ const HeadlessFormExample = () => {
 
   return (
     <div>
-      <div className="story-info-grid">
-        <span className="story-info-key">Fields</span>
-        <span className="story-info-value">{fields.length}</span>
-        <span className="story-info-key">Valid</span>
-        <span className="story-info-value">{isValid ? 'Yes' : 'No'}</span>
-        <span className="story-info-key">Payable</span>
-        <span className="story-info-value">{isPayable ? 'Yes' : 'No'}</span>
-        <span className="story-info-key">Warnings</span>
-        <span className="story-info-value">{warnings.length}</span>
-      </div>
+      <InfoGrid entries={[
+        { label: 'Fields', value: fields.length },
+        { label: 'Valid', value: isValid ? 'Yes' : 'No' },
+        { label: 'Payable', value: isPayable ? 'Yes' : 'No' },
+        { label: 'Warnings', value: warnings.length },
+      ]} />
       <div style={{ marginTop: 12 }}>
         {fields.map((field) => (
           <div key={field.name} style={{ marginBottom: 8 }}>

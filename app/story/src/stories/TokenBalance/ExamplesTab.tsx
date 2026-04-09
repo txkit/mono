@@ -1,8 +1,10 @@
 import { TxKitProvider, TokenBalance } from '@txkit/react'
 
 import StorySection from '../../StorySection'
+import WalletGate from '../shared/WalletGate'
 import { USDC_ADDRESS, VITALIK_ADDRESS } from '../../config'
-import { WalletGate, BlockWatcherDemo, HeadlessBalanceExample } from './helpers'
+import BlockWatcherDemo from './BlockWatcherDemo'
+import HeadlessBalanceExample from './HeadlessBalanceExample'
 
 
 const ExamplesTab = ({ config }: { config: TxKit.Config }) => (

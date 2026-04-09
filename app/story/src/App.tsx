@@ -1,71 +1,18 @@
-import React, { Component, useState, useEffect, useCallback, useSyncExternalStore } from 'react'
-import type { ReactNode, ErrorInfo } from 'react'
+import { useState, useEffect, useCallback, useSyncExternalStore } from 'react'
 
 import { cx } from '@txkit/core'
 
 import PropsTable from './PropsTable'
 import SearchModal from './SearchModal'
+import MemoizedStory from './MemoizedStory'
 import PlaygroundToolbar from './PlaygroundToolbar'
-import ContractFormStory from './stories/ContractForm/ContractForm'
-import TokenBalanceStory from './stories/TokenBalance/TokenBalance'
-import ConnectWalletStory from './stories/ConnectWallet/ConnectWallet'
-import TxKitProviderStory from './stories/TxKitProvider/TxKitProvider'
-import TransactionButtonStory from './stories/TransactionButton/TransactionButton'
+import StoryErrorBoundary from './StoryErrorBoundary'
 import { PlaygroundProvider, usePlayground } from './PlaygroundContext'
 import { searchItems, componentProps, bundleSizes, componentDescriptions } from './storyData'
+import type { StoryName } from './MemoizedStory'
 
 
-
-type StoryErrorBoundaryState = { hasError: boolean; error: Error | null }
-
-class StoryErrorBoundary extends Component<{ children: ReactNode; storyKey: string }, StoryErrorBoundaryState> {
-  state: StoryErrorBoundaryState = { hasError: false, error: null }
-
-  static getDerivedStateFromError(error: Error): StoryErrorBoundaryState {
-    return { hasError: true, error }
-  }
-
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[Playground] Story error:', error, info.componentStack)
-  }
-
-  componentDidUpdate(prevProps: { storyKey: string }) {
-    if (prevProps.storyKey !== this.props.storyKey) {
-      this.setState({ hasError: false, error: null })
-    }
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="story-card" style={{ padding: 24, textAlign: 'center' }}>
-          <p style={{ color: '#ef4444', marginBottom: 12 }}>
-            <strong>Story Error:</strong> {this.state.error?.message}
-          </p>
-          <button
-            type="button"
-            className="story-code-toggle"
-            onClick={() => this.setState({ hasError: false, error: null })}
-          >
-            Try Again
-          </button>
-        </div>
-      )
-    }
-    return this.props.children
-  }
-}
-
-
-const stories = {
-  ConnectWallet: ConnectWalletStory,
-  TokenBalance: TokenBalanceStory,
-  TransactionButton: TransactionButtonStory,
-  ContractForm: ContractFormStory,
-  TxKitProvider: TxKitProviderStory,
-} as const
-
-type StoryName = keyof typeof stories
+const storyNames: readonly StoryName[] = [ 'ConnectWallet', 'TokenBalance', 'TransactionButton', 'ContractForm', 'TxKitProvider' ]
 
 const storyCount: Record<StoryName, number> = {
   ConnectWallet: 9,
@@ -77,10 +24,8 @@ const storyCount: Record<StoryName, number> = {
 
 const slugify = (name: string) => name.toLowerCase().replace(/\s+/g, '-')
 
-const unslugify = (slug: string): StoryName | null => {
-  const names = Object.keys(stories) as StoryName[]
-  return names.find((name) => slugify(name) === slug) ?? null
-}
+const unslugify = (slug: string): StoryName | null =>
+  storyNames.find((name) => slugify(name) === slug) ?? null
 
 const getInitialStory = (): StoryName => {
   const hash = window.location.hash.slice(1)
@@ -92,17 +37,6 @@ const getInitialStory = (): StoryName => {
   }
   return 'ConnectWallet'
 }
-
-/** Memoized story renderer - prevents wagmi useSyncExternalStore crash
- *  when playground theme/colorScheme changes trigger parent re-render.
- *  Variant is passed as prop so stories don't subscribe to PlaygroundContext
- *  (context subscription bypasses React.memo and triggers wagmi infinite loops). */
-const MemoizedStory = React.memo(({ name, variant }: { name: StoryName; variant: TxKit.Variant }) => {
-  const Story = stories[name]
-  return <Story variant={variant} />
-})
-MemoizedStory.displayName = 'MemoizedStory'
-
 
 const subscribeSystemTheme = (callback: () => void) => {
   const mql = window.matchMedia('(prefers-color-scheme: dark)')
@@ -124,7 +58,7 @@ const AppContent = () => {
   }, [])
 
   const handleSearchSelect = useCallback((storyName: string) => {
-    const found = Object.keys(stories).find((k) => k === storyName) as StoryName | undefined
+    const found = storyNames.find((k) => k === storyName) as StoryName | undefined
     if (found) {
       navigate(found)
     }
@@ -143,9 +77,9 @@ const AppContent = () => {
   }, [])
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault()
         setSearchOpen(true)
       }
     }
@@ -170,7 +104,7 @@ const AppContent = () => {
           Search <kbd>⌘K</kbd>
         </button>
         <nav>
-          {(Object.keys(stories) as StoryName[]).map((name) => (
+          {storyNames.map((name) => (
             <button
               key={name}
               type="button"
@@ -249,13 +183,11 @@ const AppContent = () => {
   )
 }
 
-const App = () => {
-  return (
-    <PlaygroundProvider>
-      <AppContent />
-    </PlaygroundProvider>
-  )
-}
+const App = () => (
+  <PlaygroundProvider>
+    <AppContent />
+  </PlaygroundProvider>
+)
 
 
 export default App

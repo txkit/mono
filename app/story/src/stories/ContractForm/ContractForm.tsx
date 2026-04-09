@@ -1,27 +1,17 @@
-import { useState } from 'react'
-
-import { defaultConfig, useStoryConfig } from '../../config'
+import StoryTabs from '../shared/StoryTabs'
 import CfLiveTab from './LiveTab'
 import CfExamplesTab from './ExamplesTab'
+import { defaultConfig, useStoryConfig } from '../../config'
 
 
 const ContractFormStory = ({ variant }: { variant: TxKit.Variant }) => {
   const config = useStoryConfig(defaultConfig, 'dark', variant)
-  const [ tab, setTab ] = useState<'live' | 'examples'>('live')
 
   return (
-    <div>
-      <div className="story-tabs">
-        <button type="button" className={`story-tab ${tab === 'live' ? 'active' : ''}`} onClick={() => setTab('live')}>
-          Live
-        </button>
-        <button type="button" className={`story-tab ${tab === 'examples' ? 'active' : ''}`} onClick={() => setTab('examples')}>
-          Examples
-        </button>
-      </div>
-      {tab === 'live' && <CfLiveTab config={config} />}
-      {tab === 'examples' && <CfExamplesTab config={config} />}
-    </div>
+    <StoryTabs tabs={[
+      { id: 'live', label: 'Live', content: <CfLiveTab config={config} /> },
+      { id: 'examples', label: 'Examples', content: <CfExamplesTab config={config} /> },
+    ]} />
   )
 }
 
