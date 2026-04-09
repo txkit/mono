@@ -1,6 +1,6 @@
 import StoryTabs from '../shared/StoryTabs'
-import CfLiveTab from './LiveTab'
-import CfExamplesTab from './ExamplesTab'
+import LiveTab from './LiveTab'
+import ExamplesTab from './ExamplesTab'
 import { defaultConfig, useStoryConfig } from '../../config'
 
 
@@ -9,8 +9,8 @@ const ContractFormStory = ({ variant }: { variant: TxKit.Variant }) => {
 
   return (
     <StoryTabs tabs={[
-      { id: 'live', label: 'Live', content: <CfLiveTab config={config} /> },
-      { id: 'examples', label: 'Examples', content: <CfExamplesTab config={config} /> },
+      { id: 'live', label: 'Live', content: <LiveTab config={config} /> },
+      { id: 'examples', label: 'Examples', content: <ExamplesTab config={config} /> },
     ]} />
   )
 }

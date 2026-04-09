@@ -23,8 +23,8 @@ export const pollUntil = async <T>(
 
     const result = await fn()
 
-    if (result) {
-      return result as NonNullable<T>
+    if (result != null) {
+      return result
     }
 
     if (timeout > 0 && Date.now() - start >= timeout) {

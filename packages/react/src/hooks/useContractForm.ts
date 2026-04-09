@@ -52,7 +52,7 @@ const useContractForm = (options: UseContractFormOptions): UseContractFormReturn
   const { abiFunction, formError: abiError } = useMemo(() => {
     const result = getAbiFunction(abi, functionName)
     return {
-      abiFunction: result.fn as AbiFunction | undefined,
+      abiFunction: result.fn,
       formError: result.error,
     }
   }, [ abi, functionName ])

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import type { ReactNode } from 'react'
+import { cx } from '@txkit/core'
 
 
 type TabConfig = {
@@ -25,7 +26,7 @@ const StoryTabs: React.FC<StoryTabsProps> = ({ tabs, defaultTab }) => {
             <button
               key={tab.id}
               type="button"
-              className={`story-tab ${tab.id === active ? 'active' : ''}`}
+              className={cx('story-tab', { active: tab.id === active })}
               onClick={() => setActive(tab.id)}
             >
               {tab.label}

@@ -7,9 +7,10 @@ export const classifyError = (error: unknown): TransactionErrorCode => {
     return 'UNKNOWN'
   }
 
-  const err = error as { name?: string; message?: string; shortMessage?: string; cause?: unknown }
-  const name = err.name ?? ''
-  const message = (err.shortMessage ?? err.message ?? '').toLowerCase()
+  const name = 'name' in error && typeof error.name === 'string' ? error.name : ''
+  const shortMessage = 'shortMessage' in error && typeof error.shortMessage === 'string' ? error.shortMessage : ''
+  const rawMessage = 'message' in error && typeof error.message === 'string' ? error.message : ''
+  const message = (shortMessage || rawMessage).toLowerCase()
 
   if (name === 'UserRejectedRequestError' || message.includes('user rejected') || message.includes('user denied')) {
     return 'USER_REJECTED'
@@ -34,8 +35,8 @@ export const classifyError = (error: unknown): TransactionErrorCode => {
   }
 
   // Traverse cause chain for wrapped viem errors
-  if (err.cause && typeof err.cause === 'object') {
-    return classifyError(err.cause)
+  if ('cause' in error && error.cause && typeof error.cause === 'object') {
+    return classifyError(error.cause)
   }
 
   return 'UNKNOWN'

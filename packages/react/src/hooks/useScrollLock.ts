@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 
 const useScrollLock = (isActive: boolean) => {
   useEffect(() => {
-    if (!isActive) {
+    if (!isActive || typeof window === 'undefined') {
       return
     }
 

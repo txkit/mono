@@ -1,4 +1,3 @@
-import type { Abi } from 'viem'
 import { encodeFunctionData, decodeFunctionData } from 'viem'
 
 import type { DecodedCalldata } from '@txkit/core'
@@ -19,7 +18,7 @@ export const decodeCalldata = (tx: TxParams): DecodedCalldata | undefined => {
       args: tx.args ?? [],
     })
     const decoded = decodeFunctionData({ abi: tx.abi, data })
-    const abiItem = (tx.abi as Abi).find(
+    const abiItem = tx.abi.find(
       (item) => 'name' in item && item.name === decoded.functionName,
     )
     const inputs = abiItem && 'inputs' in abiItem ? abiItem.inputs ?? [] : []

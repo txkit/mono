@@ -11,7 +11,7 @@ import SAMPLE_ABI from './sampleAbi'
 import HeadlessFormExample from './HeadlessExample'
 
 
-const CfExamplesTab = ({ config }: { config: TxKit.Config }) => (
+const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
   <TxKitProvider config={config}>
     <p className="story-description">Code examples and advanced usage patterns</p>
     <StorySection
@@ -144,4 +144,4 @@ const CfExamplesTab = ({ config }: { config: TxKit.Config }) => (
 )
 
 
-export default CfExamplesTab
+export default ExamplesTab

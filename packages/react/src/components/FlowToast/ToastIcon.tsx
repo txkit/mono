@@ -1,7 +1,7 @@
 import React from 'react'
 
 
-const ToastIcon: React.FC<{ type: string }> = ({ type }) => {
+const ToastIcon: React.FC<{ type: 'success' | 'error' | 'info' }> = ({ type }) => {
   if (type === 'success') {
     return (
       <svg className="txkit-ft-icon" viewBox="0 0 24 24" aria-hidden="true">
