@@ -1,7 +1,8 @@
 import React from 'react'
 
 import TransactionButton from '../TransactionButton/TransactionButton'
-import { WarningBanner, CalldataPreview } from './ContractFormReview'
+import WarningBanner from './WarningBanner'
+import CalldataPreview from './CalldataPreview'
 import { renderFieldInput, getFieldHint, PayableValueField } from './ContractFormFields'
 import type { FieldProps } from './ContractFormFields'
 

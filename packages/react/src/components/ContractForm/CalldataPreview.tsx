@@ -1,19 +1,8 @@
+'use client'
 import React, { useCallback } from 'react'
 
 import type { ContractFormLabels } from './labels'
-import type { SecurityWarning } from '../../types/contract'
 
-
-const WarningBanner: React.FC<{ warning: SecurityWarning }> = ({ warning }) => (
-  <div
-    className="txkit-cf-warning"
-    data-level={warning.level}
-    role={warning.level === 'danger' ? 'alert' : 'status'}
-    aria-live={warning.level === 'danger' ? 'assertive' : 'polite'}
-  >
-    {warning.message}
-  </div>
-)
 
 const CalldataPreview: React.FC<{ preview: string; labels: ContractFormLabels }> = ({ preview, labels }) => {
   const handleCopy = useCallback(() => {
@@ -41,4 +30,4 @@ const CalldataPreview: React.FC<{ preview: string; labels: ContractFormLabels }>
 }
 
 
-export { WarningBanner, CalldataPreview }
+export default CalldataPreview

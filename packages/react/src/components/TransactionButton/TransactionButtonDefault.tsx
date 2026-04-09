@@ -2,6 +2,9 @@ import React from 'react'
 import type { StepStatus, TransactionError, RiskResult, DecodedCalldata } from '@txkit/core'
 import { formatDecodedCalldata } from '@txkit/core'
 
+import CheckIcon from './CheckIcon'
+import DotLoader from './DotLoader'
+import ExternalLinkIcon from './ExternalLinkIcon'
 import type { TransactionButtonLabels } from './labels'
 
 
@@ -24,26 +27,6 @@ export type TransactionButtonDefaultProps = {
 }
 
 const explorerStates: readonly StepStatus[] = [ 'tx-pending', 'completed', 'error' ]
-
-const DotLoader: React.FC = () => (
-  <span className="txkit-txb-dots" aria-hidden="true">
-    <span className="txkit-txb-dot" />
-    <span className="txkit-txb-dot" />
-    <span className="txkit-txb-dot" />
-  </span>
-)
-
-const CheckIcon: React.FC = () => (
-  <svg className="txkit-txb-check" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M5 13l4 4L19 7" />
-  </svg>
-)
-
-const ExternalLinkIcon: React.FC = () => (
-  <svg className="txkit-txb-explorer-icon" viewBox="0 0 16 16" aria-hidden="true">
-    <path d="M12 8.5V12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h3.5M9 2h5v5M14 2L6.5 9.5" />
-  </svg>
-)
 
 const TransactionButtonDefault: React.FC<TransactionButtonDefaultProps> = ({
   state,

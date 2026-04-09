@@ -1,30 +1,12 @@
 import React from 'react'
 
-import hashColor from '../../helpers/hashColor'
-import SkeletonPulse from './SkeletonPulse'
+import DotLoader from './DotLoader'
 import WalletModal from './WalletModal'
+import SkeletonPulse from './SkeletonPulse'
+import AvatarFallback from './AvatarFallback'
 import AccountDropdown from './AccountDropdown'
 import type { ConnectWalletDefaultProps } from '../../types/connect'
 
-
-const AvatarFallback: React.FC<{ address: string }> = ({ address }) => {
-  const bgColor = hashColor(address)
-  const letter = address.slice(2, 4).toUpperCase()
-
-  return (
-    <span className="txkit-cw-avatar-fallback" style={{ backgroundColor: bgColor }}>
-      {letter}
-    </span>
-  )
-}
-
-const DotLoader: React.FC = () => (
-  <span className="txkit-cw-dots">
-    <span className="txkit-cw-dot" />
-    <span className="txkit-cw-dot" />
-    <span className="txkit-cw-dot" />
-  </span>
-)
 
 const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = ({
   buttonRef,
