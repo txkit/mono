@@ -1,6 +1,7 @@
 import { TxKitProvider, TokenBalance } from '@txkit/react'
 
 import StorySection from '../../StorySection'
+import dedent from '../shared/dedent'
 import WalletGate from '../shared/WalletGate'
 import { USDC_ADDRESS, VITALIK_ADDRESS } from '../../config'
 import BlockWatcherDemo from './BlockWatcherDemo'
@@ -96,8 +97,10 @@ const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
       title="Headless Hook (useTokenBalance)"
       description="Headless - your UI, txKit logic. Full data access via useTokenBalance hook"
       headless
-      code={`const data = useTokenBalance({ token: USDC })
-// data.formatted, data.symbol, data.fiatFormatted, ...`}
+      code={dedent`
+        const data = useTokenBalance({ token: USDC })
+        // data.formatted, data.symbol, data.fiatFormatted, ...
+      `}
     >
       <HeadlessBalanceExample />
     </StorySection>

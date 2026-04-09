@@ -2,6 +2,7 @@ import { sepolia } from 'viem/chains'
 import { TxKitProvider, ConnectWallet } from '@txkit/react'
 
 import StorySection from '../../StorySection'
+import dedent from '../shared/dedent'
 import DotLoadingDemo from './DotLoadingDemo'
 import ButtonVariantsDemo from './ButtonVariantsDemo'
 import AvatarFallbackDemo from './AvatarFallbackDemo'
@@ -33,10 +34,12 @@ const ExamplesTab = ({ config, darkConfig, lightConfig }: {
     <StorySection
       title="Button Variants"
       description="Visual styles: default (solid), outline, ghost, soft"
-      code={`<ConnectWallet variant="default" />
-<ConnectWallet variant="outline" />
-<ConnectWallet variant="ghost" />
-<ConnectWallet variant="soft" />`}
+      code={dedent`
+        <ConnectWallet variant="default" />
+        <ConnectWallet variant="outline" />
+        <ConnectWallet variant="ghost" />
+        <ConnectWallet variant="soft" />
+      `}
     >
       <ButtonVariantsDemo />
     </StorySection>
@@ -88,11 +91,13 @@ const ExamplesTab = ({ config, darkConfig, lightConfig }: {
     <StorySection
       title="With Callbacks"
       description="Open browser console to see events"
-      code={`<ConnectWallet
-  onConnect={(data) => console.log('Connected:', data)}
-  onDisconnect={() => console.log('Disconnected')}
-  onError={(err) => console.log('Error:', err.message)}
-/>`}
+      code={dedent`
+        <ConnectWallet
+          onConnect={(data) => console.log('Connected:', data)}
+          onDisconnect={() => console.log('Disconnected')}
+          onError={(err) => console.log('Error:', err.message)}
+        />
+      `}
     >
       <ConnectWallet
         onConnect={(data) => console.log('[txKit] Connected:', data)}
@@ -104,9 +109,11 @@ const ExamplesTab = ({ config, darkConfig, lightConfig }: {
     <StorySection
       title="Custom Address Format"
       description="Uses formatAddress prop - visible after connecting a wallet"
-      code={`<ConnectWallet
-  formatAddress={(addr) => \`\${addr.slice(0, 6)}..\${addr.slice(-2)}\`}
-/>`}
+      code={dedent`
+        <ConnectWallet
+          formatAddress={(addr) => \`\${addr.slice(0, 6)}..\${addr.slice(-2)}\`}
+        />
+      `}
     >
       <ConnectWallet
         formatAddress={(address) => `${address.slice(0, 6)}..${address.slice(-2)}`}
@@ -116,20 +123,22 @@ const ExamplesTab = ({ config, darkConfig, lightConfig }: {
     <StorySection
       title="Custom Labels (Spanish)"
       description="Full i18n support via labels prop"
-      code={`<ConnectWallet
-  labels={{
-    connect: 'Conectar billetera',
-    connecting: 'Conectando...',
-    wrongChain: 'Red incorrecta',
-    disconnect: 'Desconectar',
-    copyAddress: 'Copiar direccion',
-    copied: 'Copiado!',
-    selectWallet: 'Seleccionar billetera',
-    error: 'Error de conexion',
-    retry: 'Reintentar',
-    whatIsWallet: 'Que es una billetera?',
-  }}
-/>`}
+      code={dedent`
+        <ConnectWallet
+          labels={{
+            connect: 'Conectar billetera',
+            connecting: 'Conectando...',
+            wrongChain: 'Red incorrecta',
+            disconnect: 'Desconectar',
+            copyAddress: 'Copiar direccion',
+            copied: 'Copiado!',
+            selectWallet: 'Seleccionar billetera',
+            error: 'Error de conexion',
+            retry: 'Reintentar',
+            whatIsWallet: 'Que es una billetera?',
+          }}
+        />
+      `}
     >
       <ConnectWallet
         labels={{

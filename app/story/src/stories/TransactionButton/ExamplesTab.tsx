@@ -12,6 +12,7 @@ import {
 } from '@txkit/react'
 
 import StorySection from '../../StorySection'
+import dedent from '../shared/dedent'
 import HeadlessFlowExample from './HeadlessExample'
 import { USDC_ADDRESS, VITALIK_ADDRESS } from '../../config'
 
@@ -22,11 +23,13 @@ const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
     <StorySection
       title="Simple ETH Transfer (Sepolia)"
       description="Send 0.001 ETH using the new steps API"
-      code={`<TransactionButton
-  steps={[ txStep('send', 'Send ETH', { to: '0xd8dA6BF...', value: parseEther('0.001') }) ]}
-  chainId={sepolia.id}
-  label="Send 0.001 ETH"
-/>`}
+      code={dedent`
+        <TransactionButton
+          steps={[ txStep('send', 'Send ETH', { to: '0xd8dA6BF...', value: parseEther('0.001') }) ]}
+          chainId={sepolia.id}
+          label="Send 0.001 ETH"
+        />
+      `}
     >
       <TransactionButton
         steps={[
@@ -43,16 +46,18 @@ const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
     <StorySection
       title="Multi-Step: Approve + Execute"
       description="Using approveAndExecute helper (auto-skips approve if allowance sufficient)"
-      code={`<TransactionButton
-  steps={approveAndExecute({
-    token: USDC_ADDRESS,
-    spender: VITALIK_ADDRESS,
-    amount: 1000000n,
-    tx: { address: USDC_ADDRESS, abi: erc20Abi, functionName: 'transfer', args: [...] },
-    label: 'Transfer USDC',
-  })}
-  label="Approve + Transfer"
-/>`}
+      code={dedent`
+        <TransactionButton
+          steps={approveAndExecute({
+            token: USDC_ADDRESS,
+            spender: VITALIK_ADDRESS,
+            amount: 1000000n,
+            tx: { address: USDC_ADDRESS, abi: erc20Abi, functionName: 'transfer', args: [...] },
+            label: 'Transfer USDC',
+          })}
+          label="Approve + Transfer"
+        />
+      `}
     >
       <TransactionButton
         steps={approveAndExecute({
@@ -74,10 +79,12 @@ const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
     <StorySection
       title="Compound Components"
       description="FlowSteps + FlowProgress placed anywhere - auto-connect via TxKitProvider"
-      code={`<TransactionButton steps={[...]} label="Multi-step" />
-{/* These can be anywhere in the tree */}
-<FlowSteps />
-<FlowProgress />`}
+      code={dedent`
+        <TransactionButton steps={[...]} label="Multi-step" />
+        {/* These can be anywhere in the tree */}
+        <FlowSteps />
+        <FlowProgress />
+      `}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <FlowSteps />
@@ -103,11 +110,13 @@ const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
     <StorySection
       title="With Safety Config (Delay Timer)"
       description="5-second confirmation delay"
-      code={`<TransactionButton
-  steps={[ txStep('send', 'Send', { to: '0x...', value: parseEther('0.001') }) ]}
-  safety={{ delayMs: 5000 }}
-  label="Send with Delay"
-/>`}
+      code={dedent`
+        <TransactionButton
+          steps={[ txStep('send', 'Send', { to: '0x...', value: parseEther('0.001') }) ]}
+          safety={{ delayMs: 5000 }}
+          label="Send with Delay"
+        />
+      `}
     >
       <TransactionButton
         steps={[
@@ -187,8 +196,10 @@ const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
     <StorySection
       title="Balance Refresh After Transaction"
       description="TokenBalance auto-updates after TransactionButton completes via targeted invalidation"
-      code={`<TokenBalance /> {/* auto-refreshes after tx */}
-<TransactionButton steps={[...]} />`}
+      code={dedent`
+        <TokenBalance /> {/* auto-refreshes after tx */}
+        <TransactionButton steps={[...]} />
+      `}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <TokenBalance />

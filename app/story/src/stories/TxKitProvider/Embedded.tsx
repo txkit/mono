@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { TxKitProvider, ConnectWallet } from '@txkit/react'
 
 import StorySection from '../../StorySection'
+import dedent from '../shared/dedent'
 import EmbeddedInfo from './EmbeddedInfo'
 import useEmbeddedProviders from './useEmbeddedProviders'
 import { usePlayground } from '../../PlaygroundContext'
@@ -20,13 +21,15 @@ const TxKitProviderEmbeddedStory: React.FC = () => {
           <StorySection
             title="Basic Embedded"
             description="txKit wraps an existing WagmiProvider + QueryClientProvider"
-            code={`<WagmiProvider config={wagmiConfig}>
-  <QueryClientProvider client={queryClient}>
-    <TxKitProvider embedded>
-      <ConnectWallet />
-    </TxKitProvider>
-  </QueryClientProvider>
-</WagmiProvider>`}
+            code={dedent`
+              <WagmiProvider config={wagmiConfig}>
+                <QueryClientProvider client={queryClient}>
+                  <TxKitProvider embedded>
+                    <ConnectWallet />
+                  </TxKitProvider>
+                </QueryClientProvider>
+              </WagmiProvider>
+            `}
           >
             <TxKitProvider embedded config={{ theme }}>
               <ConnectWallet />
@@ -37,9 +40,11 @@ const TxKitProviderEmbeddedStory: React.FC = () => {
           <StorySection
             title="Embedded with Dark Theme"
             description="Embedded mode with theme override via config"
-            code={`<TxKitProvider embedded config={{ theme: 'dark' }}>
-  <ConnectWallet />
-</TxKitProvider>`}
+            code={dedent`
+              <TxKitProvider embedded config={{ theme: 'dark' }}>
+                <ConnectWallet />
+              </TxKitProvider>
+            `}
           >
             <TxKitProvider embedded config={{ theme: 'dark' }}>
               <ConnectWallet />
@@ -50,9 +55,11 @@ const TxKitProviderEmbeddedStory: React.FC = () => {
           <StorySection
             title="Embedded with Light Theme"
             description="Light theme in embedded mode"
-            code={`<TxKitProvider embedded config={{ theme: 'light' }}>
-  <ConnectWallet />
-</TxKitProvider>`}
+            code={dedent`
+              <TxKitProvider embedded config={{ theme: 'light' }}>
+                <ConnectWallet />
+              </TxKitProvider>
+            `}
           >
             <TxKitProvider embedded config={{ theme: 'light' }}>
               <ConnectWallet />

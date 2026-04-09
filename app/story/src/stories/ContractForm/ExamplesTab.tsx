@@ -5,6 +5,7 @@ import {
 } from '@txkit/react'
 
 import StorySection from '../../StorySection'
+import dedent from '../shared/dedent'
 import { USDC_ADDRESS } from '../../config'
 import SAMPLE_ABI from './sampleAbi'
 import HeadlessFormExample from './HeadlessExample'
@@ -17,7 +18,14 @@ const CfExamplesTab = ({ config }: { config: TxKit.Config }) => (
       id="transfer"
       title="ERC-20 Transfer"
       description="Simple token transfer form with address and amount fields"
-      code={`<ContractForm\n  address={USDC_ADDRESS}\n  abi={erc20Abi}\n  functionName="transfer"\n  onSuccess={(receipt) => console.log('Confirmed:', receipt.transactionHash)}\n/>`}
+      code={dedent`
+        <ContractForm
+          address={USDC_ADDRESS}
+          abi={erc20Abi}
+          functionName="transfer"
+          onSuccess={(receipt) => console.log('Confirmed:', receipt.transactionHash)}
+        />
+      `}
     >
       <ContractForm
         address={USDC_ADDRESS}
@@ -31,7 +39,14 @@ const CfExamplesTab = ({ config }: { config: TxKit.Config }) => (
       id="security-warnings"
       title="Security Warnings"
       description="Dangerous functions show warnings. Try approve with MAX_UINT256 for unlimited approval warning"
-      code={`<ContractForm\n  address={USDC_ADDRESS}\n  abi={erc20Abi}\n  functionName="approve"\n  labels={{ securityWarning: 'Security Warning' }}\n/>`}
+      code={dedent`
+        <ContractForm
+          address={USDC_ADDRESS}
+          abi={erc20Abi}
+          functionName="approve"
+          labels={{ securityWarning: 'Security Warning' }}
+        />
+      `}
     >
       <ContractForm
         address={USDC_ADDRESS}
@@ -44,7 +59,13 @@ const CfExamplesTab = ({ config }: { config: TxKit.Config }) => (
       id="mixed-types"
       title="Mixed Types"
       description="Form with string, uint8, bool, and address fields"
-      code={`<ContractForm\n  address="0x..."\n  abi={contractAbi}\n  functionName="registerUser"\n/>`}
+      code={dedent`
+        <ContractForm
+          address="0x..."
+          abi={contractAbi}
+          functionName="registerUser"
+        />
+      `}
     >
       <ContractForm
         address={USDC_ADDRESS}
@@ -57,7 +78,13 @@ const CfExamplesTab = ({ config }: { config: TxKit.Config }) => (
       id="custom-render"
       title="Custom Render (Tier 2)"
       description="Custom form UI via children render function"
-      code={`<ContractForm address={USDC_ADDRESS} abi={erc20Abi} functionName="transfer">\n  {({ fields, values, errors, isValid, setFieldValue }) => (\n    <div>Custom UI here</div>\n  )}\n</ContractForm>`}
+      code={dedent`
+        <ContractForm address={USDC_ADDRESS} abi={erc20Abi} functionName="transfer">
+          {({ fields, values, errors, isValid, setFieldValue }) => (
+            <div>Custom UI here</div>
+          )}
+        </ContractForm>
+      `}
     >
       <ContractForm address={USDC_ADDRESS} abi={erc20Abi} functionName="transfer">
         {({ fields, values, errors, touched, isValid, setFieldValue, setFieldTouched }) => (
@@ -99,7 +126,17 @@ const CfExamplesTab = ({ config }: { config: TxKit.Config }) => (
       title="Headless Hook (Tier 3)"
       description="Headless - your UI, txKit logic. Full control with useContractForm hook"
       headless
-      code={`const {\n  fields, values, errors, warnings,\n  isValid, calldataPreview,\n  setFieldValue, setFieldTouched,\n} = useContractForm({\n  address: USDC_ADDRESS,\n  abi: erc20Abi,\n  functionName: 'transfer',\n})`}
+      code={dedent`
+        const {
+          fields, values, errors, warnings,
+          isValid, calldataPreview,
+          setFieldValue, setFieldTouched,
+        } = useContractForm({
+          address: USDC_ADDRESS,
+          abi: erc20Abi,
+          functionName: 'transfer',
+        })
+      `}
     >
       <HeadlessFormExample />
     </StorySection>
