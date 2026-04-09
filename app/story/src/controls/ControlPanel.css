@@ -16,7 +16,7 @@
 .control-panel-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   padding: 8px 12px;
   background: #111827;
 }
@@ -25,29 +25,10 @@
   background: #f1f5f9;
 }
 
-.control-panel-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: none;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.control-panel-chevron {
-  font-size: 8px;
-  transition: transform 150ms ease;
-  display: inline-block;
-}
-
-.control-panel-chevron.collapsed {
-  transform: rotate(-90deg);
-}
-
 .control-panel-title {
+  font-size: 12px;
   font-weight: 500;
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -57,7 +38,7 @@
   border: 1px solid #334155;
   border-radius: 4px;
   background: transparent;
-  color: #94a3b8;
+  color: #64748b;
   font-size: 11px;
   cursor: pointer;
   transition: all 150ms ease;

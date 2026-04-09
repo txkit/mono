@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect, useCallback } from 'react'
+import React, { Component, useState, useEffect, useCallback, useSyncExternalStore } from 'react'
 import type { ReactNode, ErrorInfo } from 'react'
 
 import { cx } from '@txkit/core'
@@ -6,16 +6,14 @@ import { cx } from '@txkit/core'
 import PropsTable from './PropsTable'
 import SearchModal from './SearchModal'
 import PlaygroundToolbar from './PlaygroundToolbar'
-import ContractFormStory from './stories/ContractForm'
-import TokenBalanceStory from './stories/TokenBalance'
-import TxKitProviderStory from './stories/TxKitProvider'
-import ConnectWalletStory from './stories/ConnectWallet'
-import ResponsiveToggle from './ResponsiveToggle'
-import TransactionButtonStory from './stories/TransactionButton'
+import ContractFormStory from './stories/ContractForm/ContractForm'
+import TokenBalanceStory from './stories/TokenBalance/TokenBalance'
+import ConnectWalletStory from './stories/ConnectWallet/ConnectWallet'
+import TxKitProviderStory from './stories/TxKitProvider/TxKitProvider'
+import TransactionButtonStory from './stories/TransactionButton/TransactionButton'
 import { PlaygroundProvider, usePlayground } from './PlaygroundContext'
 import { searchItems, componentProps, bundleSizes, componentDescriptions } from './storyData'
 
-import type { Viewport } from './ResponsiveToggle'
 
 
 type StoryErrorBoundaryState = { hasError: boolean; error: Error | null }
@@ -77,12 +75,6 @@ const storyCount: Record<StoryName, number> = {
   TxKitProvider: 6,
 }
 
-const viewportWidths: Record<Viewport, string> = {
-  desktop: '100%',
-  tablet: '768px',
-  mobile: '375px',
-}
-
 const slugify = (name: string) => name.toLowerCase().replace(/\s+/g, '-')
 
 const unslugify = (slug: string): StoryName | null => {
@@ -112,9 +104,17 @@ const MemoizedStory = React.memo(({ name, variant }: { name: StoryName; variant:
 MemoizedStory.displayName = 'MemoizedStory'
 
 
+const subscribeSystemTheme = (callback: () => void) => {
+  const mql = window.matchMedia('(prefers-color-scheme: dark)')
+  mql.addEventListener('change', callback)
+  return () => mql.removeEventListener('change', callback)
+}
+
+const getSystemTheme = () =>
+  window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+
 const AppContent = () => {
   const [ active, setActive ] = useState<StoryName>(getInitialStory)
-  const [ viewport, setViewport ] = useState<Viewport>('desktop')
   const [ searchOpen, setSearchOpen ] = useState(false)
   const { theme, variant, colorScheme } = usePlayground()
 
@@ -153,7 +153,9 @@ const AppContent = () => {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
 
-  const bgClass = theme === 'light' ? 'bg-light' : 'bg-dark'
+  const systemTheme = useSyncExternalStore(subscribeSystemTheme, getSystemTheme)
+  const resolvedTheme = theme === 'auto' ? systemTheme : theme
+  const bgClass = resolvedTheme === 'light' ? 'bg-light' : 'bg-dark'
   const propsData = componentProps[active as keyof typeof componentProps]
 
   return (
@@ -184,7 +186,6 @@ const AppContent = () => {
       <main className={cx('playground-main', bgClass)}>
         <div className="playground-toolbar-row">
           <PlaygroundToolbar />
-          <ResponsiveToggle viewport={viewport} onChange={setViewport} />
         </div>
         <div className="playground-title-row">
           <h2 className="playground-title">{active}</h2>
@@ -229,10 +230,9 @@ const AppContent = () => {
           )
         }
         <div
-          className={cx('responsive-viewport', {
+          className={cx({
             'txkit-color-violet': colorScheme === 'violet',
           })}
-          style={{ maxWidth: viewportWidths[viewport] }}
         >
           <StoryErrorBoundary storyKey={active}>
             <MemoizedStory name={active} variant={variant} />

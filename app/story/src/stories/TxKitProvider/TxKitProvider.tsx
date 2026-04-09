@@ -1,14 +1,12 @@
 import React from 'react'
-import { useState } from 'react'
-import { http } from 'viem'
-import { injected } from 'wagmi/connectors'
-import { mainnet, sepolia } from 'viem/chains'
-import { WagmiProvider, createConfig } from 'wagmi'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { WagmiProvider } from 'wagmi'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { TxKitProvider, ConnectWallet, useTxKit } from '@txkit/react'
 
-import StorySection from '../StorySection'
-import { defaultConfig, useStoryConfig } from '../config'
+import StorySection from '../../StorySection'
+import EmbeddedInfo from './EmbeddedInfo'
+import useEmbeddedProviders from './useEmbeddedProviders'
+import { defaultConfig, useStoryConfig } from '../../config'
 
 
 const ThemeInfo = () => {
@@ -29,44 +27,11 @@ const ThemeInfo = () => {
   )
 }
 
-const EmbeddedInfo: React.FC = () => {
-  const { theme, config } = useTxKit()
-
-  return (
-    <div className="story-info-grid" style={{ marginTop: 12 }}>
-      <span className="story-info-key">Embedded</span>
-      <span className="story-info-value">{String(config.embedded)}</span>
-      <span className="story-info-key">Theme</span>
-      <span className="story-info-value">{theme}</span>
-      <span className="story-info-key">Chains</span>
-      <span className="story-info-value">{config.chains.map((c) => c.name).join(', ')}</span>
-    </div>
-  )
-}
-
 const TxKitProviderStory = ({ variant }: { variant: TxKit.Variant }) => {
   const config = useStoryConfig(defaultConfig, 'dark', variant)
   const darkConfig = useStoryConfig(defaultConfig, 'dark', variant)
   const lightConfig = useStoryConfig(defaultConfig, 'light', variant)
-
-  const [ wagmiConfig ] = useState(() =>
-    createConfig({
-      chains: [ mainnet, sepolia ],
-      transports: {
-        [mainnet.id]: http(),
-        [sepolia.id]: http(),
-      },
-      connectors: [ injected() ],
-    }),
-  )
-
-  const [ queryClient ] = useState(
-    () => new QueryClient({
-      defaultOptions: {
-        queries: { staleTime: 60_000 },
-      },
-    }),
-  )
+  const { wagmiConfig, queryClient } = useEmbeddedProviders()
 
   return (
     <div>

@@ -362,11 +362,13 @@ body {
 }
 
 .playground-color-btn.active {
-  border-color: #e2e8f0;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 1px #6366f1;
 }
 
 .bg-light .playground-color-btn.active {
-  border-color: #0f172a;
+  border-color: #4338ca;
+  box-shadow: 0 0 0 1px #4338ca;
 }
 
 .playground-color-dot {
@@ -477,6 +479,47 @@ body {
 
 .bg-light .story-card--headless {
   border-color: #cbd5e1;
+}
+
+/* --- Story Tabs --- */
+
+.story-tabs {
+  display: flex;
+  gap: 2px;
+  background: #1e293b;
+  border-radius: 6px;
+  padding: 2px;
+  margin-bottom: 12px;
+  width: fit-content;
+}
+
+.bg-light .story-tabs {
+  background: #e2e8f0;
+}
+
+.story-tab {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.story-tab:hover {
+  color: #e2e8f0;
+}
+
+.bg-light .story-tab:hover {
+  color: #334155;
+}
+
+.story-tab.active {
+  background: #4f46e5;
+  color: #ffffff;
 }
 
 /* --- Theme info (TxKitProvider story) --- */

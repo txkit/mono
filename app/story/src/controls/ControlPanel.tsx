@@ -1,5 +1,4 @@
 import React from 'react'
-import { useState } from 'react'
 
 import { cx } from '@txkit/core'
 
@@ -73,8 +72,6 @@ const SelectInput: React.FC<{ entry: ControlEntry }> = ({ entry }) => {
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ entries, onReset }) => {
-  const [ collapsed, setCollapsed ] = useState(false)
-
   if (entries.length === 0) {
     return null
   }
@@ -82,14 +79,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ entries, onReset }) => {
   return (
     <div className="control-panel">
       <div className="control-panel-header">
-        <button
-          type="button"
-          className="control-panel-toggle"
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          <span className={cx('control-panel-chevron', { collapsed })}>&#9660;</span>
-          <span className="control-panel-title">Controls</span>
-        </button>
+        <span className="control-panel-title">Controls</span>
         <button
           type="button"
           className="control-panel-reset"
@@ -98,25 +88,21 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ entries, onReset }) => {
           Reset
         </button>
       </div>
-      {
-        !collapsed && (
-          <div className="control-panel-body">
-            {
-              entries.map((entry) => (
-                <div key={entry.key} className="control-item">
-                  <label className="control-label">{humanizeLabel(entry.key)}</label>
-                  <div className="control-value">
-                    {entry.def.type === 'boolean' && <BooleanInput entry={entry} />}
-                    {entry.def.type === 'string' && <StringInput entry={entry} />}
-                    {entry.def.type === 'number' && <NumberInput entry={entry} />}
-                    {entry.def.type === 'select' && <SelectInput entry={entry} />}
-                  </div>
-                </div>
-              ))
-            }
-          </div>
-        )
-      }
+      <div className="control-panel-body">
+        {
+          entries.map((entry) => (
+            <div key={entry.key} className="control-item">
+              <label className="control-label">{humanizeLabel(entry.key)}</label>
+              <div className="control-value">
+                {entry.def.type === 'boolean' && <BooleanInput entry={entry} />}
+                {entry.def.type === 'string' && <StringInput entry={entry} />}
+                {entry.def.type === 'number' && <NumberInput entry={entry} />}
+                {entry.def.type === 'select' && <SelectInput entry={entry} />}
+              </div>
+            </div>
+          ))
+        }
+      </div>
     </div>
   )
 }

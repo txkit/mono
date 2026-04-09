@@ -1,53 +1,17 @@
 import React from 'react'
-import { useState } from 'react'
-import { http } from 'viem'
-import { injected } from 'wagmi/connectors'
-import { mainnet, sepolia } from 'viem/chains'
-import { WagmiProvider, createConfig } from 'wagmi'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { TxKitProvider, ConnectWallet, useTxKit } from '@txkit/react'
+import { WagmiProvider } from 'wagmi'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
 
-import StorySection from '../StorySection'
-import { usePlayground } from '../PlaygroundContext'
-
-
-const EmbeddedInfo: React.FC = () => {
-  const { theme, config } = useTxKit()
-
-  return (
-    <div className="story-info-grid" style={{ marginTop: 12 }}>
-      <span className="story-info-key">Embedded</span>
-      <span className="story-info-value">{String(config.embedded)}</span>
-      <span className="story-info-key">Theme</span>
-      <span className="story-info-value">{theme}</span>
-      <span className="story-info-key">Chains</span>
-      <span className="story-info-value">{config.chains.map((c) => c.name).join(', ')}</span>
-    </div>
-  )
-}
+import StorySection from '../../StorySection'
+import EmbeddedInfo from './EmbeddedInfo'
+import useEmbeddedProviders from './useEmbeddedProviders'
+import { usePlayground } from '../../PlaygroundContext'
 
 
 const TxKitProviderEmbeddedStory: React.FC = () => {
   const { theme } = usePlayground()
-
-  const [ wagmiConfig ] = useState(() =>
-    createConfig({
-      chains: [ mainnet, sepolia ],
-      transports: {
-        [mainnet.id]: http(),
-        [sepolia.id]: http(),
-      },
-      connectors: [ injected() ],
-    }),
-  )
-
-  const [ queryClient ] = useState(
-    () => new QueryClient({
-      defaultOptions: {
-        queries: { staleTime: 60_000 },
-      },
-    }),
-  )
+  const { wagmiConfig, queryClient } = useEmbeddedProviders()
 
   return (
     <WagmiProvider config={wagmiConfig}>
