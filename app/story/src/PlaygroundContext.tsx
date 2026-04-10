@@ -3,7 +3,7 @@ import { createContext, useState, useContext, useMemo, useCallback } from 'react
 import type { ReactNode } from 'react'
 
 
-type ColorScheme = 'indigo' | 'violet'
+type ColorScheme = 'violet' | 'indigo' | 'emerald' | 'amber'
 
 type PlaygroundState = {
   theme: TxKit.Theme
@@ -50,7 +50,7 @@ export const PlaygroundProvider: React.FC<PlaygroundProviderProps> = ({ children
     (stored.variant as TxKit.Variant) || 'default'
   )
   const [ colorScheme, setColorSchemeState ] = useState<ColorScheme>(
-    (stored.colorScheme as ColorScheme) || 'indigo'
+    (stored.colorScheme as ColorScheme) || 'violet'
   )
 
   const setTheme = useCallback((value: TxKit.Theme) => {

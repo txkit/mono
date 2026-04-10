@@ -1,11 +1,17 @@
-/* Sharp variant - straight corners, defined borders, crisp look, compact spacing */
+/*
+ * Sharp variant - zero radii, no shadows, compact spacing, crisp borders.
+ * Overrides: radius, shadow, spacing, border-width, transition.
+ */
 .txkit-sharp {
   --txkit-radius-sm: 0;
   --txkit-radius-md: 0;
-  --txkit-radius-lg: 2px;
+  --txkit-radius-lg: 0;
+  --txkit-radius-xl: 2px;
+  --txkit-radius-button: 0;
 
   --txkit-shadow-sm: none;
   --txkit-shadow-md: none;
+  --txkit-shadow-lg: none;
 
   --txkit-space-sm: 0.375rem;
   --txkit-space-md: 0.625rem;

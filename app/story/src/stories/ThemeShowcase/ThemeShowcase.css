@@ -1,0 +1,338 @@
+/* --- Theme Showcase story --- */
+
+.tshow {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 1280px;
+}
+
+.tshow-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tshow-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.bg-light .tshow-title {
+  color: #0f172a;
+}
+
+.tshow-description {
+  margin: 0;
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.tshow-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tshow-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tshow-section-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bg-light .tshow-section-title {
+  color: #334155;
+}
+
+/* Theme toggle inside section */
+
+.tshow-theme-toggle {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: #1e293b;
+  gap: 2px;
+}
+
+.bg-light .tshow-theme-toggle {
+  background: #e2e8f0;
+}
+
+.tshow-theme-toggle button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.bg-light .tshow-theme-toggle button {
+  color: #64748b;
+}
+
+.tshow-theme-toggle button.active {
+  background: #0f172a;
+  color: #f1f5f9;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.bg-light .tshow-theme-toggle button.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* --- Grid --- */
+
+.tshow-grid {
+  border-radius: 12px;
+  border: 1px solid #1e293b;
+  overflow: hidden;
+}
+
+.bg-light .tshow-grid {
+  border-color: #e2e8f0;
+}
+
+.tshow-grid-dark {
+  background: #09090b;
+}
+
+.tshow-grid-light {
+  background: #fafafa;
+}
+
+.tshow-grid-header {
+  display: grid;
+  grid-template-columns: 160px repeat(4, 1fr);
+  border-bottom: 1px solid #1e293b;
+}
+
+.tshow-grid-light .tshow-grid-header {
+  border-bottom-color: #e2e8f0;
+}
+
+.tshow-grid-col-label {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  text-align: center;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.tshow-grid-row {
+  display: grid;
+  grid-template-columns: 160px repeat(4, 1fr);
+  border-top: 1px solid #1e293b;
+}
+
+.tshow-grid-light .tshow-grid-row {
+  border-top-color: #e2e8f0;
+}
+
+.tshow-grid-row-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  border: none;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 150ms ease;
+}
+
+.tshow-grid-light .tshow-grid-row-label {
+  color: #0f172a;
+}
+
+.tshow-grid-row-label:hover,
+.tshow-grid-row-label.active {
+  background: rgba(168, 85, 247, 0.08);
+}
+
+.tshow-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tshow-grid-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 12px;
+  border-left: 1px solid #1e293b;
+}
+
+.tshow-grid-light .tshow-grid-cell {
+  border-left-color: #e2e8f0;
+}
+
+/* --- Mini cell content (component samples) --- */
+
+.tshow-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.tshow-btn {
+  height: 30px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--txkit-radius-button, 8px);
+  background: var(--txkit-color-primary);
+  color: var(--txkit-color-primary-text);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.tshow-btn:hover {
+  background: var(--txkit-color-primary-hover);
+}
+
+.tshow-input {
+  padding: 6px 10px;
+  border: 1px solid var(--txkit-color-border);
+  border-radius: var(--txkit-radius-md, 6px);
+  background: transparent;
+  color: var(--txkit-color-text, #e2e8f0);
+  font-size: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.tshow-token {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--txkit-color-primary);
+  border-radius: var(--txkit-radius-md, 6px);
+  background: var(--txkit-color-primary-alpha);
+  color: var(--txkit-color-primary);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.tshow-token-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--txkit-color-primary);
+}
+
+/* --- Copy theme panel --- */
+
+.tshow-copy {
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  background: #0d1525;
+  overflow: hidden;
+}
+
+.bg-light .tshow-copy {
+  border-color: #e2e8f0;
+  background: #f8fafc;
+}
+
+.tshow-copy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #111827;
+  border-bottom: 1px solid #1e293b;
+}
+
+.bg-light .tshow-copy-header {
+  background: #f1f5f9;
+  border-bottom-color: #e2e8f0;
+}
+
+.tshow-copy-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.tshow-copy-btn {
+  padding: 4px 10px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.bg-light .tshow-copy-btn {
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.tshow-copy-btn:hover {
+  color: #a78bfa;
+  border-color: #a78bfa;
+}
+
+.tshow-copy-code {
+  margin: 0;
+  padding: 16px;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #cbd5e1;
+  overflow-x: auto;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.bg-light .tshow-copy-code {
+  color: #334155;
+}
+
+/* --- Mobile --- */
+
+@media (max-width: 900px) {
+  .tshow-grid-header,
+  .tshow-grid-row {
+    grid-template-columns: 120px repeat(4, 1fr);
+  }
+
+  .tshow-grid-cell {
+    padding: 12px 6px;
+  }
+}

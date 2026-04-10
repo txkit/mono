@@ -223,13 +223,14 @@
   width: 24px;
   height: 24px;
   border-radius: var(--txkit-radius-full);
-  display: flex;
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
   font-weight: 700;
   color: #fff;
-  flex-shrink: 0;
+  text-transform: uppercase;
 }
 
 /* Address */
@@ -316,14 +317,35 @@
 
 .txkit-cw-modal-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 12px;
   padding: var(--txkit-space-lg);
   border-bottom: 1px solid var(--txkit-color-border);
 }
 
-.txkit-cw-modal-title {
+.txkit-cw-modal-heading {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.txkit-cw-modal-origin {
+  margin: 0;
+  font-size: var(--txkit-font-size-xs);
+  color: var(--txkit-color-text-tertiary);
+  line-height: 1.3;
+}
+
+.txkit-cw-modal-origin-host {
+  color: var(--txkit-color-primary);
+  font-family: var(--txkit-font-mono);
+  word-break: break-all;
+}
+
+.txkit-cw-modal-title {
   margin: 0;
   font-size: var(--txkit-font-size-base);
   font-weight: 600;

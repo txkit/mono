@@ -199,6 +199,42 @@
   to { stroke-dashoffset: 0; }
 }
 
+/* --- Multi-step progress dots --- */
+
+.txkit-txb-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.txkit-txb-progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--txkit-radius-full);
+  background: var(--txkit-color-border);
+  transition: background var(--txkit-duration-fast) var(--txkit-ease-default),
+              transform var(--txkit-duration-fast) var(--txkit-ease-default);
+}
+
+.txkit-txb-progress-dot[data-state="completed"] {
+  background: var(--txkit-color-primary);
+}
+
+.txkit-txb-progress-dot[data-state="current"] {
+  background: var(--txkit-color-primary);
+  transform: scale(1.25);
+  box-shadow: 0 0 0 3px var(--txkit-color-primary-alpha);
+}
+
+.txkit-txb-progress-label {
+  margin-left: 4px;
+  font-size: var(--txkit-font-size-xs);
+  color: var(--txkit-color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
 /* --- Countdown badge --- */
 
 .txkit-txb-countdown {

@@ -60,6 +60,18 @@ export type {
   UseTransactionFlowReturn,
 } from './types/transaction'
 
+// --- Input primitives ---
+export { default as TextInput } from './components/Inputs/TextInput'
+export { default as NumberInput } from './components/Inputs/NumberInput'
+export { default as AddressInput } from './components/Inputs/AddressInput'
+export { default as Checkbox } from './components/Inputs/Checkbox'
+export { default as Select } from './components/Inputs/Select'
+export type { TextInputProps } from './components/Inputs/TextInput'
+export type { NumberInputProps } from './components/Inputs/NumberInput'
+export type { AddressInputProps, AddressValidity } from './components/Inputs/AddressInput'
+export type { CheckboxProps } from './components/Inputs/Checkbox'
+export type { SelectProps, SelectOption } from './components/Inputs/Select'
+
 // --- ContractForm ---
 export { default as ContractForm } from './components/ContractForm/ContractForm'
 export { default as useContractForm } from './hooks/useContractForm'

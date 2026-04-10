@@ -12,7 +12,14 @@ import { searchItems, componentProps, bundleSizes, componentDescriptions } from 
 import type { StoryName } from './MemoizedStory'
 
 
-const storyNames: readonly StoryName[] = [ 'ConnectWallet', 'TokenBalance', 'TransactionButton', 'ContractForm', 'TxKitProvider' ]
+const storyNames: readonly StoryName[] = [
+  'ConnectWallet',
+  'TokenBalance',
+  'TransactionButton',
+  'ContractForm',
+  'TxKitProvider',
+  'ThemeShowcase',
+]
 
 const storyCount: Record<StoryName, number> = {
   ConnectWallet: 9,
@@ -20,6 +27,7 @@ const storyCount: Record<StoryName, number> = {
   TransactionButton: 7,
   ContractForm: 6,
   TxKitProvider: 6,
+  ThemeShowcase: 3,
 }
 
 const slugify = (name: string) => name.toLowerCase().replace(/\s+/g, '-')
@@ -163,11 +171,7 @@ const AppContent = () => {
             />
           )
         }
-        <div
-          className={cx({
-            'txkit-color-violet': colorScheme === 'violet',
-          })}
-        >
+        <div className={`txkit-color-${colorScheme}`}>
           <StoryErrorBoundary storyKey={active}>
             <MemoizedStory name={active} variant={variant} />
           </StoryErrorBoundary>

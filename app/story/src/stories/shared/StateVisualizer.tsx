@@ -28,48 +28,64 @@ type StateVisualizerProps = {
   onStateClick?: (stateId: string) => void
 }
 
-const StateVisualizer: React.FC<StateVisualizerProps> = ({ states = DEFAULT_STATES, currentState = 'idle', onStateClick }) => (
-  <div className="state-visualizer">
-    <div className="state-flow">
-      {
-        states.map((s, i) => {
-          const isActive = s.id === currentState
-          const isPast = states.findIndex((st) => st.id === currentState) > i
-          const isClickable = Boolean(onStateClick)
+const StateVisualizer: React.FC<StateVisualizerProps> = ({
+  states = DEFAULT_STATES,
+  currentState = 'idle',
+  onStateClick,
+}) => {
+  const activeIndex = states.findIndex((st) => st.id === currentState)
 
-          return (
-            <div key={s.id} className="state-node-wrapper">
-              <button
-                type="button"
-                className={`state-node ${isActive ? 'active' : ''} ${isPast ? 'past' : ''} ${isClickable ? 'clickable' : ''}`}
-                style={{
-                  '--state-color': s.color,
-                  borderColor: isActive ? s.color : undefined,
-                  background: isActive ? `${s.color}20` : undefined,
-                } as React.CSSProperties}
-                onClick={() => onStateClick?.(s.id)}
-              >
-                <div
-                  className="state-dot"
-                  style={{ background: isActive || isPast ? s.color : '#334155' }}
-                />
-                <span className="state-label">{s.label}</span>
-              </button>
-              {
-                i < states.length - 1 && (
-                  <div
-                    className="state-connector"
-                    style={{ background: isPast ? s.color : '#334155' }}
+  return (
+    <div className="state-visualizer">
+      <div className="state-flow">
+        {
+          states.map((state, index) => {
+            const isActive = index === activeIndex
+            const isPast = activeIndex >= 0 && index < activeIndex
+            const isFuture = activeIndex >= 0 && index > activeIndex
+            const isClickable = Boolean(onStateClick)
+            const nextState = states[index + 1]
+            // Connector takes the color of the NEXT state it's leading into (v0 pattern).
+            const connectorColor = isPast && nextState ? nextState.color : '#334155'
+
+            const nodeClasses = [
+              'state-node',
+              isActive && 'active',
+              isPast && 'past',
+              isFuture && 'future',
+              isClickable && 'clickable',
+            ].filter(Boolean).join(' ')
+
+            return (
+              <div key={state.id} className="state-node-wrapper">
+                <button
+                  type="button"
+                  className={nodeClasses}
+                  style={{ '--state-color': state.color } as React.CSSProperties}
+                  onClick={() => onStateClick?.(state.id)}
+                >
+                  <span
+                    className="state-dot"
+                    style={{ background: isActive || isPast ? state.color : undefined }}
                   />
-                )
-              }
-            </div>
-          )
-        })
-      }
+                  <span className="state-label">{state.label}</span>
+                </button>
+                {
+                  index < states.length - 1 && (
+                    <div
+                      className="state-connector"
+                      style={{ background: connectorColor }}
+                    />
+                  )
+                }
+              </div>
+            )
+          })
+        }
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 
 export default StateVisualizer

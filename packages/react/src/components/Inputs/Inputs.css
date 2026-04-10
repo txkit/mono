@@ -1,0 +1,285 @@
+/*
+ * txKit Input Primitives
+ *
+ * Shared styles for TextInput, NumberInput, AddressInput, Checkbox, Select.
+ * All styles use CSS custom properties so they inherit variant/theme/color from
+ * ancestor .txkit-root / .txkit-dark / .txkit-color-* / .txkit-soft etc.
+ */
+
+/* --- Wrapper (label + control + helper/error) --- */
+
+.txkit-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--txkit-font-family);
+}
+
+.txkit-input[data-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.txkit-input-label {
+  font-size: var(--txkit-font-size-sm);
+  font-weight: 500;
+  color: var(--txkit-color-text);
+  line-height: 1.3;
+}
+
+.txkit-input-helper {
+  font-size: var(--txkit-font-size-xs);
+  color: var(--txkit-color-text-secondary);
+  line-height: 1.4;
+}
+
+.txkit-input-error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--txkit-font-size-xs);
+  color: var(--txkit-color-error);
+  line-height: 1.4;
+}
+
+/* --- Control base (used by TextInput, NumberInput, AddressInput, Select) --- */
+
+.txkit-input-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.txkit-input-field {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--txkit-color-border);
+  border-radius: var(--txkit-radius-md);
+  background: var(--txkit-color-bg);
+  color: var(--txkit-color-text);
+  font-family: inherit;
+  font-size: var(--txkit-font-size-sm);
+  line-height: 1.4;
+  outline: none;
+  transition: border-color var(--txkit-duration-fast) var(--txkit-ease-default),
+              box-shadow var(--txkit-duration-fast) var(--txkit-ease-default);
+}
+
+.txkit-input-field::placeholder {
+  color: var(--txkit-color-text-tertiary);
+}
+
+.txkit-input-field:hover:not(:disabled) {
+  border-color: var(--txkit-color-border-hover);
+}
+
+.txkit-input-field:focus-visible,
+.txkit-input-field:focus {
+  border-color: var(--txkit-color-primary);
+  box-shadow: 0 0 0 3px var(--txkit-color-ring);
+}
+
+.txkit-input-field:disabled {
+  cursor: not-allowed;
+  background: var(--txkit-color-bg-secondary);
+}
+
+/* Valid state */
+.txkit-input[data-state="valid"] .txkit-input-field {
+  border-color: var(--txkit-color-success);
+}
+
+.txkit-input[data-state="valid"] .txkit-input-field:focus {
+  box-shadow: 0 0 0 3px oklch(from var(--txkit-color-success) l c h / 0.3);
+}
+
+/* Invalid state */
+.txkit-input[data-state="invalid"] .txkit-input-field,
+.txkit-input[data-error="true"] .txkit-input-field {
+  border-color: var(--txkit-color-error);
+}
+
+.txkit-input[data-state="invalid"] .txkit-input-field:focus,
+.txkit-input[data-error="true"] .txkit-input-field:focus {
+  box-shadow: 0 0 0 3px oklch(from var(--txkit-color-error) l c h / 0.3);
+}
+
+/* Warning state (anti-phishing) */
+.txkit-input[data-state="warning"] .txkit-input-field {
+  border-color: var(--txkit-color-warning);
+}
+
+.txkit-input[data-state="warning"] .txkit-input-field:focus {
+  box-shadow: 0 0 0 3px oklch(from var(--txkit-color-warning) l c h / 0.3);
+}
+
+/* --- Number input (right-aligned with unit suffix) --- */
+
+.txkit-input-field[data-type="number"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding-right: 56px;
+}
+
+.txkit-input-unit {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--txkit-font-size-sm);
+  color: var(--txkit-color-text-tertiary);
+  font-family: var(--txkit-font-mono);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* --- Address input (monospace + validity indicator) --- */
+
+.txkit-input-field[data-type="address"] {
+  font-family: var(--txkit-font-mono);
+  font-size: var(--txkit-font-size-xs);
+  padding-right: 40px;
+}
+
+.txkit-input-indicator {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.txkit-input-indicator svg {
+  width: 16px;
+  height: 16px;
+}
+
+.txkit-input-indicator--valid { color: var(--txkit-color-success); }
+.txkit-input-indicator--invalid { color: var(--txkit-color-error); }
+.txkit-input-indicator--warning { color: var(--txkit-color-warning); }
+.txkit-input-indicator--checking {
+  color: var(--txkit-color-primary);
+  animation: txkit-input-spin 1s linear infinite;
+}
+
+@keyframes txkit-input-spin {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* --- Checkbox --- */
+
+.txkit-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--txkit-font-family);
+  min-height: 44px;
+}
+
+.txkit-checkbox[data-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.txkit-checkbox-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.txkit-checkbox-input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  appearance: none;
+  border: 1px solid var(--txkit-color-border);
+  border-radius: var(--txkit-radius-sm);
+  background: var(--txkit-color-bg);
+  cursor: inherit;
+  transition: all var(--txkit-duration-fast) var(--txkit-ease-default);
+}
+
+.txkit-checkbox-input:hover:not(:disabled) {
+  border-color: var(--txkit-color-primary);
+}
+
+.txkit-checkbox-input:checked {
+  background: var(--txkit-color-primary);
+  border-color: var(--txkit-color-primary);
+}
+
+.txkit-checkbox-input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--txkit-color-ring);
+}
+
+.txkit-checkbox-mark {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  color: var(--txkit-color-primary-text);
+  opacity: 0;
+  transition: opacity var(--txkit-duration-fast) var(--txkit-ease-default);
+  pointer-events: none;
+}
+
+.txkit-checkbox-input:checked + .txkit-checkbox-mark {
+  opacity: 1;
+}
+
+.txkit-checkbox-label {
+  font-size: var(--txkit-font-size-sm);
+  color: var(--txkit-color-text);
+  line-height: 1.4;
+}
+
+/* --- Select (chevron on the right) --- */
+
+.txkit-select-control {
+  position: relative;
+}
+
+.txkit-select-field {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.txkit-select-chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--txkit-color-text-tertiary);
+  pointer-events: none;
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .txkit-input-field,
+  .txkit-checkbox-input,
+  .txkit-checkbox-mark {
+    transition: none;
+  }
+
+  .txkit-input-indicator--checking {
+    animation: none;
+  }
+}

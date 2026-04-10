@@ -1,34 +1,54 @@
+/*
+ * txKit Design Tokens - Dark theme
+ * All overrides in OKLCH. Dark mode uses higher lightness for primary
+ * so it reads properly on dark backgrounds.
+ */
 .txkit-dark {
-  --txkit-color-primary: #5B54E8;
-  --txkit-color-primary-hover: #818CF8;
-  --txkit-color-primary-active: #4F46E5;
-  --txkit-color-primary-text: #FFFFFF;
+  /* --- Primary (violet, brighter in dark mode) --- */
+  --txkit-color-primary: oklch(0.65 0.22 292);
+  --txkit-color-primary-hover: oklch(0.72 0.23 292);
+  --txkit-color-primary-active: oklch(0.58 0.2 292);
+  --txkit-color-primary-text: oklch(1 0 0);
+  --txkit-color-primary-alpha: oklch(0.65 0.22 292 / 0.15);
+  --txkit-color-ring: oklch(0.65 0.22 292 / 0.5);
 
-  --txkit-color-success: #34D399;
-  --txkit-color-success-text: #022C22;
-  --txkit-color-warning: #FBBF24;
-  --txkit-color-warning-text: #451A03;
-  --txkit-color-error: #EF4444;
-  --txkit-color-error-text: #FFFFFF;
-  --txkit-color-info: #60A5FA;
+  /* --- Backgrounds (zinc-tinted dark) --- */
+  --txkit-color-bg: oklch(0.145 0.005 285);
+  --txkit-color-bg-elevated: oklch(0.185 0.006 285);
+  --txkit-color-bg-secondary: oklch(0.195 0.008 285);
+  --txkit-color-bg-tertiary: oklch(0.235 0.01 285);
+  --txkit-color-bg-muted: oklch(0.22 0.01 285);
 
-  --txkit-color-bg: #0F172A;
-  --txkit-color-bg-secondary: #1E293B;
-  --txkit-color-bg-tertiary: #334155;
+  /* --- Text hierarchy --- */
+  --txkit-color-text: oklch(0.96 0 0);
+  --txkit-color-text-secondary: oklch(0.72 0 0);
+  --txkit-color-text-tertiary: oklch(0.55 0 0);
 
-  --txkit-color-text: #F1F5F9;
-  --txkit-color-text-secondary: #94A3B8;
-  --txkit-color-text-tertiary: #7C8DA0;
+  /* --- Borders --- */
+  --txkit-color-border: oklch(0.28 0.008 285);
+  --txkit-color-border-hover: oklch(0.38 0.012 285);
 
-  --txkit-color-primary-alpha: rgba(91, 84, 232, 0.25);
+  /* --- Semantic (brighter in dark) --- */
+  --txkit-color-success: oklch(0.7 0.18 145);
+  --txkit-color-success-text: oklch(0.18 0.06 145);
+  --txkit-color-success-alpha: oklch(0.7 0.18 145 / 0.15);
 
-  --txkit-color-border: rgba(255, 255, 255, 0.06);
-  --txkit-color-border-hover: rgba(255, 255, 255, 0.12);
+  --txkit-color-warning: oklch(0.82 0.16 65);
+  --txkit-color-warning-text: oklch(0.22 0.08 65);
+  --txkit-color-warning-alpha: oklch(0.82 0.16 65 / 0.15);
 
-  --txkit-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.15);
-  --txkit-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
-  --txkit-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --txkit-color-error: oklch(0.65 0.22 25);
+  --txkit-color-error-text: oklch(1 0 0);
+  --txkit-color-error-alpha: oklch(0.65 0.22 25 / 0.15);
 
+  --txkit-color-info: oklch(0.72 0.17 245);
+
+  /* --- Shadows (more pronounced on dark) --- */
+  --txkit-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2), 0 1px 1px oklch(0 0 0 / 0.15);
+  --txkit-shadow-md: 0 4px 12px oklch(0 0 0 / 0.3), 0 1px 2px oklch(0 0 0 / 0.2);
+  --txkit-shadow-lg: 0 8px 24px oklch(0 0 0 / 0.4), 0 2px 4px oklch(0 0 0 / 0.2);
+
+  /* --- Skeleton --- */
   --txkit-skeleton-from: var(--txkit-color-bg-secondary);
   --txkit-skeleton-to: var(--txkit-color-bg-tertiary);
 }

@@ -1,0 +1,87 @@
+/*
+ * txKit Color Schemes
+ *
+ * Default primary is violet (set in base.css/dark.css).
+ * These classes override --txkit-color-primary* to swap brand color.
+ *
+ * All schemes use the same lightness/chroma envelope (OKLCH perceptual
+ * uniformity) so buttons and UI elements feel visually equivalent across
+ * brands - just the hue shifts.
+ *
+ * Usage: add class to .txkit-root or ancestor
+ *   <div class="txkit-root txkit-color-emerald">...</div>
+ */
+
+/* --- Violet (default, same as base) --- */
+.txkit-color-violet {
+  --txkit-color-primary: oklch(0.585 0.233 292);
+  --txkit-color-primary-hover: oklch(0.54 0.245 292);
+  --txkit-color-primary-active: oklch(0.48 0.25 292);
+  --txkit-color-primary-alpha: oklch(0.585 0.233 292 / 0.1);
+  --txkit-color-ring: oklch(0.585 0.233 292 / 0.4);
+}
+
+.txkit-dark.txkit-color-violet,
+.txkit-color-violet .txkit-dark {
+  --txkit-color-primary: oklch(0.65 0.22 292);
+  --txkit-color-primary-hover: oklch(0.72 0.23 292);
+  --txkit-color-primary-active: oklch(0.58 0.2 292);
+  --txkit-color-primary-alpha: oklch(0.65 0.22 292 / 0.15);
+  --txkit-color-ring: oklch(0.65 0.22 292 / 0.5);
+}
+
+/* --- Indigo --- */
+.txkit-color-indigo {
+  --txkit-color-primary: oklch(0.585 0.233 268);
+  --txkit-color-primary-hover: oklch(0.54 0.245 268);
+  --txkit-color-primary-active: oklch(0.48 0.25 268);
+  --txkit-color-primary-alpha: oklch(0.585 0.233 268 / 0.1);
+  --txkit-color-ring: oklch(0.585 0.233 268 / 0.4);
+}
+
+.txkit-dark.txkit-color-indigo,
+.txkit-color-indigo .txkit-dark {
+  --txkit-color-primary: oklch(0.65 0.22 268);
+  --txkit-color-primary-hover: oklch(0.72 0.23 268);
+  --txkit-color-primary-active: oklch(0.58 0.2 268);
+  --txkit-color-primary-alpha: oklch(0.65 0.22 268 / 0.15);
+  --txkit-color-ring: oklch(0.65 0.22 268 / 0.5);
+}
+
+/* --- Emerald --- */
+.txkit-color-emerald {
+  --txkit-color-primary: oklch(0.585 0.18 155);
+  --txkit-color-primary-hover: oklch(0.54 0.19 155);
+  --txkit-color-primary-active: oklch(0.48 0.2 155);
+  --txkit-color-primary-alpha: oklch(0.585 0.18 155 / 0.1);
+  --txkit-color-ring: oklch(0.585 0.18 155 / 0.4);
+}
+
+.txkit-dark.txkit-color-emerald,
+.txkit-color-emerald .txkit-dark {
+  --txkit-color-primary: oklch(0.68 0.18 155);
+  --txkit-color-primary-hover: oklch(0.74 0.19 155);
+  --txkit-color-primary-active: oklch(0.6 0.17 155);
+  --txkit-color-primary-alpha: oklch(0.68 0.18 155 / 0.15);
+  --txkit-color-ring: oklch(0.68 0.18 155 / 0.5);
+}
+
+/* --- Amber --- */
+.txkit-color-amber {
+  --txkit-color-primary: oklch(0.7 0.18 65);
+  --txkit-color-primary-hover: oklch(0.65 0.19 65);
+  --txkit-color-primary-active: oklch(0.58 0.2 65);
+  --txkit-color-primary-text: oklch(0.22 0.08 65);
+  --txkit-color-primary-alpha: oklch(0.7 0.18 65 / 0.12);
+  --txkit-color-ring: oklch(0.7 0.18 65 / 0.4);
+}
+
+.txkit-dark.txkit-color-amber,
+.txkit-color-amber .txkit-dark {
+  --txkit-color-primary: oklch(0.78 0.17 65);
+  --txkit-color-primary-hover: oklch(0.84 0.17 65);
+  --txkit-color-primary-active: oklch(0.72 0.17 65);
+  --txkit-color-primary-text: oklch(0.22 0.08 65);
+  --txkit-color-primary-alpha: oklch(0.78 0.17 65 / 0.15);
+  --txkit-color-ring: oklch(0.78 0.17 65 / 0.5);
+}

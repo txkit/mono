@@ -1,5 +1,6 @@
 import React from 'react'
 
+import ThemeShowcaseStory from './stories/ThemeShowcase/ThemeShowcase'
 import ContractFormStory from './stories/ContractForm/ContractForm'
 import TokenBalanceStory from './stories/TokenBalance/TokenBalance'
 import ConnectWalletStory from './stories/ConnectWallet/ConnectWallet'
@@ -13,6 +14,7 @@ const stories = {
   TransactionButton: TransactionButtonStory,
   ContractForm: ContractFormStory,
   TxKitProvider: TxKitProviderStory,
+  ThemeShowcase: ThemeShowcaseStory,
 } as const
 
 export type StoryName = keyof typeof stories

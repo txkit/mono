@@ -47,6 +47,8 @@ export type ConnectWalletLabels = {
   scanWithPhone?: string
   /** Copy WalletConnect URI button text */
   copyLink?: string
+  /** Prefix shown before the dApp origin in wallet modal (anti-phishing) */
+  connectingTo?: string
 }
 
 export const defaultLabels: Required<ConnectWalletLabels> = {
@@ -74,4 +76,5 @@ export const defaultLabels: Required<ConnectWalletLabels> = {
   switchNetwork: 'Switch Network',
   scanWithPhone: 'Scan with your phone',
   copyLink: 'Copy Link',
+  connectingTo: 'Connecting to',
 }

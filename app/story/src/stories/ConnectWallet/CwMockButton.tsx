@@ -1,6 +1,6 @@
 import React from 'react'
 
-import hashColor from '../shared/hashColor'
+import { hashGradient } from '../shared/hashColor'
 
 
 type CwMockProps = {
@@ -34,9 +34,7 @@ const CwMockButton: React.FC<CwMockProps> = ({
           <button type="button" className="txkit-cw-button" data-state="connected" style={{ pointerEvents: 'none', ...sizeStyle }}>
             {
               showAvatar && (
-                <span className="txkit-cw-avatar-fallback" style={{ backgroundColor: hashColor(MOCK_ADDRESS) }}>
-                  D8
-                </span>
+                <span className="txkit-cw-avatar-fallback" style={{ background: hashGradient(MOCK_ADDRESS) }} aria-hidden="true" />
               )
             }
             <span className="txkit-cw-address">{displayAddress}</span>

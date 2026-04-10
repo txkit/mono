@@ -16,30 +16,35 @@ body {
 }
 
 /* Override txKit internal theme class to match playground theme.
-   TxKitProvider defaults to auto/dark, but playground toolbar controls theme via CSS. */
+   TxKitProvider defaults to auto/dark (hardcoded in story config to avoid wagmi re-mount),
+   but playground toolbar controls theme via CSS class on <main>.
+   When playground is in light mode, force surface/text tokens back to :root (light) defaults.
+   NOTE: --txkit-color-primary* are NOT overridden here - they are controlled by
+   .txkit-color-{violet|indigo|emerald|amber} classes on the story wrapper. */
 .bg-light .txkit-root.txkit-dark {
-  --txkit-color-primary: #4338CA;
-  --txkit-color-primary-hover: #3730A3;
-  --txkit-color-primary-active: #312E81;
-  --txkit-color-primary-text: #FFFFFF;
-  --txkit-color-bg: #FFFFFF;
-  --txkit-color-bg-secondary: #F8FAFC;
-  --txkit-color-bg-tertiary: #F1F5F9;
-  --txkit-color-text: #0F172A;
-  --txkit-color-text-secondary: #475569;
-  --txkit-color-text-tertiary: #64748B;
-  --txkit-color-border: #E2E8F0;
-  --txkit-color-border-hover: #CBD5E1;
-  --txkit-color-success: #059669;
-  --txkit-color-warning: #D97706;
-  --txkit-color-error: #DC2626;
-  --txkit-alpha-hover: 0.04;
-  --txkit-alpha-active: 0.08;
-  --txkit-color-primary-alpha: rgba(67, 56, 202, 0.1);
-  --txkit-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --txkit-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --txkit-skeleton-from: #F1F5F9;
-  --txkit-skeleton-to: #E2E8F0;
+  --txkit-color-bg: oklch(1 0 0);
+  --txkit-color-bg-elevated: oklch(1 0 0);
+  --txkit-color-bg-secondary: oklch(0.98 0 0);
+  --txkit-color-bg-tertiary: oklch(0.96 0 0);
+  --txkit-color-bg-muted: oklch(0.95 0.005 285);
+
+  --txkit-color-text: oklch(0.145 0 0);
+  --txkit-color-text-secondary: oklch(0.42 0 0);
+  --txkit-color-text-tertiary: oklch(0.58 0 0);
+
+  --txkit-color-border: oklch(0.9 0 0);
+  --txkit-color-border-hover: oklch(0.82 0 0);
+
+  --txkit-color-success: oklch(0.6 0.18 145);
+  --txkit-color-warning: oklch(0.75 0.17 65);
+  --txkit-color-error: oklch(0.58 0.22 25);
+
+  --txkit-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.04), 0 1px 1px oklch(0 0 0 / 0.03);
+  --txkit-shadow-md: 0 4px 12px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);
+  --txkit-shadow-lg: 0 8px 24px oklch(0 0 0 / 0.12), 0 2px 4px oklch(0 0 0 / 0.04);
+
+  --txkit-skeleton-from: oklch(0.98 0 0);
+  --txkit-skeleton-to: oklch(0.96 0 0);
 }
 
 /* --- Layout --- */

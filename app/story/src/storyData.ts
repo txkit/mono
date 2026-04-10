@@ -137,6 +137,9 @@ export const componentDescriptions: Record<string, { summary: string; docsPath?:
     summary: 'Root wrapper that initializes wagmi, TanStack Query, and theming. Standalone mode creates providers internally. Embedded mode reuses an existing WagmiProvider - for projects with RainbowKit, ConnectKit, or custom wallet setup.',
     docsPath: '/getting-started',
   },
+  ThemeShowcase: {
+    summary: 'Visual preview of all 4 color schemes × 4 variants × 2 themes. Includes a Copy Theme panel to grab CSS variables for any combination.',
+  },
 }
 
 

@@ -171,13 +171,23 @@ const WalletModal: React.FC<WalletModalProps> = ({
                 )
                 : null
             }
-            <h2 id="txkit-wallet-modal-title" className="txkit-cw-modal-title">
+            <div className="txkit-cw-modal-heading">
+              <h2 id="txkit-wallet-modal-title" className="txkit-cw-modal-title">
+                {
+                  showConnectingView && connectingWallet
+                    ? connectingWallet
+                    : labels.selectWallet
+                }
+              </h2>
               {
-                showConnectingView && connectingWallet
-                  ? connectingWallet
-                  : labels.selectWallet
+                !showConnectingView && typeof window !== 'undefined' && (
+                  <p className="txkit-cw-modal-origin">
+                    {labels.connectingTo || 'Connecting to'}{' '}
+                    <span className="txkit-cw-modal-origin-host">{window.location.host}</span>
+                  </p>
+                )
               }
-            </h2>
+            </div>
             <button
               type="button"
               className="txkit-cw-modal-close"

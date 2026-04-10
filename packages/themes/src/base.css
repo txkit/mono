@@ -1,87 +1,114 @@
+/*
+ * txKit Design Tokens - Base / Light theme
+ * All colors in OKLCH for perceptual uniformity and easy theming.
+ *
+ * Token categories:
+ *   - color.primary (triad: base/hover/active + alpha)
+ *   - color.bg     (4 levels: bg, elevated, sunken, muted)
+ *   - color.text   (3 levels: primary, secondary, tertiary)
+ *   - color.border (base/hover)
+ *   - color.semantic (success/warning/error/info) + foreground
+ *   - radius (sm/md/lg/xl/full) + button radius (variant-controlled)
+ *   - shadow (sm/md/lg)
+ *   - spacing, typography, motion
+ */
 :root {
-  /* Colors - Indigo primary (brand) */
-  --txkit-color-primary: #4338CA;
-  --txkit-color-primary-hover: #3730A3;
-  --txkit-color-primary-active: #312E81;
-  --txkit-color-primary-text: #FFFFFF;
+  /* --- Primary (violet 292°) --- */
+  --txkit-color-primary: oklch(0.585 0.233 292);
+  --txkit-color-primary-hover: oklch(0.54 0.245 292);
+  --txkit-color-primary-active: oklch(0.48 0.25 292);
+  --txkit-color-primary-text: oklch(1 0 0);
+  --txkit-color-primary-alpha: oklch(0.585 0.233 292 / 0.1);
+  --txkit-color-ring: oklch(0.585 0.233 292 / 0.4);
 
-  /* Semantic */
-  --txkit-color-success: #059669;
-  --txkit-color-success-text: #FFFFFF;
-  --txkit-color-warning: #D97706;
-  --txkit-color-warning-text: #FFFFFF;
-  --txkit-color-error: #DC2626;
-  --txkit-color-error-text: #FFFFFF;
-  --txkit-color-info: #2563EB;
+  /* --- Backgrounds (4 levels) --- */
+  --txkit-color-bg: oklch(1 0 0);
+  --txkit-color-bg-elevated: oklch(1 0 0);
+  --txkit-color-bg-secondary: oklch(0.98 0 0);
+  --txkit-color-bg-tertiary: oklch(0.96 0 0);
+  --txkit-color-bg-muted: oklch(0.95 0.005 285);
 
-  /* Surfaces */
-  --txkit-color-bg: #FFFFFF;
-  --txkit-color-bg-secondary: #F8FAFC;
-  --txkit-color-bg-tertiary: #F1F5F9;
+  /* --- Text hierarchy (3 levels) --- */
+  --txkit-color-text: oklch(0.145 0 0);
+  --txkit-color-text-secondary: oklch(0.42 0 0);
+  --txkit-color-text-tertiary: oklch(0.58 0 0);
 
-  /* Text */
-  --txkit-color-text: #0F172A;
-  --txkit-color-text-secondary: #475569;
-  --txkit-color-text-tertiary: #64748B;
+  /* --- Borders --- */
+  --txkit-color-border: oklch(0.9 0 0);
+  --txkit-color-border-hover: oklch(0.82 0 0);
 
-  /* Borders */
-  --txkit-color-border: #E2E8F0;
-  --txkit-color-border-hover: #CBD5E1;
+  /* --- Semantic colors --- */
+  --txkit-color-success: oklch(0.6 0.18 145);
+  --txkit-color-success-text: oklch(1 0 0);
+  --txkit-color-success-alpha: oklch(0.6 0.18 145 / 0.1);
 
-  /* Typography */
-  --txkit-font-family: system-ui, -apple-system, sans-serif;
-  --txkit-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --txkit-color-warning: oklch(0.75 0.17 65);
+  --txkit-color-warning-text: oklch(0.28 0.08 65);
+  --txkit-color-warning-alpha: oklch(0.75 0.17 65 / 0.1);
+
+  --txkit-color-error: oklch(0.58 0.22 25);
+  --txkit-color-error-text: oklch(1 0 0);
+  --txkit-color-error-alpha: oklch(0.58 0.22 25 / 0.1);
+
+  --txkit-color-info: oklch(0.62 0.2 245);
+
+  /* --- Typography --- */
+  --txkit-font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --txkit-font-mono: 'IBM Plex Mono', ui-monospace, 'Menlo', monospace;
   --txkit-font-size-xs: 0.75rem;
   --txkit-font-size-sm: 0.875rem;
   --txkit-font-size-md: 1rem;
   --txkit-font-size-base: 1rem;
   --txkit-font-size-lg: 1.125rem;
+  --txkit-font-size-xl: 1.25rem;
 
-  /* Spacing */
+  /* --- Spacing scale --- */
   --txkit-space-xs: 0.25rem;
   --txkit-space-sm: 0.5rem;
   --txkit-space-md: 0.75rem;
   --txkit-space-lg: 1rem;
   --txkit-space-xl: 1.5rem;
+  --txkit-space-2xl: 2rem;
 
-  /* Radii */
+  /* --- Radii (default variant) --- */
   --txkit-radius-sm: 6px;
   --txkit-radius-md: 8px;
   --txkit-radius-lg: 12px;
   --txkit-radius-xl: 20px;
   --txkit-radius-full: 9999px;
+  --txkit-radius-button: var(--txkit-radius-md);
 
-  /* Alpha */
-  --txkit-color-primary-alpha: rgba(67, 56, 202, 0.1);
+  /* --- Shadows --- */
+  --txkit-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.04), 0 1px 1px oklch(0 0 0 / 0.03);
+  --txkit-shadow-md: 0 4px 12px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);
+  --txkit-shadow-lg: 0 8px 24px oklch(0 0 0 / 0.12), 0 2px 4px oklch(0 0 0 / 0.04);
 
-  /* Shadows */
-  --txkit-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.03);
-  --txkit-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --txkit-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.04);
-
-  /* Transitions */
+  /* --- Motion --- */
   --txkit-transition: 150ms ease;
-
-  /* Motion tokens */
   --txkit-ease-default: cubic-bezier(0.2, 0, 0, 1);
   --txkit-ease-enter: cubic-bezier(0.05, 0.7, 0.1, 1);
   --txkit-ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);
   --txkit-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --txkit-ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
-
   --txkit-duration-fast: 100ms;
   --txkit-duration-normal: 200ms;
   --txkit-duration-moderate: 300ms;
   --txkit-duration-slow: 400ms;
 
-  /* Skeleton shimmer */
+  /* --- Skeleton shimmer --- */
   --txkit-skeleton-from: var(--txkit-color-bg-secondary);
   --txkit-skeleton-to: var(--txkit-color-bg-tertiary);
+
+  /* --- Z-index --- */
+  --txkit-z-dropdown: 1000;
+  --txkit-z-modal: 1001;
+  --txkit-z-toast: 1002;
 }
 
 .txkit-root {
   font-family: var(--txkit-font-family);
   color: var(--txkit-color-text);
+  background: var(--txkit-color-bg);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -89,5 +116,9 @@
 @media (prefers-reduced-motion: reduce) {
   :root {
     --txkit-transition: 0ms;
+    --txkit-duration-fast: 0ms;
+    --txkit-duration-normal: 0ms;
+    --txkit-duration-moderate: 0ms;
+    --txkit-duration-slow: 0ms;
   }
 }

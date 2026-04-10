@@ -9,8 +9,10 @@ const themes: TxKit.Theme[] = [ 'light', 'dark', 'auto' ]
 const variants: TxKit.Variant[] = [ 'default', 'soft', 'sharp', 'rounded' ]
 
 const colorSchemes = [
-  { id: 'indigo' as const, color: '#4338CA', label: 'Indigo' },
-  { id: 'violet' as const, color: '#7C3AED', label: 'Violet' },
+  { id: 'violet' as const, color: 'oklch(0.65 0.22 292)', label: 'Violet' },
+  { id: 'indigo' as const, color: 'oklch(0.65 0.22 268)', label: 'Indigo' },
+  { id: 'emerald' as const, color: 'oklch(0.68 0.18 155)', label: 'Emerald' },
+  { id: 'amber' as const, color: 'oklch(0.78 0.17 65)', label: 'Amber' },
 ]
 
 const PlaygroundToolbar: React.FC = () => {

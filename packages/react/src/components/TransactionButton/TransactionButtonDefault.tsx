@@ -21,6 +21,10 @@ export type TransactionButtonDefaultProps = {
   isProcessing: boolean
   showExplorerLink: boolean
   isButtonDisabled: boolean
+  /** 0-indexed current step. Used to render progress dots above button for multi-step flows. */
+  currentStepIndex: number
+  /** Total steps in the flow. When > 1, progress dots are rendered. */
+  totalSteps: number
   onClick: () => void
   onCancel: () => void
   onForceSubmit: () => void
@@ -41,15 +45,49 @@ const TransactionButtonDefault: React.FC<TransactionButtonDefaultProps> = ({
   isProcessing,
   showExplorerLink,
   isButtonDisabled,
+  currentStepIndex,
+  totalSteps,
   onClick,
   onCancel,
   onForceSubmit,
 }) => {
   const showDetails = state === 'confirming-risk' && Boolean(decodedCalldata || riskResult)
   const showExplorer = showExplorerLink && explorerUrl && explorerStates.includes(state)
+  const showProgressDots = totalSteps > 1
 
   return (
     <>
+      {
+        showProgressDots && (
+          <div
+            className="txkit-txb-progress"
+            role="progressbar"
+            aria-valuenow={currentStepIndex + 1}
+            aria-valuemin={1}
+            aria-valuemax={totalSteps}
+            aria-label={`Step ${currentStepIndex + 1} of ${totalSteps}`}
+          >
+            {
+              Array.from({ length: totalSteps }).map((_, index) => (
+                <span
+                  key={index}
+                  className="txkit-txb-progress-dot"
+                  data-state={
+                    index < currentStepIndex
+                      ? 'completed'
+                      : index === currentStepIndex
+                        ? 'current'
+                        : 'pending'
+                  }
+                />
+              ))
+            }
+            <span className="txkit-txb-progress-label">
+              {currentStepIndex + 1} of {totalSteps}
+            </span>
+          </div>
+        )
+      }
       <button
         type="button"
         className="txkit-txb-button"

@@ -1,12 +1,17 @@
-/* Rounded variant - pill-shaped buttons, large radii, playful feel */
+/*
+ * Rounded variant - pill-shaped buttons, large radii, playful feel.
+ * Overrides: radius, button radius to pill, shadow, transition.
+ */
 .txkit-rounded {
   --txkit-radius-sm: 16px;
   --txkit-radius-md: 20px;
   --txkit-radius-lg: 28px;
-  --txkit-radius-button: 999px;
+  --txkit-radius-xl: 32px;
+  --txkit-radius-button: 9999px;
 
-  --txkit-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
-  --txkit-shadow-md: 0 6px 16px -4px rgba(0, 0, 0, 0.12);
+  --txkit-shadow-sm: 0 2px 4px oklch(0 0 0 / 0.06);
+  --txkit-shadow-md: 0 6px 16px -4px oklch(0 0 0 / 0.12);
+  --txkit-shadow-lg: 0 12px 32px -6px oklch(0 0 0 / 0.18);
 
   --txkit-transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
