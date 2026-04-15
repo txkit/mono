@@ -22,7 +22,6 @@ const storyNames: readonly StoryName[] = [
   'ConnectWallet',
   'TokenBalance',
   'TransactionButton',
-  'ContractForm',
   'TxKitProvider',
   'ThemeShowcase',
 ]
@@ -31,7 +30,6 @@ const storyCount: Record<StoryName, number> = {
   ConnectWallet: 9,
   TokenBalance: 13,
   TransactionButton: 7,
-  ContractForm: 6,
   TxKitProvider: 6,
   ThemeShowcase: 3,
 }

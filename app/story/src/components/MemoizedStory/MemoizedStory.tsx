@@ -1,7 +1,6 @@
 import React from 'react'
 
 import ThemeShowcaseStory from '../../stories/ThemeShowcase/ThemeShowcase'
-import ContractFormStory from '../../stories/ContractForm/ContractForm'
 import TokenBalanceStory from '../../stories/TokenBalance/TokenBalance'
 import ConnectWalletStory from '../../stories/ConnectWallet/ConnectWallet'
 import TxKitProviderStory from '../../stories/TxKitProvider/TxKitProvider'
@@ -12,7 +11,6 @@ const stories = {
   ConnectWallet: ConnectWalletStory,
   TokenBalance: TokenBalanceStory,
   TransactionButton: TransactionButtonStory,
-  ContractForm: ContractFormStory,
   TxKitProvider: TxKitProviderStory,
   ThemeShowcase: ThemeShowcaseStory,
 } as const

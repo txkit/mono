@@ -30,12 +30,6 @@ export const searchItems = [
   { story: 'TransactionButton', section: 'Safety Delay', description: '5-second confirmation' },
   { story: 'TransactionButton', section: 'Custom Render', description: 'children-as-function' },
   { story: 'TransactionButton', section: 'Headless Hook', description: 'useTransactionFlow' },
-  { story: 'ContractForm', section: 'Interactive', description: 'Toggle function and props live' },
-  { story: 'ContractForm', section: 'ERC-20 Transfer', description: 'Address and amount fields' },
-  { story: 'ContractForm', section: 'Security Warnings', description: 'Approve with MAX_UINT256' },
-  { story: 'ContractForm', section: 'Mixed Types', description: 'String, uint8, bool, address' },
-  { story: 'ContractForm', section: 'Custom Render', description: 'children-as-function' },
-  { story: 'ContractForm', section: 'Headless Hook', description: 'useContractForm' },
   { story: 'TxKitProvider', section: 'Default Config', description: 'Standalone with auto theme' },
   { story: 'TxKitProvider', section: 'Dark Theme' },
   { story: 'TxKitProvider', section: 'Light Theme' },
@@ -93,21 +87,6 @@ export const componentProps = {
       { name: 'onFlowComplete', type: '(results) => void', description: 'Called when entire flow completes' },
       { name: 'onStepComplete', type: '(stepId, result) => void', description: 'Called on any step completion' },
       { name: 'onError', type: '(error, stepId) => void', description: 'Called on any step error' },
-      { name: 'children', type: '(data) => ReactNode', description: 'Render function for full control' },
-    ],
-  },
-  ContractForm: {
-    importPath: '@txkit/react',
-    props: [
-      { name: 'address', type: 'Address', required: true, description: 'Contract address' },
-      { name: 'abi', type: 'Abi', required: true, description: 'Contract ABI' },
-      { name: 'functionName', type: 'string', required: true, description: 'Function to call' },
-      { name: 'label', type: 'string', default: 'functionName', description: 'Submit button label' },
-      { name: 'chainId', type: 'number', description: 'Target chain' },
-      { name: 'safety', type: 'SafetyConfig', description: 'Anti-phishing config' },
-      { name: 'disabled', type: 'boolean', default: 'false', description: 'Disable form' },
-      { name: 'onSuccess', type: '(receipt) => void', description: 'Called on confirmation' },
-      { name: 'onError', type: '(error) => void', description: 'Called on error' },
       { name: 'children', type: '(data) => ReactNode', description: 'Render function for full control' },
     ],
   },
@@ -172,16 +151,6 @@ export const componentDescriptions: Record<string, ComponentDescription> = {
     useWhen: 'Any on-chain action more complex than a single transaction - swaps, stakes, bridges, multi-approve flows.',
     docsPath: '/api/transaction-button',
   },
-  ContractForm: {
-    summary: 'ABI-driven form generation with validation, dangerous-function warnings, and calldata preview. Deferred to v0.2.0 (not in public API).',
-    features: [
-      'Auto-renders type-specific inputs for every Solidity type including arrays and tuples',
-      '19 dangerous functions detected (approve, setApprovalForAll, delegateCall, selfdestruct, ...)',
-      'Calldata preview with full addresses (anti address poisoning)',
-      'Integrated with TransactionButton flow',
-    ],
-    useWhen: 'Internal tooling and explorer-style UIs that need ad-hoc contract calls. Not yet part of the v0.1.0 public API.',
-  },
   ThemeShowcase: {
     summary: 'Interactive grid of 4 color schemes × 4 variants × 2 themes (32 combinations), with a Copy Theme panel that outputs ready-to-paste CSS variables.',
     features: [
@@ -200,6 +169,5 @@ export const bundleSizes: Record<string, { js: string; css: string }> = {
   ConnectWallet: { js: '4.8 kB', css: '2.1 kB' },
   TokenBalance: { js: '4.6 kB', css: '2.1 kB' },
   TransactionButton: { js: '6.5 kB', css: '2.1 kB' },
-  ContractForm: { js: '5.2 kB', css: '1.8 kB' },
   TxKitProvider: { js: '2.1 kB', css: '0.3 kB' },
 }
