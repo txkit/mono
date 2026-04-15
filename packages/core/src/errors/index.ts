@@ -1,2 +1,7 @@
 export { TxKitError } from './base'
-export { InvalidConfigError, MissingWagmiProviderError, ProviderNotFoundError } from './config'
+export {
+  NestedProviderError,
+  InvalidConfigError,
+  ProviderNotFoundError,
+  MissingWagmiProviderError,
+} from './config'

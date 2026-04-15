@@ -1,4 +1,4 @@
-import { useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 
 type ThemeInput = 'light' | 'dark' | 'auto'
@@ -27,14 +27,21 @@ const subscribeToSystemTheme = (callback: () => void) => {
 
 const getServerTheme = (): ThemeResolved => 'light'
 
+/** Follow initialTheme changes from props without the setState-in-render
+ *  anti-pattern, which can interleave with wagmi's useSyncExternalStore and
+ *  trigger "Maximum update depth exceeded" when parents re-render often
+ *  (e.g. playground variant/theme toggles). useEffect is one render late but
+ *  safe against feedback loops. */
 const useTheme = ({ initialTheme = 'auto' }: UseThemeOptions = {}): UseThemeReturn => {
   const [ mode, setTheme ] = useState<ThemeInput>(initialTheme)
   const prevInitialThemeRef = useRef(initialTheme)
 
-  if (prevInitialThemeRef.current !== initialTheme) {
-    prevInitialThemeRef.current = initialTheme
-    setTheme(initialTheme)
-  }
+  useEffect(() => {
+    if (prevInitialThemeRef.current !== initialTheme) {
+      prevInitialThemeRef.current = initialTheme
+      setTheme(initialTheme)
+    }
+  }, [ initialTheme ])
 
   const systemTheme = useSyncExternalStore(
     subscribeToSystemTheme,

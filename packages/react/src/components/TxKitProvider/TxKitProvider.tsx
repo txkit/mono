@@ -1,6 +1,6 @@
 'use client'
 import React, { createContext, useContext } from 'react'
-import { ProviderNotFoundError } from '@txkit/core'
+import { NestedProviderError, ProviderNotFoundError } from '@txkit/core'
 
 import '../../types/global'
 import './TxKitProvider.css'
@@ -35,6 +35,15 @@ export const useTxKit = (): TxKit.Context => {
 
 
 const TxKitProvider = (props: TxKitProviderProps) => {
+  // Detect nested standalone providers - an anti-pattern that spawns duplicate
+  // wagmi stores and QueryClients, causing "Maximum update depth exceeded"
+  // crashes from wagmi's useSyncExternalStore reading new Map() refs each render.
+  // Embedded providers are safe to nest (they reuse the outer wagmi).
+  const parentContext = useContext(TxKitContext)
+  if (!props.embedded && parentContext) {
+    throw new NestedProviderError()
+  }
+
   if (props.embedded) {
     return <EmbeddedProvider config={props.config}>{props.children}</EmbeddedProvider>
   }

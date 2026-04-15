@@ -33,3 +33,14 @@ export class MissingWagmiProviderError extends TxKitError {
     })
   }
 }
+
+/** Thrown when a standalone TxKitProvider is nested inside another TxKitProvider */
+export class NestedProviderError extends TxKitError {
+  override name = 'NestedProviderError'
+  constructor() {
+    super('Nested <TxKitProvider> detected.', {
+      docsPath: '/errors/nested-provider',
+      details: 'Each standalone TxKitProvider creates its own wagmi store and QueryClient. Nesting them spawns duplicate stores, causes "Maximum update depth exceeded" from wagmi\'s useSyncExternalStore, and breaks wallet state. Use CSS classes (.txkit-dark / .txkit-light / .txkit-sharp) to show multiple theme variants inside one provider.',
+    })
+  }
+}

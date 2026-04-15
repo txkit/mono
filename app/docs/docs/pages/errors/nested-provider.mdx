@@ -1,0 +1,48 @@
+# NestedProviderError
+
+> Nested `<TxKitProvider>` detected.
+
+## Cause
+
+A standalone `<TxKitProvider>` was rendered inside another `<TxKitProvider>`. Each
+standalone provider creates its own wagmi store and QueryClient. Nesting them
+produces duplicate stores, breaks wallet state, and causes
+"Maximum update depth exceeded" crashes originating from wagmi's
+`useSyncExternalStore` reading a fresh `Map` reference on each render.
+
+## Solution
+
+Use **one** `<TxKitProvider>` per app. To display multiple theme or variant
+previews side by side, apply CSS classes on wrapper divs instead of nesting
+providers:
+
+```tsx
+<TxKitProvider config={config}>
+  <div className="txkit-root txkit-dark">
+    <ConnectWallet />
+  </div>
+  <div className="txkit-root txkit-light">
+    <ConnectWallet />
+  </div>
+  <div className="txkit-root txkit-sharp">
+    <ConnectWallet />
+  </div>
+</TxKitProvider>
+```
+
+If you need multiple wallet contexts in the same app (rare), wrap the inner
+subtree with your own `<WagmiProvider>` + `<QueryClientProvider>` and use
+`<TxKitProvider embedded>` - embedded providers safely reuse the outer wagmi.
+
+```tsx
+<TxKitProvider config={config}>
+  {/* main app */}
+  <WagmiProvider config={otherWagmiConfig}>
+    <QueryClientProvider client={otherQueryClient}>
+      <TxKitProvider embedded>
+        {/* isolated subtree */}
+      </TxKitProvider>
+    </QueryClientProvider>
+  </WagmiProvider>
+</TxKitProvider>
+```
