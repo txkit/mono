@@ -1,4 +1,8 @@
 'use client'
+// NOTE: deferred to v0.2.0. Not exported from @txkit/react public API in v0.1.0.
+// Component code, hook, tests, and story remain intact for iteration; re-enable
+// in packages/react/src/index.ts once Phase 2b (read functions, multi-function,
+// ENS, gas estimation) is ready.
 import React, { forwardRef, useCallback, useMemo } from 'react'
 import { cx } from '@txkit/core'
 import type { TransactionReceipt, TransactionError } from '@txkit/core'

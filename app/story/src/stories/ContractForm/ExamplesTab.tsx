@@ -1,5 +1,6 @@
 import { erc20Abi } from 'viem'
-import { ContractForm } from '@txkit/react'
+// ContractForm is deferred to v0.2.0 - not exported from @txkit/react public API.
+import ContractForm from '@txkit/react/components/ContractForm/ContractForm'
 
 import { StorySection } from '../../components'
 import dedent from '../../helpers/dedent'

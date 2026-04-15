@@ -73,15 +73,6 @@ export type { CheckboxProps } from './components/Inputs/Checkbox'
 export type { SelectProps, SelectOption } from './components/Inputs/Select'
 
 // --- ContractForm ---
-export { default as ContractForm } from './components/ContractForm/ContractForm'
-export { default as useContractForm } from './hooks/useContractForm'
-export type { ContractFormLabels } from './components/ContractForm/labels'
-export type {
-  ContractFormProps,
-  ContractFormRenderData,
-  UseContractFormOptions,
-  UseContractFormReturn,
-  FieldDescriptor,
-  SecurityWarning,
-  SolidityFieldType,
-} from './types/contract'
+// Deferred to v0.2.0. Component code, hook, tests, and types remain in the tree
+// but are not part of the public v0.1.0 surface. Re-enable in the v0.2.0 release
+// once Phase 2b (read functions, multi-function, ENS, gas estimation) is ready.

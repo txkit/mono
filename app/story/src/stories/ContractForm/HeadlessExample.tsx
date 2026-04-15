@@ -1,5 +1,6 @@
 import { erc20Abi } from 'viem'
-import { useContractForm } from '@txkit/react'
+// useContractForm is deferred to v0.2.0 - not exported from @txkit/react.
+import useContractForm from '@txkit/react/hooks/useContractForm'
 
 import { InfoGrid } from '../../components'
 import { USDC_ADDRESS } from '../../config'

@@ -1,5 +1,8 @@
 import { useState } from 'react'
-import { ContractForm } from '@txkit/react'
+// ContractForm is deferred to v0.2.0 - not exported from @txkit/react public API.
+// Story imports from source path directly so we can iterate on the component
+// internally without committing to a frozen v0.1.0 surface.
+import ContractForm from '@txkit/react/components/ContractForm/ContractForm'
 
 import { USDC_ADDRESS } from '../../config'
 import SAMPLE_ABI from './sampleAbi'
