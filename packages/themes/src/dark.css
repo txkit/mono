@@ -4,13 +4,13 @@
  * so it reads properly on dark backgrounds.
  */
 .txkit-dark {
-  /* --- Primary (violet, brighter in dark mode) --- */
-  --txkit-color-primary: oklch(0.65 0.22 292);
-  --txkit-color-primary-hover: oklch(0.72 0.23 292);
-  --txkit-color-primary-active: oklch(0.58 0.2 292);
+  /* --- Primary (txKit indigo, brighter for dark mode) --- */
+  --txkit-color-primary: oklch(0.62 0.24 276);
+  --txkit-color-primary-hover: oklch(0.68 0.25 276);
+  --txkit-color-primary-active: oklch(0.56 0.23 276);
   --txkit-color-primary-text: oklch(1 0 0);
-  --txkit-color-primary-alpha: oklch(0.65 0.22 292 / 0.15);
-  --txkit-color-ring: oklch(0.65 0.22 292 / 0.5);
+  --txkit-color-primary-alpha: oklch(0.62 0.24 276 / 0.15);
+  --txkit-color-ring: oklch(0.62 0.24 276 / 0.5);
 
   /* --- Backgrounds (zinc-tinted dark) --- */
   --txkit-color-bg: oklch(0.145 0.005 285);

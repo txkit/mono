@@ -1,7 +1,7 @@
 /*
  * txKit Color Schemes
  *
- * Default primary is violet (set in base.css/dark.css).
+ * Default primary is indigo 276° (brand hex #4338CA, set in base.css/dark.css).
  * These classes override --txkit-color-primary* to swap brand color.
  *
  * All schemes use the same lightness/chroma envelope (OKLCH perceptual
@@ -12,7 +12,25 @@
  *   <div class="txkit-root txkit-color-emerald">...</div>
  */
 
-/* --- Violet (default, same as base) --- */
+/* --- Indigo (default, same as base - txKit canonical brand #4338CA) --- */
+.txkit-color-indigo {
+  --txkit-color-primary: oklch(0.511 0.262 276);
+  --txkit-color-primary-hover: oklch(0.465 0.275 276);
+  --txkit-color-primary-active: oklch(0.42 0.28 276);
+  --txkit-color-primary-alpha: oklch(0.511 0.262 276 / 0.1);
+  --txkit-color-ring: oklch(0.511 0.262 276 / 0.4);
+}
+
+.txkit-dark.txkit-color-indigo,
+.txkit-color-indigo .txkit-dark {
+  --txkit-color-primary: oklch(0.62 0.24 276);
+  --txkit-color-primary-hover: oklch(0.68 0.25 276);
+  --txkit-color-primary-active: oklch(0.56 0.23 276);
+  --txkit-color-primary-alpha: oklch(0.62 0.24 276 / 0.15);
+  --txkit-color-ring: oklch(0.62 0.24 276 / 0.5);
+}
+
+/* --- Violet --- */
 .txkit-color-violet {
   --txkit-color-primary: oklch(0.585 0.233 292);
   --txkit-color-primary-hover: oklch(0.54 0.245 292);
@@ -28,24 +46,6 @@
   --txkit-color-primary-active: oklch(0.58 0.2 292);
   --txkit-color-primary-alpha: oklch(0.65 0.22 292 / 0.15);
   --txkit-color-ring: oklch(0.65 0.22 292 / 0.5);
-}
-
-/* --- Indigo --- */
-.txkit-color-indigo {
-  --txkit-color-primary: oklch(0.585 0.233 268);
-  --txkit-color-primary-hover: oklch(0.54 0.245 268);
-  --txkit-color-primary-active: oklch(0.48 0.25 268);
-  --txkit-color-primary-alpha: oklch(0.585 0.233 268 / 0.1);
-  --txkit-color-ring: oklch(0.585 0.233 268 / 0.4);
-}
-
-.txkit-dark.txkit-color-indigo,
-.txkit-color-indigo .txkit-dark {
-  --txkit-color-primary: oklch(0.65 0.22 268);
-  --txkit-color-primary-hover: oklch(0.72 0.23 268);
-  --txkit-color-primary-active: oklch(0.58 0.2 268);
-  --txkit-color-primary-alpha: oklch(0.65 0.22 268 / 0.15);
-  --txkit-color-ring: oklch(0.65 0.22 268 / 0.5);
 }
 
 /* --- Emerald --- */

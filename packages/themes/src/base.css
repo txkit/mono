@@ -13,13 +13,13 @@
  *   - spacing, typography, motion
  */
 :root {
-  /* --- Primary (violet 292°) --- */
-  --txkit-color-primary: oklch(0.585 0.233 292);
-  --txkit-color-primary-hover: oklch(0.54 0.245 292);
-  --txkit-color-primary-active: oklch(0.48 0.25 292);
+  /* --- Primary (txKit indigo, hue 276°, matches brand hex #4338CA) --- */
+  --txkit-color-primary: oklch(0.511 0.262 276);
+  --txkit-color-primary-hover: oklch(0.465 0.275 276);
+  --txkit-color-primary-active: oklch(0.42 0.28 276);
   --txkit-color-primary-text: oklch(1 0 0);
-  --txkit-color-primary-alpha: oklch(0.585 0.233 292 / 0.1);
-  --txkit-color-ring: oklch(0.585 0.233 292 / 0.4);
+  --txkit-color-primary-alpha: oklch(0.511 0.262 276 / 0.1);
+  --txkit-color-ring: oklch(0.511 0.262 276 / 0.4);
 
   /* --- Backgrounds (4 levels) --- */
   --txkit-color-bg: oklch(1 0 0);
@@ -103,6 +103,10 @@
   --txkit-z-dropdown: 1000;
   --txkit-z-modal: 1001;
   --txkit-z-toast: 1002;
+
+  /* --- Layout primitives --- */
+  --txkit-tap-target: 44px;
+  --txkit-row-min-height: 56px;
 }
 
 .txkit-root {

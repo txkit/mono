@@ -40,12 +40,12 @@
 
 .txkit-ft-content[data-type="success"] {
   background: var(--txkit-color-success);
-  color: #fff;
+  color: var(--txkit-color-success-text);
 }
 
 .txkit-ft-content[data-type="error"] {
   background: var(--txkit-color-error);
-  color: #fff;
+  color: var(--txkit-color-error-text);
 }
 
 .txkit-ft-content[data-type="info"] {

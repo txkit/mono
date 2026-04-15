@@ -71,20 +71,20 @@
 .txkit-fs-item[aria-current="step"] .txkit-fs-indicator {
   background: var(--txkit-color-primary);
   border-color: var(--txkit-color-primary);
-  color: #fff;
+  color: var(--txkit-color-primary-text);
 }
 
 .txkit-fs-item[data-status="completed"] .txkit-fs-indicator {
   background: var(--txkit-color-success);
   border-color: var(--txkit-color-success);
-  color: #fff;
+  color: var(--txkit-color-success-text);
 }
 
 .txkit-fs-item[data-status="error"] .txkit-fs-indicator,
 .txkit-fs-item[data-status="simulation-failed"] .txkit-fs-indicator {
   background: var(--txkit-color-error);
   border-color: var(--txkit-color-error);
-  color: #fff;
+  color: var(--txkit-color-error-text);
 }
 
 /* Pulse on active processing step */
