@@ -17,12 +17,19 @@
     "txkit",
     "web3",
     "ethereum",
-    "utilities",
-    "types",
     "viem",
     "blockchain",
     "typescript",
-    "defi"
+    "defi",
+    "utilities",
+    "types",
+    "errors",
+    "format",
+    "address",
+    "token",
+    "calldata",
+    "polling",
+    "evm"
   ],
   "publishConfig": {
     "access": "public"

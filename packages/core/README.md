@@ -9,21 +9,24 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@txkit/core"><img src="https://img.shields.io/npm/v/@txkit/core.svg" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/@txkit/core"><img src="https://img.shields.io/npm/v/@txkit/core/alpha.svg" alt="npm version" /></a>
+  <a href="https://bundlephobia.com/package/@txkit/core"><img src="https://img.shields.io/bundlephobia/minzip/@txkit/core" alt="bundle size" /></a>
   <a href="https://github.com/txkit/mono/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@txkit/core.svg" alt="license" /></a>
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue.svg" alt="TypeScript" />
 </p>
 
 ---
 
+> **v0.1.0-alpha** - stable utilities consumed by `@txkit/react`. Framework-agnostic, safe to use standalone.
+
 ## Overview
 
-Framework-agnostic utilities, types, constants, and error classes used across the txKit ecosystem. Built on [viem](https://viem.sh).
+Framework-agnostic utilities, types, constants, and error classes used across the txKit ecosystem. Built on [viem](https://viem.sh), zero React dependency.
 
 ## Install
 
 ```bash
-npm install @txkit/core
+npm install @txkit/core viem
 ```
 
 ## API
@@ -42,6 +45,7 @@ npm install @txkit/core
 - `formatDecodedCalldata(decoded)` - format decoded calldata for display
 - `deepEqual(a, b)` - deep equality comparison
 - `pollUntil(fn, options?)` - poll until truthy value or timeout
+- `copyToClipboard(text)` - async clipboard write with fallback
 
 ### Constants
 

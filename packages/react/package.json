@@ -22,7 +22,9 @@
     "wallet",
     "connect-wallet",
     "token-balance",
-    "transaction",
+    "transaction-button",
+    "flow",
+    "multi-step",
     "defi",
     "wagmi",
     "viem",
@@ -30,10 +32,13 @@
     "anti-phishing",
     "dapp",
     "hooks",
+    "headless",
     "erc20",
     "arbitrum",
     "optimism",
-    "base"
+    "base",
+    "sepolia",
+    "accessibility"
   ],
   "publishConfig": {
     "access": "public"

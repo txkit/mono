@@ -9,23 +9,26 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@txkit/react"><img src="https://img.shields.io/npm/v/@txkit/react.svg" alt="npm version" /></a>
-  <a href="https://www.npmjs.com/package/@txkit/react"><img src="https://img.shields.io/npm/dm/@txkit/react.svg" alt="npm downloads" /></a>
+  <a href="https://www.npmjs.com/package/@txkit/react"><img src="https://img.shields.io/npm/v/@txkit/react/alpha.svg" alt="npm version" /></a>
+  <a href="https://bundlephobia.com/package/@txkit/react"><img src="https://img.shields.io/bundlephobia/minzip/@txkit/react" alt="bundle size" /></a>
   <a href="https://github.com/txkit/mono/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@txkit/react.svg" alt="license" /></a>
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue.svg" alt="TypeScript" />
 </p>
 
 ---
 
+> **v0.1.0-alpha** - core primitives and transaction flow are stable. `ContractForm` is deferred to v0.2.0.
+
 ## Features
 
-- Works with **RainbowKit**, **AppKit**, **ConnectKit**, or built-in ConnectWallet
-- **TokenBalance** - native + ERC-20 with fiat pricing
-- **TransactionButton** - multi-step flow with simulation + anti-phishing
-- **ContractForm** - ABI-driven form with validation + security warnings
+- Works with **RainbowKit**, **AppKit**, **ConnectKit**, or built-in `ConnectWallet`
+- **TokenBalance** - native + ERC-20 with fiat pricing and auto-formatting
+- **TransactionButton** - multi-step transaction flow with simulation + anti-phishing
+- **FlowSteps / FlowProgress / FlowToast** - compound UI for active transaction flows
 - Three customization levels: zero-config, custom render, headless hooks
 - Built on [wagmi](https://wagmi.sh) + [viem](https://viem.sh) - no vendor lock-in
 - CSS custom properties for full style control
+- WCAG 2.1 AA - focus traps, keyboard navigation, 44px touch targets
 
 ## Install
 
@@ -88,7 +91,6 @@ function MyComponent() {
 | [`ConnectWallet`](https://txkit.dev/docs/components/connect-wallet) | Multi-wallet connection with ENS, balance, chain switching |
 | [`TokenBalance`](https://txkit.dev/docs/components/token-balance) | Native + ERC-20 balance display with fiat pricing |
 | [`TransactionButton`](https://txkit.dev/docs/components/transaction-button) | Multi-step transaction flow with simulation and approval |
-| [`ContractForm`](https://txkit.dev/docs/components/contract-form) | ABI-driven form generation with validation and security warnings |
 | `FlowSteps` / `FlowProgress` / `FlowToast` | Compound components for transaction flow UI |
 
 ## Headless Hooks
@@ -96,21 +98,42 @@ function MyComponent() {
 Every component has a corresponding headless hook for full control:
 
 ```tsx
-import { useWalletState } from '@txkit/react/connect'
-import { useTokenBalance } from '@txkit/react/balance'
-import { useTransactionFlow } from '@txkit/react/transaction'
-import { useContractForm } from '@txkit/react/contract'
+import {
+  useWalletState,
+  useTokenBalance,
+  useTokenBalances,
+  useTokenPrice,
+  useTransactionFlow,
+  useFlowState,
+} from '@txkit/react'
 ```
 
-## Subpath Imports
+## Transaction Flow
 
-Tree-shake by importing only what you need:
+Multi-step flows compose from `txStep`, `approveAndExecute`, `signAndSubmit` helpers:
 
 ```tsx
-import { ConnectWallet } from '@txkit/react/connect'
-import { TokenBalance } from '@txkit/react/balance'
-import { TransactionButton } from '@txkit/react/transaction'
-import { ContractForm } from '@txkit/react/contract'
+import { TransactionButton, FlowSteps, FlowToast, approveAndExecute } from '@txkit/react'
+import { parseUnits } from 'viem'
+
+const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
+
+function SwapButton() {
+  return (
+    <>
+      <TransactionButton
+        steps={approveAndExecute({
+          token: USDC,
+          spender: '0xRouter...',
+          amount: parseUnits('100', 6),
+          tx: { to: '0xRouter...', data: '0x...' },
+        })}
+      />
+      <FlowSteps />
+      <FlowToast />
+    </>
+  )
+}
 ```
 
 ## Documentation

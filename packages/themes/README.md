@@ -9,15 +9,18 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@txkit/themes"><img src="https://img.shields.io/npm/v/@txkit/themes.svg" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/@txkit/themes"><img src="https://img.shields.io/npm/v/@txkit/themes/alpha.svg" alt="npm version" /></a>
+  <a href="https://bundlephobia.com/package/@txkit/themes"><img src="https://img.shields.io/bundlephobia/minzip/@txkit/themes" alt="bundle size" /></a>
   <a href="https://github.com/txkit/mono/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@txkit/themes.svg" alt="license" /></a>
 </p>
 
 ---
 
+> **v0.1.0-alpha** - pure CSS, no JavaScript. Ships light + dark themes and three visual variants.
+
 ## Overview
 
-CSS custom property themes for txKit components. Includes light and dark themes with visual variants.
+CSS custom property themes for txKit components. Light and dark base themes, plus `soft`, `sharp`, and `rounded` visual variants. All tokens are namespaced under `--txkit-*` to avoid clashes with your app's design system.
 
 ## Install
 
@@ -55,6 +58,8 @@ Override any `--txkit-*` CSS custom property:
   --txkit-font-family: 'Inter', sans-serif;
 }
 ```
+
+Token namespaces: `--txkit-color-*`, `--txkit-radius-*`, `--txkit-shadow-*`, `--txkit-spacing-*`, `--txkit-font-*`, `--txkit-z-*`, `--txkit-transition`.
 
 ## Documentation
 

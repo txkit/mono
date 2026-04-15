@@ -18,10 +18,14 @@
     "themes",
     "css",
     "web3",
+    "ethereum",
     "dark-mode",
     "light-mode",
     "design-tokens",
-    "css-variables"
+    "css-variables",
+    "theming",
+    "ui-kit",
+    "defi"
   ],
   "publishConfig": {
     "access": "public"

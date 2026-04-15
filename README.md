@@ -9,13 +9,16 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@txkit/react"><img src="https://img.shields.io/npm/v/@txkit/react.svg" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/@txkit/react"><img src="https://img.shields.io/npm/v/@txkit/react/alpha.svg" alt="npm version" /></a>
+  <a href="https://bundlephobia.com/package/@txkit/react"><img src="https://img.shields.io/bundlephobia/minzip/@txkit/react" alt="bundle size" /></a>
   <a href="https://github.com/txkit/mono/actions/workflows/ci.yml"><img src="https://github.com/txkit/mono/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <a href="https://github.com/txkit/mono/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@txkit/react.svg" alt="license" /></a>
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue.svg" alt="TypeScript" />
 </p>
 
 ---
+
+> **v0.1.0-alpha** - published under the `alpha` npm tag while we refine the public surface. API may shift before v1.0.
 
 ## What is txKit?
 
@@ -25,16 +28,16 @@ Works standalone or alongside **RainbowKit**, **AppKit**, **ConnectKit**, or any
 
 ## Packages
 
-| Package | Description | npm |
-|---------|-------------|-----|
-| [`@txkit/react`](./packages/react) | React components and headless hooks | [![npm](https://img.shields.io/npm/v/@txkit/react.svg)](https://www.npmjs.com/package/@txkit/react) |
-| [`@txkit/core`](./packages/core) | Framework-agnostic utilities and types | [![npm](https://img.shields.io/npm/v/@txkit/core.svg)](https://www.npmjs.com/package/@txkit/core) |
-| [`@txkit/themes`](./packages/themes) | CSS themes (light, dark, variants) | [![npm](https://img.shields.io/npm/v/@txkit/themes.svg)](https://www.npmjs.com/package/@txkit/themes) |
+| Package | Description | Version | Size |
+|---------|-------------|---------|------|
+| [`@txkit/react`](./packages/react) | React components and headless hooks | [![npm](https://img.shields.io/npm/v/@txkit/react/alpha.svg)](https://www.npmjs.com/package/@txkit/react) | [![size](https://img.shields.io/bundlephobia/minzip/@txkit/react)](https://bundlephobia.com/package/@txkit/react) |
+| [`@txkit/core`](./packages/core) | Framework-agnostic utilities and types | [![npm](https://img.shields.io/npm/v/@txkit/core/alpha.svg)](https://www.npmjs.com/package/@txkit/core) | [![size](https://img.shields.io/bundlephobia/minzip/@txkit/core)](https://bundlephobia.com/package/@txkit/core) |
+| [`@txkit/themes`](./packages/themes) | CSS themes (light, dark, variants) | [![npm](https://img.shields.io/npm/v/@txkit/themes/alpha.svg)](https://www.npmjs.com/package/@txkit/themes) | [![size](https://img.shields.io/bundlephobia/minzip/@txkit/themes)](https://bundlephobia.com/package/@txkit/themes) |
 
 ## Quick Start
 
 ```bash
-npm install @txkit/react @txkit/themes wagmi viem @tanstack/react-query
+npm install @txkit/react@alpha @txkit/themes@alpha wagmi viem @tanstack/react-query
 ```
 
 ```tsx
@@ -92,12 +95,11 @@ function SendButton() {
 }
 ```
 
-## Components
+## Components (v0.1.0-alpha)
 
 - **ConnectWallet** - multi-wallet connection with ENS, balance display, chain switching
 - **TokenBalance** - native + ERC-20 balance with fiat pricing and auto-formatting
 - **TransactionButton** - multi-step transaction flow with simulation, approval, and anti-phishing
-- **ContractForm** - ABI-driven form generation with validation and security warnings
 - **FlowSteps** / **FlowProgress** / **FlowToast** - compound components for transaction flow UI
 
 Every component supports three customization levels:
@@ -105,13 +107,14 @@ Every component supports three customization levels:
 2. **Custom render** - `children` as render function for custom UI
 3. **Headless hooks** - full control, bring your own UI
 
+**Coming in v0.2.0:** `ContractForm` (ABI-driven form generation), `SwapWidget`, `StakingPanel`, `ApprovalManager`.
+
 ## Features
 
 - Built on [wagmi](https://wagmi.sh) + [viem](https://viem.sh) - zero vendor lock-in, bring your own RPC
 - **Anti-phishing** - calldata preview, bounded approvals, simulation, risk scoring
 - **WCAG 2.1 AA** - focus traps, keyboard navigation, screen reader support, 44px touch targets
 - CSS custom properties (`--txkit-*`) for full style control
-- Tree-shakeable subpath imports (`@txkit/react/connect`, `/balance`, `/transaction`, `/contract`)
 - Light + dark themes with visual variants (soft, sharp, rounded)
 - ESM + CJS + TypeScript declarations
 
