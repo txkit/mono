@@ -102,13 +102,7 @@ const AppContent = () => {
       }
       <aside className={cx('playground-sidebar', { open: sidebarOpen })}>
         <div className="playground-brand">
-          <div className="playground-brand-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" />
-              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
+          <img className="playground-brand-icon" src="/logo.svg" alt="txKit" width="24" height="24" />
           <span className="playground-logo">txKit</span>
           <button
             type="button"
@@ -165,24 +159,45 @@ const AppContent = () => {
         </div>
         {
           componentDescriptions[active] && (
-            <p className="playground-description">
-              {componentDescriptions[active].summary}
+            <div className="playground-description">
+              <p className="playground-description-summary">
+                {componentDescriptions[active].summary}
+                {
+                  componentDescriptions[active].docsPath && (
+                    <>
+                      {' '}
+                      <a
+                        href={`https://docs.txkit.dev${componentDescriptions[active].docsPath}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="playground-docs-link"
+                      >
+                        Docs <ExternalLinkIcon size={12} />
+                      </a>
+                    </>
+                  )
+                }
+              </p>
               {
-                componentDescriptions[active].docsPath && (
-                  <>
-                    {' '}
-                    <a
-                      href={`https://docs.txkit.dev${componentDescriptions[active].docsPath}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="playground-docs-link"
-                    >
-                      Docs <ExternalLinkIcon size={12} />
-                    </a>
-                  </>
+                componentDescriptions[active].features && (
+                  <ul className="playground-description-features">
+                    {
+                      componentDescriptions[active].features!.map((feature) => (
+                        <li key={feature}>{feature}</li>
+                      ))
+                    }
+                  </ul>
                 )
               }
-            </p>
+              {
+                componentDescriptions[active].useWhen && (
+                  <p className="playground-description-when">
+                    <span className="playground-description-when-label">Use when</span>
+                    {componentDescriptions[active].useWhen}
+                  </p>
+                )
+              }
+            </div>
           )
         }
         {

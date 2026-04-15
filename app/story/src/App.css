@@ -18,7 +18,7 @@
   --pg-surface-sunken: oklch(0.12 0 0);
 
   /* UI - single muted neutral used for sidebar, segmented containers, panel backgrounds */
-  --pg-primary: oklch(0.585 0.233 292.717);
+  --pg-primary: oklch(0.511 0.262 276);
   --pg-primary-fg: oklch(1 0 0);
   --pg-secondary: oklch(0.2 0 0);
   --pg-secondary-fg: oklch(0.95 0 0);
@@ -61,7 +61,7 @@
   --pg-surface-elevated: oklch(1 0 0);
   --pg-surface-sunken: oklch(0.96 0 0);
 
-  --pg-primary: oklch(0.585 0.233 292.717);
+  --pg-primary: oklch(0.511 0.262 276);
   --pg-primary-fg: oklch(1 0 0);
   --pg-secondary: oklch(0.96 0 0);
   --pg-secondary-fg: oklch(0.205 0 0);
@@ -126,19 +126,11 @@ body {
 }
 
 .playground-brand-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 28px;
   height: 28px;
   border-radius: var(--pg-radius-sm);
-  background: var(--pg-primary);
-}
-
-.playground-brand-icon svg {
-  width: 16px;
-  height: 16px;
-  color: var(--pg-primary-fg);
+  display: block;
+  flex-shrink: 0;
 }
 
 .playground-logo {
@@ -264,8 +256,47 @@ body {
   font-size: 14px;
   line-height: 1.5;
   margin: -16px 0 20px;
-  max-width: 600px;
+  max-width: 680px;
   color: var(--pg-muted-fg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.playground-description-summary {
+  margin: 0;
+  color: var(--pg-fg);
+}
+
+.playground-description-features {
+  margin: 0;
+  padding-left: 18px;
+  list-style: disc;
+  color: var(--pg-muted-fg);
+}
+
+.playground-description-features li {
+  margin: 2px 0;
+}
+
+.playground-description-when {
+  margin: 0;
+  font-size: 13px;
+  color: var(--pg-muted-fg);
+  padding: 8px 12px;
+  border-left: 2px solid var(--pg-primary);
+  background: var(--pg-surface-sunken);
+  border-radius: 0 4px 4px 0;
+}
+
+.playground-description-when-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pg-primary);
+  margin-right: 8px;
 }
 
 .playground-docs-link {

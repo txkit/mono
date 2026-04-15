@@ -50,7 +50,7 @@ export const PlaygroundProvider: React.FC<PlaygroundProviderProps> = ({ children
     (stored.variant as TxKit.Variant) || 'default'
   )
   const [ colorScheme, setColorSchemeState ] = useState<ColorScheme>(
-    (stored.colorScheme as ColorScheme) || 'violet'
+    (stored.colorScheme as ColorScheme) || 'indigo'
   )
 
   const setTheme = useCallback((value: TxKit.Theme) => {

@@ -8,8 +8,8 @@ type Variant = 'default' | 'soft' | 'sharp' | 'rounded'
 type Theme = 'light' | 'dark'
 
 const colorSchemes: readonly { id: ColorScheme; label: string; hue: number }[] = [
+  { id: 'indigo', label: 'Indigo', hue: 276 },
   { id: 'violet', label: 'Violet', hue: 292 },
-  { id: 'indigo', label: 'Indigo', hue: 268 },
   { id: 'emerald', label: 'Emerald', hue: 155 },
   { id: 'amber', label: 'Amber', hue: 65 },
 ]

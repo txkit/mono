@@ -116,29 +116,80 @@ export const componentProps = {
 
 // --- Component descriptions ---
 
-export const componentDescriptions: Record<string, { summary: string; docsPath?: string }> = {
+export type ComponentDescription = {
+  summary: string
+  features?: readonly string[]
+  useWhen?: string
+  docsPath?: string
+}
+
+export const componentDescriptions: Record<string, ComponentDescription> = {
+  TxKitProvider: {
+    summary: 'Root provider that wires wagmi, TanStack Query, theming, and transaction flow state together. All other txKit components must be wrapped in it.',
+    features: [
+      'Standalone mode: creates its own wagmi + QueryClient',
+      'Embedded mode: plugs into your existing WagmiProvider (RainbowKit, ConnectKit, custom)',
+      'Theme switching via CSS classes (.txkit-light / .txkit-dark / .txkit-sharp / .txkit-soft / .txkit-rounded)',
+      'Shared flow store - FlowSteps, FlowProgress, and FlowToast auto-connect',
+      'Nested-provider detection throws a typed error with a docs link',
+    ],
+    useWhen: 'Always - root of every app using txKit. Standalone for greenfield projects, embedded to add txKit alongside RainbowKit/AppKit/ConnectKit.',
+    docsPath: '/api/txkit-provider',
+  },
   ConnectWallet: {
-    summary: 'Multi-wallet connection button with ENS, balance display, chain switching, and wallet grouping. 5-state machine: disconnected, connecting, connected, wrong-chain, error.',
+    summary: 'Drop-in wallet connect button with a five-state machine (disconnected, connecting, connected, wrong-chain, error).',
+    features: [
+      'EIP-6963 auto-detection of installed wallets + WalletConnect fallback',
+      'ENS name and avatar resolution on mainnet',
+      'Formatted native balance, copyable full address',
+      'Chain enforcement with one-click switch via chainId prop',
+      'Three-tier customization: zero-config, children render fn, useWalletState hook',
+    ],
+    useWhen: 'You want a turnkey connect UX. For apps that already ship RainbowKit or AppKit, use embedded mode on TxKitProvider and keep your existing connector.',
     docsPath: '/api/connect-wallet',
   },
   TokenBalance: {
-    summary: 'ERC-20 and native token balance display with auto-formatting, fiat conversion via DeFiLlama, and real-time polling.',
+    summary: 'Inline balance display for native currency or any ERC-20. One component, batch multicall behind the scenes.',
+    features: [
+      'Native ETH (wagmi useBalance) or ERC-20 via multicall - one RPC for N tokens',
+      'Progressive formatting: 5 decimals → k/m/b suffixes with dust threshold',
+      'Fiat conversion via DeFiLlama + multi-currency forex (frankfurter.app fallback)',
+      'Block-based refresh with targeted cache invalidation',
+      'onBalanceChange callback and useTokenBalance headless hook',
+    ],
+    useWhen: 'Anywhere a balance is visible. Cheap to mount repeatedly - TanStack Query dedupes identical reads.',
     docsPath: '/api/token-balance',
   },
   TransactionButton: {
-    summary: 'Multi-step transaction flow with approve, sign, and wait stages. Supports simulation, safety delays, and compound components (FlowSteps, FlowToast, FlowProgress).',
+    summary: 'Multi-step transaction executor for approve → sign → send → wait flows, with anti-phishing built in.',
+    features: [
+      'N steps (tx or sign) with a 12-state machine per step',
+      'Pre-sign simulation via eth_call + decoded calldata preview',
+      'MAX_UINT256 approval warning, optional safety delay timer',
+      'Cascade cancel on step failure, cached signatures on retry',
+      'Compound components - drop FlowSteps, FlowProgress, FlowToast anywhere in the tree',
+    ],
+    useWhen: 'Any on-chain action more complex than a single transaction - swaps, stakes, bridges, multi-approve flows.',
     docsPath: '/api/transaction-button',
   },
   ContractForm: {
-    summary: 'Auto-generated form from Solidity ABI with type-specific inputs, validation, security warnings for dangerous functions, and calldata preview.',
-    docsPath: '/api/contract-form',
-  },
-  TxKitProvider: {
-    summary: 'Root wrapper that initializes wagmi, TanStack Query, and theming. Standalone mode creates providers internally. Embedded mode reuses an existing WagmiProvider - for projects with RainbowKit, ConnectKit, or custom wallet setup.',
-    docsPath: '/getting-started',
+    summary: 'ABI-driven form generation with validation, dangerous-function warnings, and calldata preview. Deferred to v0.2.0 (not in public API).',
+    features: [
+      'Auto-renders type-specific inputs for every Solidity type including arrays and tuples',
+      '19 dangerous functions detected (approve, setApprovalForAll, delegateCall, selfdestruct, ...)',
+      'Calldata preview with full addresses (anti address poisoning)',
+      'Integrated with TransactionButton flow',
+    ],
+    useWhen: 'Internal tooling and explorer-style UIs that need ad-hoc contract calls. Not yet part of the v0.1.0 public API.',
   },
   ThemeShowcase: {
-    summary: 'Visual preview of all 4 color schemes × 4 variants × 2 themes. Includes a Copy Theme panel to grab CSS variables for any combination.',
+    summary: 'Interactive grid of 4 color schemes × 4 variants × 2 themes (32 combinations), with a Copy Theme panel that outputs ready-to-paste CSS variables.',
+    features: [
+      'Four brand hues: indigo (canonical), violet, emerald, amber',
+      'Four border-radius variants: default, soft, sharp, rounded',
+      'Switch between light and dark previews',
+      'Copy OKLCH tokens for any combination',
+    ],
   },
 }
 
