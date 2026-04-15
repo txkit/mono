@@ -1,4 +1,4 @@
-import { http } from 'viem'
+import { fallback, http } from 'viem'
 import { mainnet, sepolia } from 'viem/chains'
 import type { Chain, Transport } from 'viem'
 
@@ -16,13 +16,31 @@ export const TESTNET_CHAINS: [ Chain, ...Chain[] ] = [ sepolia, mainnet ]
 export const TESTNET_DISPLAY_CHAINS: [ Chain, ...Chain[] ] = [ sepolia ]
 
 /**
- * Default transports for testnet mode.
+ * CORS-enabled public RPCs for browser use.
  *
- * Uses viem's built-in public RPC endpoints (no Alchemy/Infura key required).
- * Fine for alpha / playground use - rate limits apply. Production apps should
- * provide `chains` + `transports` explicitly.
+ * viem's default RPC for mainnet (eth.merkle.io) and sepolia (thirdweb) don't
+ * reliably allow browser CORS, so we pin CORS-friendly providers with a fallback
+ * chain for resilience. Fine for alpha / playground - production apps should
+ * supply their own chains + transports.
+ *
+ * Sources (CORS-enabled as of 2026-04):
+ * - PublicNode (free, no key): https://www.publicnode.com
+ * - Cloudflare (free, no key): https://developers.cloudflare.com/web3/
+ * - LlamaRPC (free, no key): https://llamarpc.com
+ * - ethpandaops Sepolia (community run)
  */
+const MAINNET_RPCS = [
+  'https://ethereum-rpc.publicnode.com',
+  'https://cloudflare-eth.com',
+  'https://eth.llamarpc.com',
+]
+
+const SEPOLIA_RPCS = [
+  'https://ethereum-sepolia-rpc.publicnode.com',
+  'https://rpc.sepolia.org',
+]
+
 export const TESTNET_TRANSPORTS: Record<number, Transport> = {
-  [sepolia.id]: http(),
-  [mainnet.id]: http(),
+  [sepolia.id]: fallback(SEPOLIA_RPCS.map((url) => http(url))),
+  [mainnet.id]: fallback(MAINNET_RPCS.map((url) => http(url))),
 }
