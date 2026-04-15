@@ -1,0 +1,179 @@
+/* --- Control Panel (figma PreviewTab style) --- */
+
+.control-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: var(--pg-radius-lg);
+  border: 1px solid var(--pg-border);
+  background: var(--pg-muted);
+}
+
+.control-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.control-panel-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--pg-muted-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.control-panel-reset {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--pg-primary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.control-panel-reset:hover {
+  text-decoration: underline;
+}
+
+.control-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.control-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.control-group--toggles {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.control-divider {
+  height: 1px;
+  background: var(--pg-border);
+  margin: 0;
+}
+
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.control-item--full {
+  width: 100%;
+}
+
+/* When StateVisualizer is a control, remove its own container chrome. */
+.control-item--full .state-visualizer {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.control-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--pg-muted-fg);
+  font-family: 'IBM Plex Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.control-value {
+  display: flex;
+}
+
+/* --- Boolean toggle (two-button group) --- */
+
+.control-toggle-group {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.control-toggle-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--pg-border);
+  border-radius: var(--pg-radius);
+  background: var(--pg-card);
+  color: var(--pg-muted-fg);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'IBM Plex Mono', monospace;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.control-toggle-btn:hover:not(.active) {
+  color: var(--pg-fg);
+  border-color: var(--pg-border-hover);
+}
+
+.control-toggle-btn.active {
+  background: var(--pg-primary);
+  border-color: var(--pg-primary);
+  color: var(--pg-primary-fg);
+}
+
+.control-input:focus-visible,
+.control-select:focus-visible,
+.control-toggle-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px oklch(from var(--pg-primary) l c h / 0.5);
+}
+
+/* --- Text input --- */
+
+.control-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--pg-border);
+  border-radius: var(--pg-radius);
+  background: var(--pg-card);
+  color: var(--pg-fg);
+  font-size: 13px;
+  font-family: 'IBM Plex Mono', monospace;
+  outline: none;
+  transition: all 150ms ease;
+}
+
+.control-input:focus {
+  border-color: var(--pg-primary);
+  box-shadow: 0 0 0 2px oklch(from var(--pg-primary) l c h / 0.25);
+}
+
+.control-input--number {
+  max-width: 120px;
+}
+
+/* --- Select --- */
+
+.control-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--pg-border);
+  border-radius: var(--pg-radius);
+  background: var(--pg-card);
+  color: var(--pg-fg);
+  font-size: 13px;
+  font-family: 'IBM Plex Mono', monospace;
+  outline: none;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.control-select:focus {
+  border-color: var(--pg-primary);
+  box-shadow: 0 0 0 2px oklch(from var(--pg-primary) l c h / 0.25);
+}

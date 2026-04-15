@@ -1,8 +1,8 @@
 import { sepolia } from 'viem/chains'
-import { TxKitProvider, ConnectWallet } from '@txkit/react'
+import { ConnectWallet } from '@txkit/react'
 
-import StorySection from '../../StorySection'
-import dedent from '../shared/dedent'
+import { StorySection } from '../../components'
+import dedent from '../../helpers/dedent'
 import DotLoadingDemo from './DotLoadingDemo'
 import ButtonVariantsDemo from './ButtonVariantsDemo'
 import AvatarFallbackDemo from './AvatarFallbackDemo'
@@ -10,12 +10,8 @@ import CompactVariantsDemo from './CompactVariantsDemo'
 import HeadlessWalletExample from './HeadlessWalletExample'
 
 
-const ExamplesTab = ({ config, darkConfig, lightConfig }: {
-  config: TxKit.Config
-  darkConfig: TxKit.Config
-  lightConfig: TxKit.Config
-}) => (
-  <TxKitProvider config={config}>
+const ExamplesTab = () => (
+  <>
     <p className="story-description">Code examples and advanced usage patterns</p>
     <StorySection
       title="Default"
@@ -202,19 +198,22 @@ const ExamplesTab = ({ config, darkConfig, lightConfig }: {
       <div className="story-section-header">
         <h3 className="story-section-title">Dark / Light Comparison</h3>
       </div>
-      <p className="story-description">Side-by-side theme preview</p>
+      <p className="story-description">
+        Side-by-side theme preview. Theme classes are applied via CSS wrappers - no nested
+        TxKitProvider (which is an anti-pattern: each instance spawns its own wagmi + QueryClient).
+      </p>
       <div className="side-by-side">
         <div className="side-by-side-pane side-by-side-pane--dark">
           <div className="side-by-side-label">Dark</div>
-          <TxKitProvider config={darkConfig}>
+          <div className="txkit-root txkit-dark">
             <ConnectWallet />
-          </TxKitProvider>
+          </div>
         </div>
         <div className="side-by-side-pane side-by-side-pane--light">
           <div className="side-by-side-label">Light</div>
-          <TxKitProvider config={lightConfig}>
+          <div className="txkit-root txkit-light">
             <ConnectWallet />
-          </TxKitProvider>
+          </div>
         </div>
       </div>
     </div>
@@ -226,7 +225,7 @@ const ExamplesTab = ({ config, darkConfig, lightConfig }: {
     >
       <HeadlessWalletExample />
     </StorySection>
-  </TxKitProvider>
+  </>
 )
 
 

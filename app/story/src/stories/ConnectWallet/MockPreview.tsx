@@ -1,8 +1,7 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 
-import type { ControlSchema } from '../../controls/useControls'
-import StateVisualizer from '../shared/StateVisualizer'
-import CwStateMachineControls from './CwStateMachineControls'
+import CwMockButton from './CwMockButton'
+import { useControls, ControlPanel, useTxkitThemeClass } from '../../components'
 
 
 const CW_STATES = [
@@ -12,47 +11,39 @@ const CW_STATES = [
   { id: 'wrong-chain', label: 'Wrong Chain', color: '#ef4444' },
   { id: 'error', label: 'Error', color: '#ef4444' },
   { id: 'initializing', label: 'Initializing', color: '#94a3b8' },
-]
+] as const
 
-const disconnectedControls = {
-  label: { type: 'string' as const, default: 'Connect Wallet' },
-  size: { type: 'select' as const, default: 'default', options: [ 'default', 'compact' ] },
-  variant: { type: 'select' as const, default: 'default', options: [ 'default', 'outline', 'ghost', 'soft' ] },
-}
-
-const connectedControls = {
-  showBalance: { type: 'boolean' as const, default: true },
-  showAvatar: { type: 'boolean' as const, default: true },
-  showEns: { type: 'boolean' as const, default: true },
-  size: { type: 'select' as const, default: 'default', options: [ 'default', 'compact' ] },
-}
-
-const minimalControls = {
-  size: { type: 'select' as const, default: 'default', options: [ 'default', 'compact' ] },
-}
-
-const controlsByState: Record<string, ControlSchema> = {
-  disconnected: disconnectedControls,
-  connected: connectedControls,
-  connecting: minimalControls,
-  'wrong-chain': minimalControls,
-  error: minimalControls,
-  initializing: minimalControls,
-}
 
 const MockPreview = () => {
-  const [ activeState, setActiveState ] = useState('disconnected')
-  const schema = controlsByState[activeState] ?? minimalControls
+  const txkitThemeClass = useTxkitThemeClass()
+  const schema = useMemo(() => ({
+    state: { type: 'state' as const, default: 'disconnected', states: CW_STATES },
+    label: { type: 'string' as const, default: 'Connect Wallet' },
+    size: { type: 'select' as const, default: 'default', options: [ 'default', 'compact' ] },
+    variant: { type: 'select' as const, default: 'default', options: [ 'default', 'outline', 'ghost', 'soft' ] },
+    showBalance: { type: 'boolean' as const, default: true },
+    showAvatar: { type: 'boolean' as const, default: true },
+    showEns: { type: 'boolean' as const, default: true },
+  }), [])
+
+  const { values, entries, reset } = useControls(schema)
 
   return (
     <>
-      <p className="story-description">Click a state to see how the button looks - no wallet needed</p>
-      <StateVisualizer
-        states={CW_STATES}
-        currentState={activeState}
-        onStateClick={setActiveState}
-      />
-      <CwStateMachineControls key={activeState} state={activeState} schema={schema} />
+      <ControlPanel entries={entries} onReset={reset} />
+      <div className="story-card" style={{ marginTop: 8 }}>
+        <div className={`txkit-root ${txkitThemeClass}`} style={{ display: 'inline-block' }}>
+          <CwMockButton
+            state={String(values.state ?? 'disconnected')}
+            label={String(values.label ?? 'Connect Wallet')}
+            size={String(values.size ?? 'default')}
+            variant={String(values.variant ?? 'default')}
+            showBalance={Boolean(values.showBalance ?? true)}
+            showAvatar={Boolean(values.showAvatar ?? true)}
+            showEns={Boolean(values.showEns ?? true)}
+          />
+        </div>
+      </div>
     </>
   )
 }

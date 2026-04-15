@@ -1,6 +1,8 @@
 import React from 'react'
 import { useState } from 'react'
 
+import { CopyIcon, CheckIcon, ChevronRightIcon } from '../Icons/icons'
+
 
 type PropDef = {
   name: string
@@ -32,13 +34,23 @@ const PropsTable: React.FC<PropsTableProps> = ({ componentName, importPath, prop
 
   return (
     <div className="props-table-wrapper">
-      <div className="props-table-header">
-        <button
-          type="button"
-          className="props-table-toggle"
-          onClick={() => setExpanded(!expanded)}
-        >
-          <span className={`props-table-chevron ${expanded ? '' : 'collapsed'}`}>&#9660;</span>
+      <div
+        className="props-table-header"
+        role="button"
+        tabIndex={0}
+        onClick={() => setExpanded(!expanded)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            setExpanded(!expanded)
+          }
+        }}
+      >
+        <div className="props-table-toggle">
+          <ChevronRightIcon
+            size={14}
+            className={`props-table-chevron ${expanded ? 'expanded' : ''}`}
+          />
           <span className="props-table-title">Props</span>
           <span className="props-table-count">{props.length}</span>
           {
@@ -46,15 +58,20 @@ const PropsTable: React.FC<PropsTableProps> = ({ componentName, importPath, prop
               <span className="props-table-required-count">{requiredCount} required</span>
             )
           }
-        </button>
+        </div>
         <button
           type="button"
           className="props-table-import"
-          onClick={handleCopyImport}
+          onClick={(event) => {
+            event.stopPropagation()
+            handleCopyImport()
+          }}
           title="Copy import statement"
         >
           <code>{importStatement}</code>
-          <span>{copied ? 'Copied!' : '⎘'}</span>
+          <span className={`props-table-copy-icon ${copied ? 'copied' : ''}`}>
+            {copied ? <CheckIcon size={11} /> : <CopyIcon size={11} />}
+          </span>
         </button>
       </div>
       {

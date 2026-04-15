@@ -2,7 +2,7 @@ import { parseEther } from 'viem'
 import { sepolia } from 'viem/chains'
 import { useTransactionFlow, txStep } from '@txkit/react'
 
-import InfoGrid from '../shared/InfoGrid'
+import { InfoGrid } from '../../components'
 import { VITALIK_ADDRESS } from '../../config'
 
 

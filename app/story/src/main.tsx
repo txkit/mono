@@ -1,9 +1,9 @@
 import { createRoot } from 'react-dom/client'
 import App from './App'
 import '@txkit/themes/index.css'
-import './controls/ControlPanel.css'
-import './stories/shared/StateVisualizer.css'
-import './CodeBlock.css'
+import './components/ControlPanel/ControlPanel.css'
+import './components/StateVisualizer/StateVisualizer.css'
+import './components/CodeBlock/CodeBlock.css'
 import './features.css'
 import './App.css'
 

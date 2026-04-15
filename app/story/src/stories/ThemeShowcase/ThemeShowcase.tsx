@@ -86,7 +86,7 @@ const CopyThemePanel: React.FC<{ scheme: ColorScheme; theme: Theme }> = ({ schem
 }
 
 
-const ThemeShowcase: React.FC<{ variant: TxKit.Variant }> = () => {
+const ThemeShowcase: React.FC = () => {
   const [ previewTheme, setPreviewTheme ] = useState<Theme>('dark')
   const [ selectedScheme, setSelectedScheme ] = useState<ColorScheme>('violet')
 

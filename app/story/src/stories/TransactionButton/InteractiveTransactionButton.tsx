@@ -2,9 +2,8 @@ import { parseEther } from 'viem'
 import { sepolia } from 'viem/chains'
 import { TransactionButton, txStep } from '@txkit/react'
 
-import useControls from '../../controls/useControls'
-import ControlPanel from '../../controls/ControlPanel'
 import { VITALIK_ADDRESS } from '../../config'
+import { useControls, ControlPanel } from '../../components'
 
 
 const InteractiveTransactionButton = () => {

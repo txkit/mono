@@ -25,7 +25,19 @@ type SelectControl = {
   options: string[]
 }
 
-export type ControlDef = BooleanControl | StringControl | NumberControl | SelectControl
+type StateNode = {
+  id: string
+  label: string
+  color: string
+}
+
+type StateMachineControl = {
+  type: 'state'
+  default: string
+  states: readonly StateNode[]
+}
+
+export type ControlDef = BooleanControl | StringControl | NumberControl | SelectControl | StateMachineControl
 
 export type ControlSchema = Record<string, ControlDef>
 

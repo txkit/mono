@@ -1,6 +1,6 @@
 import { useBalanceContext } from '@txkit/react'
 
-import InfoGrid from '../shared/InfoGrid'
+import { InfoGrid } from '../../components'
 
 
 const BlockWatcherDemo = () => {

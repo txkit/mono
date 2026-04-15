@@ -1,16 +1,12 @@
 import { useState } from 'react'
-import {
-  TxKitProvider,
-  ContractForm,
-} from '@txkit/react'
+import { ContractForm } from '@txkit/react'
 
-import useControls from '../../controls/useControls'
-import ControlPanel from '../../controls/ControlPanel'
 import { USDC_ADDRESS } from '../../config'
 import SAMPLE_ABI from './sampleAbi'
+import { useControls, ControlPanel } from '../../components'
 
 
-const CfLiveTab = ({ config }: { config: TxKit.Config }) => {
+const CfLiveTab = () => {
   const { values, entries, reset } = useControls({
     functionName: {
       type: 'select' as const,
@@ -24,7 +20,7 @@ const CfLiveTab = ({ config }: { config: TxKit.Config }) => {
   const [ lastResult, setLastResult ] = useState<string>('')
 
   return (
-    <TxKitProvider config={config}>
+    <>
       <p className="story-description">Live ContractForm with configurable props</p>
       <ControlPanel entries={entries} onReset={reset} />
       <ContractForm
@@ -41,7 +37,7 @@ const CfLiveTab = ({ config }: { config: TxKit.Config }) => {
           <div style={{ marginTop: 8, fontSize: 12, color: '#94A3B8' }}>{lastResult}</div>
         )
       }
-    </TxKitProvider>
+    </>
   )
 }
 

@@ -1,13 +1,11 @@
-import { TxKitProvider } from '@txkit/react'
-
 import InteractiveTransactionButton from './InteractiveTransactionButton'
 
 
-const LiveTab = ({ config }: { config: TxKit.Config }) => (
-  <TxKitProvider config={config}>
+const LiveTab = () => (
+  <>
     <p className="story-description">Real component - connect a wallet to test transactions</p>
     <InteractiveTransactionButton />
-  </TxKitProvider>
+  </>
 )
 
 

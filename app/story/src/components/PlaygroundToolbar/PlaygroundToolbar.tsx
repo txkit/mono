@@ -2,7 +2,7 @@ import React from 'react'
 
 import { cx } from '@txkit/core'
 
-import { usePlayground } from './PlaygroundContext'
+import { usePlayground } from '../PlaygroundContext/PlaygroundContext'
 
 
 const themes: TxKit.Theme[] = [ 'light', 'dark', 'auto' ]
@@ -45,6 +45,8 @@ const PlaygroundToolbar: React.FC = () => {
         </div>
       </div>
 
+      <div className="playground-toolbar-divider" />
+
       <div className="playground-toolbar-group">
         <span className="playground-toolbar-label">Variant</span>
         <div className="playground-toolbar-buttons">
@@ -63,9 +65,11 @@ const PlaygroundToolbar: React.FC = () => {
         </div>
       </div>
 
+      <div className="playground-toolbar-divider" />
+
       <div className="playground-toolbar-group">
         <span className="playground-toolbar-label">Color</span>
-        <div className="playground-toolbar-buttons playground-color-buttons">
+        <div className="playground-color-buttons">
           {
             colorSchemes.map((cs) => (
               <button

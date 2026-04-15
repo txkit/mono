@@ -45,8 +45,8 @@ const StateVisualizer: React.FC<StateVisualizerProps> = ({
             const isFuture = activeIndex >= 0 && index > activeIndex
             const isClickable = Boolean(onStateClick)
             const nextState = states[index + 1]
-            // Connector takes the color of the NEXT state it's leading into (v0 pattern).
-            const connectorColor = isPast && nextState ? nextState.color : '#334155'
+            // Past connectors get the NEXT state's color; future stays neutral.
+            const connectorColor = isPast && nextState ? nextState.color : 'var(--pg-border)'
 
             const nodeClasses = [
               'state-node',
@@ -75,6 +75,7 @@ const StateVisualizer: React.FC<StateVisualizerProps> = ({
                     <div
                       className="state-connector"
                       style={{ background: connectorColor }}
+                      aria-hidden="true"
                     />
                   )
                 }

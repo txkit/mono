@@ -1,8 +1,7 @@
 import { mainnet, sepolia } from 'viem/chains'
 import { ConnectWallet, useWalletState } from '@txkit/react'
+import { useControls, ControlPanel } from '../../components'
 
-import useControls from '../../controls/useControls'
-import ControlPanel from '../../controls/ControlPanel'
 
 
 const chainIdMap: Record<string, number> = {

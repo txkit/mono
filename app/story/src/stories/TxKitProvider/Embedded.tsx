@@ -3,11 +3,10 @@ import { WagmiProvider } from 'wagmi'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { TxKitProvider, ConnectWallet } from '@txkit/react'
 
-import StorySection from '../../StorySection'
-import dedent from '../shared/dedent'
+import dedent from '../../helpers/dedent'
 import EmbeddedInfo from './EmbeddedInfo'
 import useEmbeddedProviders from './useEmbeddedProviders'
-import { usePlayground } from '../../PlaygroundContext'
+import { StorySection, usePlayground } from '../../components'
 
 
 const TxKitProviderEmbeddedStory: React.FC = () => {

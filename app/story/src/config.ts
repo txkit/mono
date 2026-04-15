@@ -27,16 +27,23 @@ export const mainnetOnlyConfig: TxKit.Config = {
   },
 }
 
-/** Memoized config with theme/variant. Stories pass a fixed theme (not playground theme)
- *  to avoid wagmi useSyncExternalStore infinite loops on dynamic theme switch.
- *  Playground theme toggle is handled via CSS class override instead. */
+/** Memoized config with variant + optional theme. Live stories omit theme so that
+ *  PlaygroundThemeSync is the single source of truth; stories that demo a specific
+ *  theme (Dark/Light examples) pass it explicitly. Keeping deps stable avoids wagmi
+ *  useSyncExternalStore infinite loops on dynamic theme switch. */
 export const useStoryConfig = (
   base: TxKit.Config,
-  theme: TxKit.Theme,
+  theme: TxKit.Theme | undefined,
   variant: TxKit.Variant
 ): TxKit.Config => {
   return useMemo(
-    () => ({ ...base, theme, variant }),
+    () => {
+      const next: TxKit.Config = { ...base, variant }
+      if (theme !== undefined) {
+        next.theme = theme
+      }
+      return next
+    },
     [ base, theme, variant ]
   )
 }

@@ -1,7 +1,6 @@
 import { erc20Abi, parseEther } from 'viem'
 import { sepolia } from 'viem/chains'
 import {
-  TxKitProvider,
   TransactionButton,
   TokenBalance,
   FlowSteps,
@@ -11,14 +10,14 @@ import {
   txStep,
 } from '@txkit/react'
 
-import StorySection from '../../StorySection'
-import dedent from '../shared/dedent'
+import { StorySection } from '../../components'
+import dedent from '../../helpers/dedent'
 import HeadlessFlowExample from './HeadlessExample'
 import { USDC_ADDRESS, VITALIK_ADDRESS } from '../../config'
 
 
-const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
-  <TxKitProvider config={config}>
+const ExamplesTab = () => (
+  <>
     <p className="story-description">Code examples and advanced usage patterns</p>
     <StorySection
       title="Simple ETH Transfer (Sepolia)"
@@ -224,7 +223,7 @@ const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
     </StorySection>
 
     <FlowToast />
-  </TxKitProvider>
+  </>
 )
 
 

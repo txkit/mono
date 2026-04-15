@@ -1,6 +1,8 @@
 import React from 'react'
 import { useState } from 'react'
 
+import { CopyIcon, CheckIcon } from '../Icons/icons'
+
 
 type CodeBlockProps = {
   code: string
@@ -18,17 +20,15 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ code, language = 'tsx' }) => {
 
   return (
     <div className="code-block">
-      <div className="code-block-header">
-        <span className="code-block-lang">{language}</span>
-        <button
-          type="button"
-          className="code-block-copy"
-          onClick={handleCopy}
-        >
-          {copied ? 'Copied!' : 'Copy'}
-        </button>
-      </div>
-      <pre className="code-block-pre">
+      <button
+        type="button"
+        className="code-block-copy"
+        onClick={handleCopy}
+        aria-label={copied ? 'Copied' : 'Copy code'}
+      >
+        {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
+      </button>
+      <pre className="code-block-pre" data-lang={language}>
         <code>{code.trim()}</code>
       </pre>
     </div>

@@ -1,0 +1,132 @@
+/* --- State Visualizer (figma PreviewTab style) --- */
+
+.state-visualizer {
+  padding: 24px;
+  border-radius: var(--pg-radius-lg);
+  border: 1px solid var(--pg-border);
+  background: var(--pg-muted);
+}
+
+.state-flow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 4px 0;
+}
+
+.state-node-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+/* --- Pill-shaped state node --- */
+
+.state-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  border: 1px solid var(--pg-border);
+  background: var(--pg-bg);
+  font: inherit;
+  white-space: nowrap;
+  cursor: default;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.state-node.clickable {
+  cursor: pointer;
+}
+
+/* Current: outline ring (not clipped by overflow), subtle tinted bg */
+.state-node.active {
+  border-color: var(--state-color);
+  background: var(--pg-bg);
+  outline: 3px solid color-mix(in srgb, var(--state-color) 25%, transparent);
+  outline-offset: 0;
+}
+
+/* Past: normal opacity, white bg, only dot coloured */
+.state-node.past {
+  border-color: var(--pg-border);
+  background: var(--pg-bg);
+}
+
+.state-node.past:hover {
+  border-color: var(--pg-border-hover);
+}
+
+/* Future: 40% opacity, neutral */
+.state-node.future {
+  opacity: 0.4;
+  border-color: var(--pg-border);
+  background: var(--pg-bg);
+}
+
+.state-node.future:hover {
+  opacity: 0.7;
+  border-color: var(--pg-border-hover);
+}
+
+/* --- Dot inside the node --- */
+
+.state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: oklch(from var(--pg-muted-fg) l c h / 0.4);
+  flex-shrink: 0;
+  transition: background 200ms ease;
+}
+
+.state-node.active .state-dot {
+  background: var(--state-color);
+}
+
+.state-node.past .state-dot {
+  background: var(--state-color);
+}
+
+/* --- Label --- */
+
+.state-label {
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'IBM Plex Mono', monospace;
+  text-transform: capitalize;
+  color: var(--pg-fg);
+}
+
+.state-node.active .state-label {
+  color: var(--pg-fg);
+  font-weight: 600;
+}
+
+.state-node.past .state-label,
+.state-node.future .state-label {
+  color: var(--pg-muted-fg);
+}
+
+/* --- Connector line (thin, colored for past) --- */
+
+.state-connector {
+  width: 32px;
+  height: 2px;
+  flex-shrink: 0;
+  border-radius: 1px;
+  transition: background 200ms ease;
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .state-node,
+  .state-dot,
+  .state-connector {
+    transition: none;
+  }
+}

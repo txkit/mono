@@ -1,18 +1,15 @@
 import { erc20Abi } from 'viem'
-import {
-  TxKitProvider,
-  ContractForm,
-} from '@txkit/react'
+import { ContractForm } from '@txkit/react'
 
-import StorySection from '../../StorySection'
-import dedent from '../shared/dedent'
+import { StorySection } from '../../components'
+import dedent from '../../helpers/dedent'
 import { USDC_ADDRESS } from '../../config'
 import SAMPLE_ABI from './sampleAbi'
 import HeadlessFormExample from './HeadlessExample'
 
 
-const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
-  <TxKitProvider config={config}>
+const ExamplesTab = () => (
+  <>
     <p className="story-description">Code examples and advanced usage patterns</p>
     <StorySection
       id="transfer"
@@ -89,7 +86,7 @@ const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
       <ContractForm address={USDC_ADDRESS} abi={erc20Abi} functionName="transfer">
         {({ fields, values, errors, touched, isValid, setFieldValue, setFieldTouched }) => (
           <div style={{ padding: 16 }}>
-            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 12 }}>
+            <div style={{ fontSize: 11, color: 'var(--pg-muted-fg)', marginBottom: 12 }}>
               Custom render - {fields.length} fields, valid: {String(isValid)}
             </div>
             {fields.map((field) => (
@@ -99,19 +96,14 @@ const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
                   value={values[field.name] || ''}
                   onChange={(event) => setFieldValue(field.name, event.target.value)}
                   onBlur={() => setFieldTouched(field.name)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: 8,
-                    border: `1px solid ${touched[field.name] && errors[field.name] ? '#ef4444' : '#334155'}`,
-                    background: '#0F172A',
-                    color: '#F1F5F9',
-                    fontSize: 14,
-                  }}
+                  className="control-input"
+                  style={touched[field.name] && errors[field.name] ? { borderColor: 'var(--pg-destructive)' } : undefined}
                 />
                 {
                   touched[field.name] && errors[field.name] && (
-                    <div style={{ color: '#ef4444', fontSize: 11, marginTop: 2 }}>{errors[field.name]}</div>
+                    <div style={{ color: 'var(--pg-destructive)', fontSize: 11, marginTop: 2 }}>
+                      {errors[field.name]}
+                    </div>
                   )
                 }
               </div>
@@ -140,7 +132,7 @@ const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
     >
       <HeadlessFormExample />
     </StorySection>
-  </TxKitProvider>
+  </>
 )
 
 

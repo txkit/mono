@@ -1,15 +1,21 @@
 import { useState, useEffect, useCallback, useSyncExternalStore } from 'react'
 
 import { cx } from '@txkit/core'
+import { TxKitProvider } from '@txkit/react'
 
-import PropsTable from './PropsTable'
-import SearchModal from './SearchModal'
-import MemoizedStory from './MemoizedStory'
-import PlaygroundToolbar from './PlaygroundToolbar'
-import StoryErrorBoundary from './StoryErrorBoundary'
-import { PlaygroundProvider, usePlayground } from './PlaygroundContext'
-import { searchItems, componentProps, bundleSizes, componentDescriptions } from './storyData'
-import type { StoryName } from './MemoizedStory'
+import {
+  PropsTable,
+  MemoizedStory,
+  usePlayground,
+  ExternalLinkIcon,
+  PlaygroundToolbar,
+  PlaygroundProvider,
+  PlaygroundThemeSync,
+  StoryErrorBoundary,
+} from './components'
+import { defaultConfig, useStoryConfig } from './config'
+import { componentProps, bundleSizes, componentDescriptions } from './storyData'
+import type { StoryName } from './components'
 
 
 const storyNames: readonly StoryName[] = [
@@ -57,20 +63,13 @@ const getSystemTheme = () =>
 
 const AppContent = () => {
   const [ active, setActive ] = useState<StoryName>(getInitialStory)
-  const [ searchOpen, setSearchOpen ] = useState(false)
   const { theme, variant, colorScheme } = usePlayground()
+  const txKitConfig = useStoryConfig(defaultConfig, undefined, variant)
 
   const navigate = useCallback((name: StoryName) => {
     setActive(name)
     window.location.hash = slugify(name)
   }, [])
-
-  const handleSearchSelect = useCallback((storyName: string) => {
-    const found = storyNames.find((k) => k === storyName) as StoryName | undefined
-    if (found) {
-      navigate(found)
-    }
-  }, [ navigate ])
 
   useEffect(() => {
     const onHashChange = () => {
@@ -84,51 +83,75 @@ const AppContent = () => {
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-        event.preventDefault()
-        setSearchOpen(true)
-      }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [])
-
   const systemTheme = useSyncExternalStore(subscribeSystemTheme, getSystemTheme)
   const resolvedTheme = theme === 'auto' ? systemTheme : theme
   const bgClass = resolvedTheme === 'light' ? 'bg-light' : 'bg-dark'
   const propsData = componentProps[active as keyof typeof componentProps]
+  const [ sidebarOpen, setSidebarOpen ] = useState(false)
 
   return (
     <div className={cx('playground', bgClass)}>
-      <aside className="playground-sidebar">
-        <h1 className="playground-logo">txKit</h1>
-        <button
-          type="button"
-          className="search-trigger"
-          onClick={() => setSearchOpen(true)}
-        >
-          Search <kbd>⌘K</kbd>
-        </button>
-        <nav>
+      {/* Mobile overlay */}
+      {
+        sidebarOpen && (
+          <div
+            className="playground-sidebar-overlay"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )
+      }
+      <aside className={cx('playground-sidebar', { open: sidebarOpen })}>
+        <div className="playground-brand">
+          <div className="playground-brand-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" />
+              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <span className="playground-logo">txKit</span>
+          <button
+            type="button"
+            className="playground-sidebar-close"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+          >
+            &#10005;
+          </button>
+        </div>
+        <nav className="playground-nav">
           {storyNames.map((name) => (
             <button
               key={name}
               type="button"
               className={cx('playground-nav-item', { active: name === active })}
-              onClick={() => navigate(name)}
+              onClick={() => {
+                navigate(name)
+                setSidebarOpen(false)
+              }}
             >
               <span>{name}</span>
               <span className="playground-nav-count">{storyCount[name]}</span>
             </button>
           ))}
         </nav>
+        <div className="playground-sidebar-footer">
+          <span className="playground-sidebar-version">v0.1.0</span>
+        </div>
       </aside>
-      <main className={cx('playground-main', bgClass)}>
+      <main className="playground-main">
         <div className="playground-toolbar-row">
+          <button
+            type="button"
+            className="playground-mobile-menu"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open menu"
+          >
+            &#9776;
+          </button>
           <PlaygroundToolbar />
         </div>
+        <div className="playground-content">
         <div className="playground-title-row">
           <h2 className="playground-title">{active}</h2>
           {
@@ -154,7 +177,7 @@ const AppContent = () => {
                       rel="noopener noreferrer"
                       className="playground-docs-link"
                     >
-                      Docs&nbsp;&#8599;
+                      Docs <ExternalLinkIcon size={12} />
                     </a>
                   </>
                 )
@@ -173,16 +196,14 @@ const AppContent = () => {
         }
         <div className={`txkit-color-${colorScheme}`}>
           <StoryErrorBoundary storyKey={active}>
-            <MemoizedStory name={active} variant={variant} />
+            <TxKitProvider config={txKitConfig}>
+              <PlaygroundThemeSync />
+              <MemoizedStory key={active} name={active} />
+            </TxKitProvider>
           </StoryErrorBoundary>
         </div>
+        </div>
       </main>
-      <SearchModal
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        onSelect={handleSearchSelect}
-        items={searchItems}
-      />
     </div>
   )
 }

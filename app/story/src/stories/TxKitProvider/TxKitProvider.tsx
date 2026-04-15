@@ -3,25 +3,21 @@ import { WagmiProvider } from 'wagmi'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { TxKitProvider, ConnectWallet } from '@txkit/react'
 
-import StorySection from '../../StorySection'
-import dedent from '../shared/dedent'
+import dedent from '../../helpers/dedent'
 import ThemeInfo from './ThemeInfo'
 import EmbeddedInfo from './EmbeddedInfo'
 import useEmbeddedProviders from './useEmbeddedProviders'
-import { defaultConfig, useStoryConfig } from '../../config'
+import { StorySection } from '../../components'
 
 
-const TxKitProviderStory = ({ variant }: { variant: TxKit.Variant }) => {
-  const config = useStoryConfig(defaultConfig, 'dark', variant)
-  const darkConfig = useStoryConfig(defaultConfig, 'dark', variant)
-  const lightConfig = useStoryConfig(defaultConfig, 'light', variant)
+const TxKitProviderStory = () => {
   const { wagmiConfig, queryClient } = useEmbeddedProviders()
 
   return (
     <div>
       <StorySection
         title="Default Config (auto theme)"
-        description="Standalone mode - txKit creates wagmi + TanStack Query internally"
+        description="Standalone mode - txKit creates wagmi + TanStack Query internally. Inherits theme from the playground toolbar above"
         code={dedent`
           import { TxKitProvider, ConnectWallet } from '@txkit/react'
 
@@ -38,14 +34,13 @@ const TxKitProviderStory = ({ variant }: { variant: TxKit.Variant }) => {
           </TxKitProvider>
         `}
       >
-        <TxKitProvider config={config}>
-          <ConnectWallet />
-          <ThemeInfo />
-        </TxKitProvider>
+        <ConnectWallet />
+        <ThemeInfo />
       </StorySection>
 
       <StorySection
-        title="Dark Theme"
+        title="Dark Theme (scoped via CSS class)"
+        description="Theme variants are CSS classes - the .txkit-root.txkit-dark wrapper scopes a theme to a section without spawning a nested provider"
         code={dedent`
           <TxKitProvider
             config={{
@@ -58,14 +53,13 @@ const TxKitProviderStory = ({ variant }: { variant: TxKit.Variant }) => {
           </TxKitProvider>
         `}
       >
-        <TxKitProvider config={darkConfig}>
+        <div className="txkit-root txkit-dark">
           <ConnectWallet />
-          <ThemeInfo />
-        </TxKitProvider>
+        </div>
       </StorySection>
 
       <StorySection
-        title="Light Theme"
+        title="Light Theme (scoped via CSS class)"
         code={dedent`
           <TxKitProvider
             config={{
@@ -78,10 +72,9 @@ const TxKitProviderStory = ({ variant }: { variant: TxKit.Variant }) => {
           </TxKitProvider>
         `}
       >
-        <TxKitProvider config={lightConfig}>
+        <div className="txkit-root txkit-light">
           <ConnectWallet label="Connect" />
-          <ThemeInfo />
-        </TxKitProvider>
+        </div>
       </StorySection>
 
       <WagmiProvider config={wagmiConfig}>

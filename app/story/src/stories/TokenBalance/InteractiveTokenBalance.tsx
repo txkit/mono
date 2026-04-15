@@ -1,9 +1,7 @@
 import { TokenBalance } from '@txkit/react'
 
-import useControls from '../../controls/useControls'
-import ControlPanel from '../../controls/ControlPanel'
 import { USDC_ADDRESS } from '../../config'
-import WalletGate from '../shared/WalletGate'
+import { WalletGate, useControls, ControlPanel } from '../../components'
 
 
 const InteractiveTokenBalance = () => {

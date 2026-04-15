@@ -123,6 +123,11 @@ const SearchModal: React.FC<SearchModalProps> = ({ open, onClose, onSelect, item
                                 <span className="search-result-desc">{item.description}</span>
                               )
                             }
+                            {
+                              index === activeIndex && (
+                                <span className="search-result-enter">&#x21B5;</span>
+                              )
+                            }
                           </button>
                         )
                       })
@@ -131,6 +136,17 @@ const SearchModal: React.FC<SearchModalProps> = ({ open, onClose, onSelect, item
                 ))
               })()
           }
+        </div>
+        <div className="search-footer">
+          <div className="search-footer-hint">
+            <kbd>&uarr;</kbd>
+            <kbd>&darr;</kbd>
+            <span>navigate</span>
+          </div>
+          <div className="search-footer-hint">
+            <kbd>&crarr;</kbd>
+            <span>select</span>
+          </div>
         </div>
       </div>
     </div>

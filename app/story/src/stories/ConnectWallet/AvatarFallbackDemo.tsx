@@ -1,7 +1,9 @@
-import { hashGradient } from '../shared/hashColor'
+import { hashGradient } from '../../helpers/hashColor'
+import { useTxkitThemeClass } from '../../components'
 
 
 const AvatarFallbackDemo = () => {
+  const txkitThemeClass = useTxkitThemeClass()
   const addresses = [
     '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
     '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B',
@@ -17,7 +19,7 @@ const AvatarFallbackDemo = () => {
         addresses.map((address) => (
           <div
             key={address}
-            className="txkit-root txkit-dark"
+            className={`txkit-root ${txkitThemeClass}`}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
             <span

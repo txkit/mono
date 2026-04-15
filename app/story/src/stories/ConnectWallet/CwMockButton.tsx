@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { hashGradient } from '../shared/hashColor'
+import { hashGradient } from '../../helpers/hashColor'
 
 
 type CwMockProps = {

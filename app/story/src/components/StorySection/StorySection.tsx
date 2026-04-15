@@ -2,7 +2,8 @@ import React from 'react'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 
-import CodeBlock from './CodeBlock'
+import CodeBlock from '../CodeBlock/CodeBlock'
+import { ChevronDownIcon } from '../Icons/icons'
 
 
 type StorySectionProps = {
@@ -34,17 +35,24 @@ const StorySection: React.FC<StorySectionProps> = ({
   }
 
   return (
-    <div className="story-section" id={sectionId}>
-      <div className="story-section-header">
-        <h3
-          className="story-section-title"
-          data-linkable=""
-          onClick={handleTitleClick}
-          title="Click to copy permalink"
-        >
-          {title}
-          <span className="story-section-anchor">#</span>
-        </h3>
+    <div className={`story-section ${headless ? 'story-section--headless' : ''}`} id={sectionId}>
+      <div className="story-section-bar">
+        <div className="story-section-meta">
+          <h3
+            className="story-section-title"
+            data-linkable=""
+            onClick={handleTitleClick}
+            title="Click to copy permalink"
+          >
+            {title}
+            <span className="story-section-anchor">#</span>
+          </h3>
+          {
+            description && (
+              <p className="story-section-desc">{description}</p>
+            )
+          }
+        </div>
         {
           code && (
             <button
@@ -53,16 +61,15 @@ const StorySection: React.FC<StorySectionProps> = ({
               onClick={() => setShowCode(!showCode)}
             >
               {showCode ? 'Hide Code' : 'Show Code'}
+              <ChevronDownIcon
+                size={14}
+                className={`story-code-chevron ${showCode ? 'rotated' : ''}`}
+              />
             </button>
           )
         }
       </div>
-      {
-        description && (
-          <p className="story-description">{description}</p>
-        )
-      }
-      <div className={`story-card${headless ? ' story-card--headless' : ''}`}>
+      <div className="story-section-stage">
         {children}
       </div>
       {

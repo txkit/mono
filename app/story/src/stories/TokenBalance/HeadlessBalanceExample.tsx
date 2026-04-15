@@ -1,6 +1,6 @@
 import { useTokenBalance } from '@txkit/react'
 
-import InfoGrid from '../shared/InfoGrid'
+import { InfoGrid } from '../../components'
 import { USDC_ADDRESS } from '../../config'
 
 

@@ -1,15 +1,14 @@
-import { TxKitProvider, TokenBalance } from '@txkit/react'
+import { TokenBalance } from '@txkit/react'
 
-import StorySection from '../../StorySection'
-import dedent from '../shared/dedent'
-import WalletGate from '../shared/WalletGate'
+import dedent from '../../helpers/dedent'
 import { USDC_ADDRESS, VITALIK_ADDRESS } from '../../config'
 import BlockWatcherDemo from './BlockWatcherDemo'
 import HeadlessBalanceExample from './HeadlessBalanceExample'
+import { StorySection, WalletGate } from '../../components'
 
 
-const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
-  <TxKitProvider config={config}>
+const ExamplesTab = () => (
+  <>
     <p className="story-description">Code examples and advanced usage patterns</p>
     <StorySection
       title="Default (Native ETH)"
@@ -116,7 +115,7 @@ const ExamplesTab = ({ config }: { config: TxKit.Config }) => (
         </div>
       </WalletGate>
     </StorySection>
-  </TxKitProvider>
+  </>
 )
 
 

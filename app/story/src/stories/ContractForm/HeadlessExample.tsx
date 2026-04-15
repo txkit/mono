@@ -1,7 +1,7 @@
 import { erc20Abi } from 'viem'
 import { useContractForm } from '@txkit/react'
 
-import InfoGrid from '../shared/InfoGrid'
+import { InfoGrid } from '../../components'
 import { USDC_ADDRESS } from '../../config'
 
 
@@ -36,7 +36,7 @@ const HeadlessFormExample = () => {
           <div key={field.name} style={{ marginBottom: 8 }}>
             <label
               htmlFor={`headless-${field.name}`}
-              style={{ display: 'block', fontSize: 12, color: '#94A3B8', marginBottom: 4 }}
+              style={{ display: 'block', fontSize: 12, color: 'var(--pg-muted-fg)', marginBottom: 4 }}
             >
               {field.name} ({field.solidityType})
             </label>
@@ -48,19 +48,15 @@ const HeadlessFormExample = () => {
               aria-describedby={touched[field.name] && errors[field.name] ? `headless-${field.name}-error` : undefined}
               onChange={(event) => setFieldValue(field.name, event.target.value)}
               onBlur={() => setFieldTouched(field.name)}
-              style={{
-                width: '100%',
-                padding: '6px 8px',
-                borderRadius: 6,
-                border: `1px solid ${touched[field.name] && errors[field.name] ? '#ef4444' : '#334155'}`,
-                background: '#1E293B',
-                color: '#F1F5F9',
-                fontSize: 13,
-              }}
+              className="control-input"
+              style={touched[field.name] && errors[field.name] ? { borderColor: 'var(--pg-destructive)' } : undefined}
             />
             {
               touched[field.name] && errors[field.name] && (
-                <div id={`headless-${field.name}-error`} style={{ color: '#ef4444', fontSize: 11, marginTop: 2 }}>
+                <div
+                  id={`headless-${field.name}-error`}
+                  style={{ color: 'var(--pg-destructive)', fontSize: 11, marginTop: 2 }}
+                >
                   {errors[field.name]}
                 </div>
               )
@@ -70,7 +66,13 @@ const HeadlessFormExample = () => {
       </div>
       {
         calldataPreview && (
-          <pre style={{ fontSize: 10, color: '#64748B', marginTop: 8, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+          <pre style={{
+            fontSize: 10,
+            color: 'var(--pg-muted-fg)',
+            marginTop: 8,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-all',
+          }}>
             {calldataPreview}
           </pre>
         )
