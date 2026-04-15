@@ -14,4 +14,12 @@ export default defineConfig({
       '@paulmillr/qr': path.resolve(__dirname, '../../packages/react/node_modules/@paulmillr/qr'),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        testnet: path.resolve(__dirname, 'testnet.html'),
+      },
+    },
+  },
 })

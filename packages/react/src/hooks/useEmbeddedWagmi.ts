@@ -36,20 +36,28 @@ const useEmbeddedWagmi = (config?: TxKit.EmbeddedConfig): TxKit.ResolvedConfig =
   const pollingInterval = config?.pollingInterval ?? DEFAULT_POLLING_INTERVAL
 
   return useMemo<TxKit.ResolvedConfig>(
-    () => ({
-      embedded: true,
-      chains: wagmiConfig.chains as [typeof wagmiConfig.chains[0], ...typeof wagmiConfig.chains],
-      transports: {},
-      walletConnectProjectId: null,
-      wallets: [],
-      autoConnect: true,
-      pollingInterval,
-      blockWatching: {
-        enabled: config?.blockWatching?.enabled ?? true,
-        throttleMs: config?.blockWatching?.throttleMs ?? pollingInterval,
-      },
-      licenseKey: config?.licenseKey ?? null,
-    }),
+    () => {
+      // Embedded mode mirrors wagmi chains for both wagmi-facing and UI-facing lists.
+      // Filtering mainnet out of the UI is the user's responsibility here - they
+      // chose their wagmi config. We don't second-guess it.
+      const chains = wagmiConfig.chains as [typeof wagmiConfig.chains[0], ...typeof wagmiConfig.chains]
+      return {
+        testnet: false,
+        embedded: true,
+        chains,
+        displayChains: chains,
+        transports: {},
+        walletConnectProjectId: null,
+        wallets: [],
+        autoConnect: true,
+        pollingInterval,
+        blockWatching: {
+          enabled: config?.blockWatching?.enabled ?? true,
+          throttleMs: config?.blockWatching?.throttleMs ?? pollingInterval,
+        },
+        licenseKey: config?.licenseKey ?? null,
+      }
+    },
     [ wagmiConfig.chains, config?.blockWatching?.enabled, config?.blockWatching?.throttleMs, config?.licenseKey, pollingInterval ],
   )
 }

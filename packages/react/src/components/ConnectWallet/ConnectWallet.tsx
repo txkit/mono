@@ -1,13 +1,13 @@
 'use client'
 import React, { useRef, useMemo, useState, useEffect, useCallback, forwardRef } from 'react'
 import type { Connector } from 'wagmi'
-import { useConfig as useWagmiConfig } from 'wagmi'
 import { cx } from '@txkit/core'
 
 import useDeepMemo from '../../hooks/useDeepMemo'
 import useWalletState from '../../hooks/useWalletState'
 import useRecentWallets from './utils/useRecentWallets'
 import useWalletGroups from './utils/useWalletGroups'
+import { useTxKit } from '../TxKitProvider/TxKitProvider'
 import { defaultLabels } from './labels'
 import ConnectWalletDefault from './ConnectWalletDefault'
 import type { ConnectWalletLabels } from './labels'
@@ -76,8 +76,11 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
     formattedBalance,
   } = useWalletState({ chainId, showEns, showBalance, connectingConnectorId: selectedConnector?.id })
 
-  const wagmiConfig = useWagmiConfig()
-  const chains = useMemo(() => wagmiConfig.chains, [ wagmiConfig ])
+  // Use displayChains from TxKit config, not wagmi config. In testnet mode,
+  // mainnet is registered with wagmi for ENS but must not appear in the chain
+  // selector or trigger wrong-chain state.
+  const { config } = useTxKit()
+  const chains = config.displayChains
 
   const { recentIds, addRecent } = useRecentWallets()
   const groupedConnectors = useWalletGroups({ connectors, recentIds })

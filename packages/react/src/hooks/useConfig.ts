@@ -1,8 +1,15 @@
 import { useMemo } from 'react'
 import { injected, walletConnect, coinbaseWallet } from 'wagmi/connectors'
+import type { Chain, Transport } from 'viem'
 
 import '../types/global'
 import { DEFAULT_POLLING_INTERVAL } from '../helpers/providerConstants'
+import {
+  TESTNET_CHAINS,
+  TESTNET_TRANSPORTS,
+  TESTNET_DISPLAY_CHAINS,
+} from '../helpers/testnetDefaults'
+
 
 const defaultWallets = (projectId: string | null): TxKit.WalletConfig[] => [
   {
@@ -28,11 +35,24 @@ const defaultWallets = (projectId: string | null): TxKit.WalletConfig[] => [
 
 const useConfig = (config: TxKit.Config): TxKit.ResolvedConfig => {
   const pollingInterval = config.pollingInterval ?? DEFAULT_POLLING_INTERVAL
+  const isTestnet = config.testnet === true
+
+  // Testnet mode: user may override chains/transports, otherwise use Sepolia defaults.
+  const chains = (config.chains ?? TESTNET_CHAINS) as [ Chain, ...Chain[] ]
+  const transports = (config.transports ?? TESTNET_TRANSPORTS) as Record<number, Transport>
+
+  // Display chains: testnet hides mainnet from UI (mainnet is in wagmi for ENS
+  // only - must not appear in chain selectors or trigger wrong-chain state).
+  const displayChains = isTestnet && !config.chains
+    ? TESTNET_DISPLAY_CHAINS
+    : chains
 
   return useMemo<TxKit.ResolvedConfig>(() => ({
+    testnet: isTestnet,
     embedded: false,
-    chains: config.chains,
-    transports: config.transports,
+    chains,
+    displayChains,
+    transports,
     walletConnectProjectId: config.walletConnectProjectId ?? null,
     wallets: config.wallets ?? defaultWallets(config.walletConnectProjectId ?? null),
     autoConnect: config.autoConnect ?? true,
@@ -43,8 +63,10 @@ const useConfig = (config: TxKit.Config): TxKit.ResolvedConfig => {
     },
     licenseKey: config.licenseKey ?? null,
   }), [
-      config.chains,
-      config.transports,
+      isTestnet,
+      chains,
+      displayChains,
+      transports,
       config.walletConnectProjectId,
       config.wallets,
       config.autoConnect,

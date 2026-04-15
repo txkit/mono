@@ -34,9 +34,31 @@ yarn add @txkit/react @txkit/themes viem wagmi @tanstack/react-query
 
 txKit is fully typed - no additional `@types/*` packages needed.
 
-## Setup
+## Quick Start (Testnet)
 
-Import the theme CSS and wrap your app with `TxKitProvider`:
+Fastest way to try txKit - no RPC keys, no chain arrays:
+
+```tsx
+import '@txkit/themes'
+
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+
+const App = () => (
+  <TxKitProvider config={{ testnet: true }}>
+    <ConnectWallet />
+  </TxKitProvider>
+)
+```
+
+`testnet: true` ships a Sepolia-only preset using viem's public RPC endpoints. Mainnet is registered internally so ENS name and avatar resolution still works, but it's hidden from the chain selector so users don't accidentally switch.
+
+:::tip
+Need Sepolia ETH? The [Alchemy Sepolia Faucet](https://sepoliafaucet.com/) and [PoW Faucet](https://sepolia-faucet.pk910.de/) are free.
+:::
+
+## Setup (Mainnet)
+
+For production, pass your chains and transports explicitly:
 
 ```tsx
 import '@txkit/themes'
@@ -48,25 +70,30 @@ import { http } from 'viem'
 const App = () => (
   <TxKitProvider config={{
     chains: [ mainnet ],
-    transports: { [mainnet.id]: http() },
+    transports: { [mainnet.id]: http('https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY') },
   }}>
     <ConnectWallet />
   </TxKitProvider>
 )
 ```
 
-That's it. `TxKitProvider` creates WagmiProvider and QueryClientProvider internally - you don't need to set them up.
+`TxKitProvider` creates `WagmiProvider` and `QueryClientProvider` internally - you don't need to set them up.
 
 :::warning
 Without `import '@txkit/themes'`, default component UI renders without styles. Skip it only if you provide your own styling via headless hooks or custom render functions.
+:::
+
+:::info
+`testnet: true` uses public RPC endpoints (no auth). Rate limits apply - fine for alpha and local development, not for production apps with real user traffic. For production, provide `chains` + `transports` with your own RPC provider (Alchemy, Infura, Ankr).
 :::
 
 ## Config Options
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `chains` | `[Chain, ...Chain[]]` | Required | Supported chains |
-| `transports` | `Record<number, Transport>` | Required | RPC transport per chain |
+| `testnet` | `boolean` | `false` | Use Sepolia preset (no `chains`/`transports` required) |
+| `chains` | `[Chain, ...Chain[]]` | Required unless `testnet: true` | Supported chains |
+| `transports` | `Record<number, Transport>` | Required unless `testnet: true` | RPC transport per chain |
 | `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Color theme |
 | `variant` | `'default' \| 'soft' \| 'sharp' \| 'rounded'` | `'default'` | Visual style preset |
 | `walletConnectProjectId` | `string` | - | Enables WalletConnect |

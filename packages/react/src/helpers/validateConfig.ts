@@ -8,6 +8,12 @@ const validateConfig = (config: TxKit.Config) => {
     throw new InvalidConfigError('Config must be an object.')
   }
 
+  // testnet: true fills chains + transports from defaults - skip validation.
+  // User may still pass partial chains/transports; if so, validate those below.
+  if (config.testnet === true && !config.chains && !config.transports) {
+    return
+  }
+
   if (!config.chains || config.chains.length === 0) {
     throw new InvalidConfigError(
       'At least one chain is required. Example: chains: [mainnet]',

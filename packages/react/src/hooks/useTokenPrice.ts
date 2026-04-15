@@ -26,10 +26,13 @@ export type UseTokenPriceReturn = {
   isError: boolean
 }
 
-const fetchTokenPrice = async (chainId: number, token?: string): Promise<number | undefined> => {
+// TanStack Query v5 forbids undefined as query data. Return null for "no price
+// available" (unsupported chain, failed fetch, missing coin). Consumers treat
+// null and undefined the same via `?? undefined` below.
+const fetchTokenPrice = async (chainId: number, token?: string): Promise<number | null> => {
   const chainName = CHAIN_TO_DEFILLAMA[chainId]
   if (!chainName) {
-    return undefined
+    return null
   }
 
   const coinId = token
@@ -37,19 +40,19 @@ const fetchTokenPrice = async (chainId: number, token?: string): Promise<number 
     : NATIVE_PRICE_IDS[chainId]
 
   if (!coinId) {
-    return undefined
+    return null
   }
 
   const res = await fetch(`${DEFILLAMA_PRICE_URL}/${coinId}`)
   if (!res.ok) {
-    return undefined
+    return null
   }
 
   try {
     const data = await res.json()
-    return data.coins?.[coinId]?.price
+    return data.coins?.[coinId]?.price ?? null
   } catch {
-    return undefined
+    return null
   }
 }
 
@@ -81,7 +84,7 @@ const useTokenPrice = (options: UseTokenPriceOptions = {}): UseTokenPriceReturn 
   })
 
   const price = useMemo(() => {
-    if (usdPrice === undefined) return undefined
+    if (usdPrice === undefined || usdPrice === null) return undefined
     if (!needsForex) return usdPrice
 
     const rate = fiatRates?.[fiatCurrency]

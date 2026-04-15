@@ -23,10 +23,7 @@ declare global {
       createConnector: CreateConnectorFn
     }
 
-    type Config = {
-      chains: [Chain, ...Chain[]]
-      transports: Record<number, Transport> // chainId → transport (http/ws/custom)
-
+    type ConfigBase = {
       // Wallets
       wallets?: WalletConfig[]           // default: injected + walletConnect + coinbase
       walletConnectProjectId?: string    // WC v2, required for WalletConnect
@@ -51,11 +48,32 @@ declare global {
       licenseKey?: string                // enables pro components
     }
 
-    type EmbeddedConfig = Pick<Config, 'theme' | 'variant' | 'licenseKey' | 'pollingInterval' | 'blockWatching'>
+    /** Zero-config testnet preset - uses Sepolia + public RPC, mainnet added for ENS lookups. */
+    type ConfigTestnet = ConfigBase & {
+      /** Enable testnet preset (Sepolia). When true, chains + transports are optional and filled from defaults. */
+      testnet: true
+      chains?: [Chain, ...Chain[]]
+      transports?: Record<number, Transport>
+    }
+
+    /** Custom config - user provides chains + transports. */
+    type ConfigCustom = ConfigBase & {
+      testnet?: false
+      chains: [Chain, ...Chain[]]
+      transports: Record<number, Transport> // chainId → transport (http/ws/custom)
+    }
+
+    type Config = ConfigTestnet | ConfigCustom
+
+    type EmbeddedConfig = Pick<ConfigBase, 'theme' | 'variant' | 'licenseKey' | 'pollingInterval' | 'blockWatching'>
 
     type ResolvedConfig = {
+      testnet: boolean
       embedded: boolean
+      /** All chains registered with wagmi (includes mainnet in testnet mode for ENS). */
       chains: [Chain, ...Chain[]]
+      /** Chains shown in UI (chain selector, wrong-chain checks) - mainnet filtered out in testnet mode. */
+      displayChains: [Chain, ...Chain[]]
       transports: Record<number, Transport>
       walletConnectProjectId: string | null
       wallets: WalletConfig[]
