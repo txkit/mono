@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react'
 import { erc20Abi } from 'viem'
-import { useAccount, useBalance, useChainId, useReadContracts } from 'wagmi'
+import { useConnection, useBalance, useChainId, useReadContracts } from 'wagmi'
 
 
 export type UseTokenBalancesOptions = {
@@ -46,7 +46,7 @@ export type UseTokenBalancesReturn = {
 const useTokenBalances = (options: UseTokenBalancesOptions): UseTokenBalancesReturn => {
   const { tokens, address: addressProp, chainId: chainIdProp, refetchInterval, enabled = true } = options
 
-  const { address: connectedAddress } = useAccount()
+  const { address: connectedAddress } = useConnection()
   const currentChainId = useChainId()
 
   const address = addressProp ?? connectedAddress

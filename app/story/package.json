@@ -13,8 +13,8 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-syntax-highlighter": "^16.1.1",
-    "viem": "^2.23.13",
-    "wagmi": "^2.14.16"
+    "viem": "^2.48.0",
+    "wagmi": "^3.6.2"
   },
   "devDependencies": {
     "@paulmillr/qr": "^0.2.1",

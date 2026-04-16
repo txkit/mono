@@ -1,10 +1,10 @@
 import React from 'react'
-import { useAccount } from 'wagmi'
+import { useConnection } from 'wagmi'
 import { ConnectWallet } from '@txkit/react'
 
 
 const WalletGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isConnected } = useAccount()
+  const { isConnected } = useConnection()
 
   if (!isConnected) {
     return (

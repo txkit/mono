@@ -1,8 +1,9 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { UserRejectedRequestError, type Chain } from 'viem'
 import {
-  useAccount,
+  useConnection,
   useConnect,
+  useConnectors,
   useBalance,
   useEnsName,
   useDisconnect,
@@ -55,11 +56,11 @@ export type UseWalletStateReturn = {
   /** Available wallet connectors */
   connectors: readonly Connector[]
   /** Initiate wallet connection */
-  connect: ReturnType<typeof useConnect>['connect']
+  connect: ReturnType<typeof useConnect>['mutate']
   /** Disconnect wallet */
-  disconnect: ReturnType<typeof useDisconnect>['disconnect']
+  disconnect: ReturnType<typeof useDisconnect>['mutate']
   /** Switch to a different chain */
-  switchChain: ReturnType<typeof useSwitchChain>['switchChain']
+  switchChain: ReturnType<typeof useSwitchChain>['mutate']
   /** Connection error */
   error: Error | null
   /** True while connection is pending */
@@ -74,10 +75,11 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
   const [ isTimedOut, setIsTimedOut ] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
-  const { disconnect } = useDisconnect()
-  const { switchChain } = useSwitchChain()
-  const { address, isConnected, chain, connector } = useAccount()
-  const { connect, connectors, isPending, error: connectError } = useConnect()
+  const { mutate: disconnect } = useDisconnect()
+  const { mutate: switchChain } = useSwitchChain()
+  const { address, isConnected, chain, connector } = useConnection()
+  const connectors = useConnectors()
+  const { mutate: connect, isPending, error: connectError } = useConnect()
 
   // Connection timeout detection - WalletConnect QR flow needs longer timeout
   const timeoutMs = connectingConnectorId === 'walletConnect' ? QR_TIMEOUT_MS : CONNECTION_TIMEOUT_MS

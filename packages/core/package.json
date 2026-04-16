@@ -50,7 +50,11 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "LICENSE", "README.md"],
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "prepublishOnly": "pnpm run build",
     "build": "tsup",
@@ -61,7 +65,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "viem": "^2.23.13"
+    "viem": "^2.48.0"
   },
   "devDependencies": {
     "tsup": "^8.4.0",

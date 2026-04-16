@@ -53,7 +53,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
   onConnectRef.current = onConnect
   onDisconnectRef.current = onDisconnect
 
-  // Track which connector the user selected (useAccount().connector is undefined during pending)
+  // Track which connector the user selected (useConnection().connector is undefined during pending)
   const [ selectedConnector, setSelectedConnector ] = useState<Connector | undefined>(undefined)
 
   const mergedLabels = useDeepMemo(

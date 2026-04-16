@@ -1,7 +1,7 @@
 'use client'
 import { useRef, useMemo, useEffect, useCallback } from 'react'
 import {
-  useAccount,
+  useConnection,
   useChainId,
   useSwitchChain,
   usePublicClient,
@@ -105,15 +105,15 @@ const useTransactionFlow = (options: UseTransactionFlowOptions): UseTransactionF
   }, [ stepDefs, setFlow ])
 
   // --- Wagmi hooks ---
-  const { address, isConnected } = useAccount()
+  const { address, isConnected } = useConnection()
   const currentChainId = useChainId()
   const targetChainId = chainIdProp ?? currentChainId
   const publicClient = usePublicClient({ chainId: targetChainId })
   const { data: walletClient } = useWalletClient()
   const { invalidateAffected, invalidateAll } = useBalanceInvalidation()
-  const { switchChainAsync } = useSwitchChain()
-  const { sendTransactionAsync } = useSendTransaction()
-  const { writeContractAsync } = useWriteContract()
+  const { mutateAsync: switchChainAsync } = useSwitchChain()
+  const { mutateAsync: sendTransactionAsync } = useSendTransaction()
+  const { mutateAsync: writeContractAsync } = useWriteContract()
 
   // --- Helpers ---
 
