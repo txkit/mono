@@ -1,5 +1,8 @@
 import { useMemo } from 'react'
+import { FlowSteps, FlowProgress, FlowToast } from '@txkit/react'
+
 import { useControls, ControlPanel, useTxkitThemeClass } from '../../components'
+import useMockFlow from './useMockFlow'
 
 
 
@@ -41,27 +44,38 @@ const MockPreview = () => {
     state: { type: 'state' as const, default: 'pending', states: TXB_STATES },
   }), [])
 
-  const { values, entries, reset } = useControls(schema)
+  const { values, entries, isDefault, reset } = useControls(schema)
   const activeState = String(values.state ?? 'pending')
   const dataState = activeState === 'pending' ? 'idle' : activeState
 
+  useMockFlow(activeState)
+
   return (
     <>
-      <p className="story-description">Click a state to see how the button looks - no wallet needed</p>
-      <ControlPanel entries={entries} onReset={reset} />
-      <div className="story-card" style={{ marginTop: 8 }}>
-        <div className={`txkit-root ${txkitThemeClass}`} style={{ display: 'inline-block' }}>
-          <div className="txkit-txb">
-            <button
-              type="button"
-              className="txkit-txb-button"
-              data-state={dataState}
-              disabled={disabledStates.includes(activeState)}
-              style={{ pointerEvents: 'none' }}
-            >
-              {stateLabels[activeState] ?? 'Send 0.001 ETH'}
-            </button>
+      <p className="story-description">Pick a state — button and compound components (FlowSteps / FlowProgress / FlowToast) update together via shared TxKitProvider context</p>
+      <div className="story-live-layout">
+        <div className="story-live-left">
+          <div className="story-live-preview-card">
+            <div className={`txkit-root ${txkitThemeClass} story-live-preview-inner`}>
+              <div className="txkit-txb">
+                <button
+                  type="button"
+                  className="txkit-txb-button"
+                  data-state={dataState}
+                  disabled={disabledStates.includes(activeState)}
+                  style={{ pointerEvents: 'none' }}
+                >
+                  {stateLabels[activeState] ?? 'Send 0.001 ETH'}
+                </button>
+              </div>
+              <FlowSteps />
+              <FlowProgress />
+              <FlowToast />
+            </div>
           </div>
+        </div>
+        <div className="story-live-right">
+          <ControlPanel entries={entries} isDefault={isDefault} onReset={reset} />
         </div>
       </div>
     </>

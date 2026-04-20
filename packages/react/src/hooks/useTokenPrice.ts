@@ -68,7 +68,9 @@ const useTokenPrice = (options: UseTokenPriceOptions = {}): UseTokenPriceReturn 
   const chainId = chainIdProp ?? currentChainId
 
   const needsForex = fiatCurrency !== 'USD'
-  const { data: fiatRates } = useFiatRates(enabled && needsForex)
+  // Always prefetch rates when enabled - prevents fiat flash when switching currencies.
+  // Query is cheap (1 req/hour, cached) and rates are needed immediately on currency change.
+  const { data: fiatRates } = useFiatRates(enabled)
 
   const {
     data: usdPrice,

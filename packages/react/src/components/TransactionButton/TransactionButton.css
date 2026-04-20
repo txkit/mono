@@ -1,24 +1,26 @@
 .txkit-txb {
   position: relative;
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   gap: var(--txkit-space-sm);
+  width: 100%;
   font-family: var(--txkit-font-family);
 }
 
 /* --- Button --- */
 
 .txkit-txb-button {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--txkit-space-sm);
-  min-height: 44px;
-  padding: var(--txkit-space-sm) var(--txkit-space-lg);
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 24px;
   border: 1px solid transparent;
   border-radius: var(--txkit-radius-lg);
   font-family: inherit;
-  font-size: var(--txkit-font-size-sm);
+  font-size: var(--txkit-font-size-base);
   font-weight: 600;
   line-height: 1.5;
   cursor: pointer;
@@ -109,13 +111,24 @@
   100% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
 }
 
-/* States: error / simulation-failed */
+/* States: error / simulation-failed
+ *
+ * Retry CTA uses amber/warning — not red — because Retry is a recovery
+ * action, not destructive. Reserving red for destructive CTAs (Revoke,
+ * Cancel Pending) avoids "red alarm fatigue" when the rest of the UI
+ * (icon, step label, toast) is already signalling error in red.
+ */
 
 .txkit-txb-button[data-state="error"],
 .txkit-txb-button[data-state="simulation-failed"] {
-  background: var(--txkit-color-error);
-  color: var(--txkit-color-error-text, #fff);
+  background: var(--txkit-color-warning);
+  color: var(--txkit-color-warning-text, #fff);
   animation: txkit-txb-shake 0.4s ease;
+}
+
+.txkit-txb-button[data-state="error"]:hover:not(:disabled),
+.txkit-txb-button[data-state="simulation-failed"]:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--txkit-color-warning) 85%, black);
 }
 
 @keyframes txkit-txb-shake {
@@ -151,52 +164,22 @@
   color: var(--txkit-color-text-tertiary);
 }
 
-/* --- Dot loader --- */
+/* --- Icon (arrow-right / loader / check) --- */
 
-.txkit-txb-dots {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
+.txkit-txb-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: block;
 }
 
-.txkit-txb-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--txkit-radius-full);
-  background: currentColor;
-  animation: txkit-txb-bounce 1.4s ease-in-out infinite;
+.txkit-txb-icon--spinning {
+  animation: txkit-txb-spin 1s linear infinite;
 }
 
-.txkit-txb-dot:nth-child(2) {
-  animation-delay: 0.16s;
-}
-
-.txkit-txb-dot:nth-child(3) {
-  animation-delay: 0.32s;
-}
-
-@keyframes txkit-txb-bounce {
-  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
-  40% { opacity: 1; transform: scale(1); }
-}
-
-/* --- Checkmark --- */
-
-.txkit-txb-check {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 24;
-  stroke-dashoffset: 24;
-  animation: txkit-txb-check-draw 0.4s ease forwards;
-}
-
-@keyframes txkit-txb-check-draw {
-  to { stroke-dashoffset: 0; }
+@keyframes txkit-txb-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* --- Multi-step progress dots --- */
@@ -406,13 +389,7 @@
     transform: none;
   }
 
-  .txkit-txb-check {
+  .txkit-txb-icon--spinning {
     animation: none;
-    stroke-dashoffset: 0;
-  }
-
-  .txkit-txb-dot {
-    animation: none;
-    opacity: 0.6;
   }
 }

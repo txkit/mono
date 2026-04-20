@@ -28,6 +28,7 @@ const FlowSteps = forwardRef<HTMLDivElement, FlowStepsProps>(({
     const stepsData = flow.steps.map((stepState, index) => ({
       id: stepState.id,
       label: stepDefs[index]?.label ?? stepState.id,
+      description: stepDefs[index]?.description,
       status: stepState.status,
       isCurrent: index === flow.currentStepIndex,
     }))

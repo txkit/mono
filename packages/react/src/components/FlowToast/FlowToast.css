@@ -1,7 +1,8 @@
 .txkit-ft {
   position: fixed;
   z-index: var(--txkit-z-modal, 1001);
-  max-width: 360px;
+  max-width: 380px;
+  min-width: 300px;
   pointer-events: auto;
 }
 
@@ -25,62 +26,124 @@
   top: var(--txkit-space-lg);
 }
 
+@media (max-width: 640px) {
+  .txkit-ft {
+    left: var(--txkit-space-lg);
+    right: var(--txkit-space-lg);
+    max-width: none;
+    min-width: 0;
+  }
+}
+
 .txkit-ft-content {
   display: flex;
-  gap: var(--txkit-space-sm);
-  align-items: center;
-  min-height: 44px;
-  padding: var(--txkit-space-md) var(--txkit-space-lg);
-  border-radius: var(--txkit-radius-lg);
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
   font-family: var(--txkit-font-family);
-  font-size: var(--txkit-font-size-sm);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  animation: txkit-ft-slide-in 200ms ease-out;
+  box-shadow:
+    0 4px 6px -1px oklch(0 0 0 / 0.08),
+    0 2px 4px -1px oklch(0 0 0 / 0.04),
+    0 0 0 1px oklch(0 0 0 / 0.03);
+  animation: txkit-ft-slide-in-right 200ms var(--txkit-ease-enter);
+}
+
+/* Direction-aware slide-in: toasts in left corners slide from the left */
+.txkit-ft-top-left .txkit-ft-content,
+.txkit-ft-bottom-left .txkit-ft-content {
+  animation-name: txkit-ft-slide-in-left;
+}
+
+.txkit-dark .txkit-ft-content {
+  box-shadow:
+    0 4px 6px -1px oklch(0 0 0 / 0.3),
+    0 2px 4px -1px oklch(0 0 0 / 0.2),
+    0 0 0 1px oklch(1 0 0 / 0.05);
 }
 
 .txkit-ft-content[data-type="success"] {
-  background: var(--txkit-color-success);
-  color: var(--txkit-color-success-text);
+  background: var(--txkit-color-success-bg);
 }
 
 .txkit-ft-content[data-type="error"] {
-  background: var(--txkit-color-error);
-  color: var(--txkit-color-error-text);
+  background: var(--txkit-color-error-bg);
 }
 
 .txkit-ft-content[data-type="info"] {
-  background: var(--txkit-color-bg-secondary);
-  color: var(--txkit-color-text);
-  border: 1px solid var(--txkit-color-border);
+  background: var(--txkit-color-info-bg);
 }
 
-/* --- Icon --- */
+.txkit-ft-content[data-type="warning"] {
+  background: var(--txkit-color-warning-bg);
+}
+
+/* --- Icon (tinted by type via CSS mask so SVG adopts theme color) --- */
 
 .txkit-ft-icon {
+  display: block;
   width: 20px;
   height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
   flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+/* When a description is present (2-line), align icon to top.
+   Without description (1-line), center icon with the title. */
+.txkit-ft-content[data-has-description] .txkit-ft-icon {
+  margin-top: 1px;
+}
+
+.txkit-ft-content:not([data-has-description]) {
+  align-items: center;
 }
 
 .txkit-ft-content[data-type="success"] .txkit-ft-icon {
-  stroke-dasharray: 24;
-  stroke-dashoffset: 24;
-  animation: txkit-ft-check-draw 0.4s ease forwards;
+  color: var(--txkit-color-success);
 }
 
-@keyframes txkit-ft-check-draw {
-  to { stroke-dashoffset: 0; }
+.txkit-ft-content[data-type="error"] .txkit-ft-icon {
+  color: var(--txkit-color-error);
+}
+
+.txkit-ft-content[data-type="info"] .txkit-ft-icon {
+  color: var(--txkit-color-info);
+}
+
+.txkit-ft-content[data-type="warning"] .txkit-ft-icon {
+  color: var(--txkit-color-warning);
+}
+
+/* --- Text block --- */
+
+.txkit-ft-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
 }
 
 .txkit-ft-message {
-  flex: 1;
-  line-height: 1.4;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--txkit-color-text);
 }
+
+.txkit-ft-description {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--txkit-color-text-secondary);
+}
+
+/* --- Dismiss button (44x44 touch target, 16px visible X) --- */
 
 .txkit-ft-dismiss {
   display: flex;
@@ -88,37 +151,63 @@
   justify-content: center;
   min-width: 44px;
   min-height: 44px;
-  width: 24px;
-  height: 24px;
+  margin: -14px -8px -14px 0;
   padding: 0;
   border: none;
   border-radius: var(--txkit-radius-sm);
   background: transparent;
   color: var(--txkit-color-text-secondary);
-  font-size: var(--txkit-font-size-sm);
   cursor: pointer;
-  transition: color var(--txkit-transition);
-  flex-shrink: 0;
+  transition: background-color 150ms ease;
 }
 
 .txkit-ft-dismiss:hover {
-  color: var(--txkit-color-text);
+  background-color: oklch(0 0 0 / 0.05);
+}
+
+.txkit-dark .txkit-ft-dismiss:hover {
+  background-color: oklch(1 0 0 / 0.08);
 }
 
 .txkit-ft-dismiss:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
+  outline: 2px solid var(--txkit-color-text);
+  outline-offset: -4px;
 }
 
-@keyframes txkit-ft-slide-in {
+.txkit-ft-dismiss-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+/* --- Slide animations (direction-aware) --- */
+
+@keyframes txkit-ft-slide-in-right {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateX(16px);
   }
-
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
+  }
+}
+
+@keyframes txkit-ft-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -126,15 +215,15 @@
 
 @media (prefers-reduced-motion: reduce) {
   .txkit-ft-content {
-    animation: none;
-  }
-
-  .txkit-ft-content[data-type="success"] .txkit-ft-icon {
-    animation: none;
-    stroke-dashoffset: 0;
+    animation: txkit-ft-fade-in 200ms ease-out;
   }
 
   .txkit-ft-dismiss {
     transition: none;
+  }
+
+  @keyframes txkit-ft-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 }

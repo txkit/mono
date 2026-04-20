@@ -1,30 +1,28 @@
 import React from 'react'
 
-import { cx } from '@txkit/core'
-
 import type { ControlEntry } from './useControls'
 
 
-const BooleanInput: React.FC<{ entry: ControlEntry }> = ({ entry }) => (
-  <div className="control-toggle-group">
-    <button
-      type="button"
-      aria-label={`${entry.key}: true`}
-      className={cx('control-toggle-btn', { active: entry.value as boolean })}
-      onClick={() => entry.setValue(true)}
-    >
-      true
-    </button>
-    <button
-      type="button"
-      aria-label={`${entry.key}: false`}
-      className={cx('control-toggle-btn', { active: !(entry.value as boolean) })}
-      onClick={() => entry.setValue(false)}
-    >
-      false
-    </button>
-  </div>
-)
+const BooleanInput: React.FC<{ entry: ControlEntry }> = ({ entry }) => {
+  const checked = entry.value as boolean
+  const id = `control-${entry.key}`
+
+  return (
+    <label className="control-switch" htmlFor={id}>
+      <input
+        id={id}
+        type="checkbox"
+        className="control-switch-input"
+        checked={checked}
+        onChange={(e) => entry.setValue(e.target.checked)}
+      />
+      <span className="control-switch-track" aria-hidden="true">
+        <span className="control-switch-thumb" />
+      </span>
+      <span className="control-switch-label">{checked ? 'Enabled' : 'Disabled'}</span>
+    </label>
+  )
+}
 
 
 export default BooleanInput

@@ -1,17 +1,22 @@
 import { useState, useCallback } from 'react'
 
 
-type BooleanControl = {
+type ControlDescription = {
+  /** Optional human-readable hint shown under the control label */
+  description?: string
+}
+
+type BooleanControl = ControlDescription & {
   type: 'boolean'
   default: boolean
 }
 
-type StringControl = {
+type StringControl = ControlDescription & {
   type: 'string'
   default: string
 }
 
-type NumberControl = {
+type NumberControl = ControlDescription & {
   type: 'number'
   default: number
   min?: number
@@ -19,7 +24,7 @@ type NumberControl = {
   step?: number
 }
 
-type SelectControl = {
+type SelectControl = ControlDescription & {
   type: 'select'
   default: string
   options: string[]
@@ -31,7 +36,7 @@ type StateNode = {
   color: string
 }
 
-type StateMachineControl = {
+type StateMachineControl = ControlDescription & {
   type: 'state'
   default: string
   states: readonly StateNode[]
@@ -59,6 +64,7 @@ export type ControlEntry = {
 type UseControlsReturn<T extends ControlSchema> = {
   values: ResolvedValues<T>
   entries: ControlEntry[]
+  isDefault: boolean
   reset: () => void
 }
 
@@ -88,9 +94,12 @@ const useControls = <T extends ControlSchema>(schema: T): UseControlsReturn<T> =
     setValue: (v: boolean | string | number) => setValue(key, v),
   }))
 
+  const isDefault = Object.keys(schema).every((key) => values[key] === schema[key].default)
+
   return {
     values: values as ResolvedValues<T>,
     entries,
+    isDefault,
     reset,
   }
 }

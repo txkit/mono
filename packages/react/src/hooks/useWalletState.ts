@@ -42,6 +42,12 @@ export type UseWalletStateReturn = {
   ensAvatar: string | null | undefined
   /** Formatted native balance with symbol (e.g. "1.23 ETH") */
   formattedBalance: string | undefined
+  /** Raw native balance in wei */
+  balanceValue: bigint | undefined
+  /** Native balance decimals (18 for ETH) */
+  balanceDecimals: number | undefined
+  /** Native balance symbol (ETH, MATIC, etc.) */
+  balanceSymbol: string | undefined
   /** Current chain */
   chain: Chain | undefined
   /** Active connector */
@@ -142,8 +148,12 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
       return undefined
     }
 
-    return ensName ?? shortenAddress(address)
-  }, [ address, ensName ])
+    if (showEns && ensName) {
+      return ensName
+    }
+
+    return shortenAddress(address)
+  }, [ showEns, address, ensName ])
 
   return {
     state,
@@ -152,6 +162,9 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
     ensName,
     ensAvatar,
     formattedBalance,
+    balanceValue: balanceData?.value,
+    balanceDecimals: balanceData?.decimals,
+    balanceSymbol: balanceData?.symbol,
     chain,
     connector,
     connectors,

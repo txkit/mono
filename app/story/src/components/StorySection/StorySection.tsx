@@ -18,6 +18,16 @@ type StorySectionProps = {
 const slugify = (text: string) =>
   text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
+/** Preserve camelCase hook / function names inside uppercase-transformed section titles. */
+const renderTitle = (text: string): ReactNode[] => {
+  const parts = text.split(/(\buse[A-Z][A-Za-z]+)/)
+  return parts.map((part, index) => (
+    /^use[A-Z]/.test(part)
+      ? <code key={`code-${index}`} className="story-section-title-code">{part}</code>
+      : <React.Fragment key={`txt-${index}`}>{part}</React.Fragment>
+  ))
+}
+
 const StorySection: React.FC<StorySectionProps> = ({
   id,
   title,
@@ -44,7 +54,7 @@ const StorySection: React.FC<StorySectionProps> = ({
             onClick={handleTitleClick}
             title="Click to copy permalink"
           >
-            {title}
+            {renderTitle(title)}
             <span className="story-section-anchor">#</span>
           </h3>
           {

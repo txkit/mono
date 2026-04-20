@@ -121,6 +121,8 @@ export type FlowStepBase = {
   id: string
   /** Human-readable label for UI */
   label: string
+  /** Optional sub-label shown below the main label (e.g. "Approve USDC spending") */
+  description?: string
   /** Skip at runtime (e.g. allowance already sufficient). Re-evaluated on retry */
   shouldSkip?: (context: StepContext) => boolean | Promise<boolean>
   /** Delay in ms after completion before starting next step */
@@ -336,7 +338,13 @@ export type FlowStepsProps = {
 /** Data passed to FlowSteps children render function */
 export type FlowStepsRenderData = {
   /** Step states with labels */
-  steps: Array<{ id: string; label: string; status: StepStatus; isCurrent: boolean }>
+  steps: Array<{
+    id: string
+    label: string
+    description?: string
+    status: StepStatus
+    isCurrent: boolean
+  }>
   /** Index of current step */
   currentStepIndex: number
   /** Total number of steps */
@@ -355,6 +363,10 @@ export type FlowProgressProps = {
   'data-testid'?: string
   /** Flow ID to display. @default '__default__' */
   flowId?: string
+  /** Show a summary row "Overall Progress — X%" above the bar. @default false */
+  showSummary?: boolean
+  /** Custom label for the summary row. @default 'Overall Progress' */
+  summaryLabel?: string
 }
 
 /** Data passed to FlowProgress children render function */
@@ -387,10 +399,12 @@ export type FlowToastProps = {
 export type FlowToastRenderData = {
   /** Whether toast is visible */
   visible: boolean
-  /** Toast message */
+  /** Toast message (rendered as the title) */
   message: string
+  /** Optional secondary line rendered below the message */
+  description?: string
   /** Toast type */
-  type: 'success' | 'error' | 'info'
+  type: 'success' | 'error' | 'info' | 'warning'
   /** Step that triggered the toast */
   stepId: string | undefined
   /** Dismiss the toast */

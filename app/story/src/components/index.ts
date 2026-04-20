@@ -13,6 +13,7 @@ export {
 
 // --- Layout / chrome ---
 export { default as CodeBlock } from './CodeBlock/CodeBlock'
+export { default as Home } from './Home/Home'
 export { default as InfoGrid } from './InfoGrid/InfoGrid'
 export { default as StoryTabs } from './StoryTabs/StoryTabs'
 export { default as WalletGate } from './WalletGate/WalletGate'

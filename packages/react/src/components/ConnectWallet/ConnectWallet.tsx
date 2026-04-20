@@ -1,9 +1,11 @@
 'use client'
 import React, { useRef, useMemo, useState, useEffect, useCallback, forwardRef } from 'react'
+import { formatUnits } from 'viem'
 import type { Connector } from 'wagmi'
-import { cx } from '@txkit/core'
+import { cx, formatFiatAmount } from '@txkit/core'
 
 import useDeepMemo from '../../hooks/useDeepMemo'
+import useTokenPrice from '../../hooks/useTokenPrice'
 import useWalletState from '../../hooks/useWalletState'
 import useRecentWallets from './utils/useRecentWallets'
 import useWalletGroups from './utils/useWalletGroups'
@@ -72,15 +74,41 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
     disconnect,
     isTimedOut,
     switchChain,
+    balanceValue,
     displayAddress,
+    balanceDecimals,
     formattedBalance,
-  } = useWalletState({ chainId, showEns, showBalance, connectingConnectorId: selectedConnector?.id })
+  } = useWalletState({
+    chainId,
+    showEns,
+    showBalance: showBalance || showFiat,
+    connectingConnectorId: selectedConnector?.id,
+  })
+
+  const { price } = useTokenPrice({
+    chainId: chain?.id,
+    fiatCurrency: 'USD',
+    enabled: showFiat && Boolean(address),
+  })
+
+  const fiatBalance = useMemo(() => {
+    if (!showFiat || balanceValue === undefined || balanceDecimals === undefined || !price) {
+      return undefined
+    }
+    const amount = Number(formatUnits(balanceValue, balanceDecimals))
+    return formatFiatAmount(amount * price, 'USD')
+  }, [ price, showFiat, balanceValue, balanceDecimals ])
 
   // Use displayChains from TxKit config, not wagmi config. In testnet mode,
   // mainnet is registered with wagmi for ENS but must not appear in the chain
   // selector or trigger wrong-chain state.
   const { config } = useTxKit()
   const chains = config.displayChains
+
+  const requiredChain = useMemo(
+    () => chainId ? chains.find((c) => c.id === chainId) : undefined,
+    [ chainId, chains ],
+  )
 
   const { recentIds, addRecent } = useRecentWallets()
   const groupedConnectors = useWalletGroups({ connectors, recentIds })
@@ -119,7 +147,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
 
   // Close panel on state changes
   useEffect(() => {
-    if (state !== 'connected' && panel === 'dropdown') {
+    if (!connectedStates.includes(state) && panel === 'dropdown') {
       setPanel('closed')
     }
     if (!modalOpenStates.includes(state) && panel === 'modal') {
@@ -133,18 +161,14 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
         setPanel('modal')
         break
       case 'connected':
-        setPanel((prev) => prev === 'dropdown' ? 'closed' : 'dropdown')
-        break
       case 'wrong-chain':
-        if (chainId) {
-          switchChain({ chainId })
-        }
+        setPanel((prev) => prev === 'dropdown' ? 'closed' : 'dropdown')
         break
       case 'error':
         setPanel('modal')
         break
     }
-  }, [ state, chainId, switchChain ])
+  }, [ state ])
 
   const handleModalSelect = useCallback((modalConnector: Connector) => {
     setSelectedConnector(modalConnector)
@@ -181,27 +205,20 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
     switch (state) {
       case 'connected': return `Connected: ${resolvedDisplayAddress}`
       case 'error': return mergedLabels.error
-      case 'wrong-chain': return mergedLabels.wrongChain
+      case 'wrong-chain':
+        return `${mergedLabels.wrongChain}: on ${chain?.name ?? '?'}, needs ${requiredChain?.name ?? '?'}`
       default: return ''
     }
-  }, [ state, mergedLabels, resolvedDisplayAddress ])
-
-  const targetChainName = useMemo(() => {
-    if (!chainId) {
-      return undefined
-    }
-    return chains.find((c) => c.id === chainId)?.name
-  }, [ chainId, chains ])
+  }, [ state, mergedLabels, resolvedDisplayAddress, chain, requiredChain ])
 
   const buttonLabel = useMemo(() => {
     switch (state) {
       case 'disconnected': return label ?? mergedLabels.connect
       case 'connecting': return mergedLabels.connecting
-      case 'wrong-chain': return targetChainName ? `Switch to ${targetChainName}` : mergedLabels.wrongChain
       case 'error': return mergedLabels.retry
       default: return null
     }
-  }, [ label, state, mergedLabels, targetChainName ])
+  }, [ label, state, mergedLabels ])
 
   const openModal = useCallback(() => setPanel('modal'), [])
   const closePanel = useCallback(() => setPanel('closed'), [])
@@ -223,8 +240,9 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
     ensName,
     ensAvatar,
     formattedBalance,
-    fiatBalance: undefined,
+    fiatBalance,
     chain,
+    requiredChain,
     chains,
     connectors,
     groupedConnectors,
@@ -237,11 +255,12 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
     error,
     isPending: state === 'connecting',
     isTimedOut,
+    isWrongChain: state === 'wrong-chain',
   }), [
     chain, chains, state, error, address, ensName, ensAvatar, openModal,
     connectors, closePanel, isTimedOut, handleConnect, handleDisconnect,
     connectingWallet, formattedBalance, groupedConnectors, handleSwitchChain,
-    resolvedDisplayAddress,
+    resolvedDisplayAddress, requiredChain, fiatBalance,
   ])
 
   return (
@@ -266,9 +285,10 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
               buttonLabel={buttonLabel}
               statusMessage={statusMessage}
               formattedBalance={formattedBalance}
-              fiatBalance={undefined}
+              fiatBalance={fiatBalance}
               resolvedDisplayAddress={resolvedDisplayAddress}
               chain={chain}
+              requiredChain={requiredChain}
               chains={chains}
               connectors={connectors}
               groupedConnectors={groupedConnectors}

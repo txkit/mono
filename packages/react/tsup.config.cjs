@@ -8,6 +8,9 @@ module.exports = {
   splitting: false,
   sourcemap: true,
   clean: true,
+  loader: {
+    '.svg': 'dataurl',
+  },
   external: [
     'react',
     'react-dom',

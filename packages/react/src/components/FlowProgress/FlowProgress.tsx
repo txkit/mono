@@ -13,6 +13,8 @@ const FlowProgress = forwardRef<HTMLDivElement, FlowProgressProps>(({
   children,
   'data-testid': testId,
   flowId = DEFAULT_FLOW_ID,
+  showSummary = false,
+  summaryLabel = 'Overall Progress',
 }, ref) => {
   const flowEntry = useFlowState(flowId)
 
@@ -49,7 +51,13 @@ const FlowProgress = forwardRef<HTMLDivElement, FlowProgressProps>(({
       {
         typeof children === 'function'
           ? children(renderData)
-          : <FlowProgressDefault {...renderData} />
+          : (
+            <FlowProgressDefault
+              {...renderData}
+              showSummary={showSummary}
+              summaryLabel={summaryLabel}
+            />
+          )
       }
     </div>
   )

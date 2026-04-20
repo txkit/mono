@@ -1,18 +1,12 @@
-import React from 'react'
-
-import ThemeShowcaseStory from '../../stories/ThemeShowcase/ThemeShowcase'
-import TokenBalanceStory from '../../stories/TokenBalance/TokenBalance'
-import ConnectWalletStory from '../../stories/ConnectWallet/ConnectWallet'
-import TxKitProviderStory from '../../stories/TxKitProvider/TxKitProvider'
-import TransactionButtonStory from '../../stories/TransactionButton/TransactionButton'
+import React, { Suspense, lazy } from 'react'
 
 
 const stories = {
-  ConnectWallet: ConnectWalletStory,
-  TokenBalance: TokenBalanceStory,
-  TransactionButton: TransactionButtonStory,
-  TxKitProvider: TxKitProviderStory,
-  ThemeShowcase: ThemeShowcaseStory,
+  ConnectWallet: lazy(() => import('../../stories/ConnectWallet/ConnectWallet')),
+  TokenBalance: lazy(() => import('../../stories/TokenBalance/TokenBalance')),
+  TransactionButton: lazy(() => import('../../stories/TransactionButton/TransactionButton')),
+  TxKitProvider: lazy(() => import('../../stories/TxKitProvider/TxKitProvider')),
+  ThemeShowcase: lazy(() => import('../../stories/ThemeShowcase/ThemeShowcase')),
 } as const
 
 export type StoryName = keyof typeof stories
@@ -22,7 +16,11 @@ export type StoryName = keyof typeof stories
  *  ensures clean unmount/mount of story content without recreating wagmi store. */
 const MemoizedStory = React.memo(({ name }: { name: StoryName }) => {
   const Story = stories[name]
-  return <Story />
+  return (
+    <Suspense fallback={null}>
+      <Story />
+    </Suspense>
+  )
 })
 MemoizedStory.displayName = 'MemoizedStory'
 

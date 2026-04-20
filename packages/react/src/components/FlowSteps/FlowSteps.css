@@ -1,12 +1,13 @@
 .txkit-fs {
   display: flex;
-  align-items: center;
+  align-items: stretch;
 }
 
 .txkit-fs-list {
   display: flex;
   gap: var(--txkit-space-sm);
-  align-items: center;
+  align-items: flex-start;
+  width: 100%;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -14,61 +15,114 @@
 
 .txkit-fs-list[data-orientation="vertical"] {
   flex-direction: column;
-  align-items: flex-start;
+  gap: var(--txkit-space-md);
+  align-items: stretch;
 }
 
 .txkit-fs-item {
   display: flex;
-  gap: var(--txkit-space-xs);
+  flex: 1;
+  gap: var(--txkit-space-sm);
   align-items: center;
   font-family: var(--txkit-font-family);
-  font-size: var(--txkit-font-size-sm);
   color: var(--txkit-color-text-secondary);
   transition: color var(--txkit-transition);
+  animation: txkit-fs-step-appear var(--txkit-duration-moderate) var(--txkit-ease-enter) backwards;
 }
 
-.txkit-fs-item[aria-current="step"] {
-  color: var(--txkit-color-primary);
-  font-weight: 600;
+.txkit-fs-list[data-orientation="vertical"] .txkit-fs-item {
+  flex: none;
+  width: 100%;
 }
 
-.txkit-fs-item[data-status="completed"] {
-  color: var(--txkit-color-success);
+.txkit-fs-item:nth-child(1) { animation-delay: 0ms; }
+.txkit-fs-item:nth-child(2) { animation-delay: 100ms; }
+.txkit-fs-item:nth-child(3) { animation-delay: 200ms; }
+.txkit-fs-item:nth-child(4) { animation-delay: 300ms; }
+.txkit-fs-item:nth-child(5) { animation-delay: 400ms; }
+.txkit-fs-item:nth-child(n+6) { animation-delay: 500ms; }
+
+@keyframes txkit-fs-step-appear {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
-.txkit-fs-item[data-status="error"],
-.txkit-fs-item[data-status="simulation-failed"] {
+.txkit-fs-list[data-orientation="vertical"] .txkit-fs-item {
+  animation-name: txkit-fs-step-appear-vertical;
+}
+
+@keyframes txkit-fs-step-appear-vertical {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Status-based colors (labels) --- */
+
+.txkit-fs-item[aria-current="step"] .txkit-fs-label {
+  color: var(--txkit-color-text);
+}
+
+.txkit-fs-item[data-status="completed"] .txkit-fs-label {
+  color: var(--txkit-color-text-secondary);
+}
+
+.txkit-fs-item[data-status="error"] .txkit-fs-label,
+.txkit-fs-item[data-status="simulation-failed"] .txkit-fs-label {
   color: var(--txkit-color-error);
 }
 
-.txkit-fs-item[data-status="rejected"],
-.txkit-fs-item[data-status="canceled"] {
+.txkit-fs-item[data-status="rejected"] .txkit-fs-label {
+  color: var(--txkit-color-warning);
+}
+
+.txkit-fs-item[data-status="canceled"] .txkit-fs-label,
+.txkit-fs-item[data-status="skipped"] .txkit-fs-label {
   color: var(--txkit-color-text-tertiary);
 }
 
-.txkit-fs-item[data-status="skipped"] {
-  color: var(--txkit-color-text-tertiary);
-  text-decoration: line-through;
-}
-
-/* --- Indicator circles --- */
+/* --- Indicator circles (32px) --- */
 
 .txkit-fs-indicator {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  font-size: var(--txkit-font-size-xs);
-  font-weight: 700;
-  line-height: 1;
   flex-shrink: 0;
-  transition: all var(--txkit-transition);
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--txkit-color-border);
+  border-radius: 50%;
+  background: var(--txkit-color-bg-secondary);
+  color: var(--txkit-color-text-tertiary);
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
 }
 
-.txkit-fs-item[aria-current="step"] .txkit-fs-indicator {
+.txkit-fs-indicator-number {
+  font-size: var(--txkit-font-size-xs);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.txkit-fs-indicator-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.txkit-fs-indicator-icon--spinning {
+  animation: txkit-fs-spin 1s linear infinite;
+}
+
+@keyframes txkit-fs-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Active (any spinning status) */
+.txkit-fs-item[data-status="simulating"] .txkit-fs-indicator,
+.txkit-fs-item[data-status="confirming-risk"] .txkit-fs-indicator,
+.txkit-fs-item[data-status="signing"] .txkit-fs-indicator,
+.txkit-fs-item[data-status="tx-pending"] .txkit-fs-indicator,
+.txkit-fs-item[data-status="waiting"] .txkit-fs-indicator {
   background: var(--txkit-color-primary);
   border-color: var(--txkit-color-primary);
   color: var(--txkit-color-primary-text);
@@ -87,55 +141,86 @@
   color: var(--txkit-color-error-text);
 }
 
-/* Pulse on active processing step */
-
-.txkit-fs-item[aria-current="step"]:not([data-status="completed"]):not([data-status="error"]):not([data-status="simulation-failed"]) .txkit-fs-indicator {
-  animation: txkit-fs-pulse 1.5s ease-in-out infinite;
+.txkit-fs-item[data-status="rejected"] .txkit-fs-indicator {
+  background: var(--txkit-color-warning);
+  border-color: var(--txkit-color-warning);
+  color: var(--txkit-color-warning-text);
 }
 
-@keyframes txkit-fs-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 var(--txkit-color-primary-alpha); }
-  50% { box-shadow: 0 0 0 4px var(--txkit-color-primary-alpha); }
+.txkit-fs-item[data-status="canceled"] .txkit-fs-indicator,
+.txkit-fs-item[data-status="skipped"] .txkit-fs-indicator {
+  background: var(--txkit-color-text-tertiary);
+  border-color: var(--txkit-color-text-tertiary);
+  color: var(--txkit-color-bg);
+}
+
+/* --- Text block (label + description) --- */
+
+.txkit-fs-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .txkit-fs-label {
+  font-size: var(--txkit-font-size-sm);
+  line-height: 1.3;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 200ms ease;
 }
 
-/* --- Connector lines (horizontal) --- */
+.txkit-fs-description {
+  font-size: var(--txkit-font-size-xs);
+  color: var(--txkit-color-text-tertiary);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- "In Progress" pill --- */
+
+.txkit-fs-pill {
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: var(--txkit-radius-full);
+  background: color-mix(in oklch, var(--txkit-color-primary) 15%, var(--txkit-color-bg));
+  color: var(--txkit-color-primary);
+  font-size: var(--txkit-font-size-xs);
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  flex-shrink: 0;
+  animation: txkit-fs-pill-pop 400ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+@keyframes txkit-fs-pill-pop {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* --- Connector lines (horizontal) flex-1 --- */
 
 .txkit-fs-list:not([data-orientation="vertical"]) .txkit-fs-item + .txkit-fs-item::before {
   content: '';
-  display: block;
-  width: 24px;
+  flex: 1;
   height: 2px;
-  margin-right: var(--txkit-space-xs);
+  min-width: 12px;
+  margin-top: 15px; /* align to circle center: (32 - 2) / 2 = 15 */
   background: var(--txkit-color-border);
-  flex-shrink: 0;
   transition: background var(--txkit-transition);
+  align-self: flex-start;
 }
 
-.txkit-fs-list:not([data-orientation="vertical"]) .txkit-fs-item[data-status="completed"] + .txkit-fs-item::before {
+.txkit-fs-list:not([data-orientation="vertical"]) .txkit-fs-item[data-status="completed"] + .txkit-fs-item::before,
+.txkit-fs-list:not([data-orientation="vertical"]) .txkit-fs-item[data-status="skipped"] + .txkit-fs-item::before {
   background: var(--txkit-color-success);
 }
 
-/* --- Connector lines (vertical) --- */
-
-.txkit-fs-list[data-orientation="vertical"] .txkit-fs-item + .txkit-fs-item::before {
-  content: '';
-  display: block;
-  width: 2px;
-  height: 16px;
-  margin-left: 11px;
-  margin-bottom: var(--txkit-space-xs);
-  background: var(--txkit-color-border);
-  flex-shrink: 0;
-  transition: background var(--txkit-transition);
-}
-
-.txkit-fs-list[data-orientation="vertical"] .txkit-fs-item[data-status="completed"] + .txkit-fs-item::before {
-  background: var(--txkit-color-success);
-}
+/* Vertical: no connector (gap-only, like composition) */
 
 /* --- Screen reader only --- */
 
@@ -156,15 +241,22 @@
 @media (prefers-reduced-motion: reduce) {
   .txkit-fs-item {
     transition: none;
+    animation: none;
   }
 
   .txkit-fs-indicator {
     transition: none;
+  }
+
+  .txkit-fs-indicator-icon--spinning {
     animation: none;
   }
 
-  .txkit-fs-list:not([data-orientation="vertical"]) .txkit-fs-item + .txkit-fs-item::before,
-  .txkit-fs-list[data-orientation="vertical"] .txkit-fs-item + .txkit-fs-item::before {
+  .txkit-fs-pill {
+    animation: none;
+  }
+
+  .txkit-fs-list:not([data-orientation="vertical"]) .txkit-fs-item + .txkit-fs-item::before {
     transition: none;
   }
 }

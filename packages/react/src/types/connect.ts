@@ -25,6 +25,8 @@ export type ConnectWalletRenderData = {
   fiatBalance: string | undefined
   /** Current chain */
   chain: Chain | undefined
+  /** Required chain when `chainId` prop is set - undefined otherwise */
+  requiredChain: Chain | undefined
   /** Available chains for switching */
   chains: readonly Chain[]
   /** Available wallet connectors */
@@ -49,6 +51,8 @@ export type ConnectWalletRenderData = {
   isPending: boolean
   /** True when connecting has exceeded timeout threshold */
   isTimedOut: boolean
+  /** True when `chainId` is enforced and current chain differs */
+  isWrongChain: boolean
 }
 
 export type ConnectWalletDefaultProps = {
@@ -64,6 +68,7 @@ export type ConnectWalletDefaultProps = {
   fiatBalance: string | undefined
   resolvedDisplayAddress: string | undefined
   chain: Chain | undefined
+  requiredChain: Chain | undefined
   chains: readonly Chain[]
   connectors: readonly Connector[]
   groupedConnectors: WalletGroups

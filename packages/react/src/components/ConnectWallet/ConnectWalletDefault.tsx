@@ -18,9 +18,10 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = ({
   buttonLabel,
   statusMessage,
   formattedBalance,
-  fiatBalance: _fiatBalance,
+  fiatBalance,
   resolvedDisplayAddress,
   chain,
+  requiredChain,
   chains,
   connectors,
   groupedConnectors,
@@ -32,9 +33,9 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = ({
   variant: _variant,
   showAvatar,
   showBalance,
-  showFiat: _showFiat,
-  showChainSelector,
-  avatarStyle: _avatarStyle,
+  showFiat,
+  showChainSelector: _showChainSelector,
+  avatarStyle,
   onModalClose,
   onDisconnect,
   onPanelClose,
@@ -54,7 +55,8 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = ({
   // We also detect when state is disconnected but connectors haven't hydrated.
   const isInitializing = connectors.length === 0
 
-  const ariaHaspopup = state === 'connected' ? 'menu' as const : 'dialog' as const
+  const isConnectedLike = state === 'connected' || state === 'wrong-chain'
+  const ariaHaspopup = isConnectedLike ? 'menu' as const : 'dialog' as const
 
   return (
   <>
@@ -79,19 +81,32 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = ({
       }
 
       {
-        state === 'connected' && (
+        isConnectedLike && (
           <>
             {
               showAvatar && (
                 ensAvatar
                   ? <img src={ensAvatar} alt="" className="txkit-cw-avatar" />
-                  : address && <AvatarFallback address={address} />
+                  : address && <AvatarFallback address={address} variant={avatarStyle} />
               )
             }
             <span className="txkit-cw-address">{resolvedDisplayAddress}</span>
             {
-              showBalance && formattedBalance && (
-                <span className="txkit-cw-balance">{formattedBalance}</span>
+              ((showBalance && formattedBalance) || (showFiat && fiatBalance)) && (
+                <span className="txkit-cw-balance-wrap">
+                  {showBalance && formattedBalance && <span className="txkit-cw-balance">{formattedBalance}</span>}
+                  {showFiat && fiatBalance && <span className="txkit-cw-fiat">{fiatBalance}</span>}
+                </span>
+              )
+            }
+            {
+              state === 'wrong-chain' && (
+                <svg className="txkit-cw-switch-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m16 3 4 4-4 4" />
+                  <path d="M20 7H4" />
+                  <path d="m8 21-4-4 4-4" />
+                  <path d="M4 17h16" />
+                </svg>
               )
             }
           </>
@@ -125,10 +140,9 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = ({
           address={address}
           ensName={ensName}
           ensAvatar={ensAvatar}
-          formattedBalance={showBalance ? formattedBalance : undefined}
+          avatarStyle={avatarStyle}
           chain={chain}
-          chains={chains}
-          showChainSelector={showChainSelector}
+          requiredChain={requiredChain}
           labels={mergedLabels}
           onClose={onPanelClose}
           onDisconnect={onDisconnect}

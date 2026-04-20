@@ -7,6 +7,8 @@ export type ConnectWalletLabels = {
   wrongChain?: string
   /** Button text for chain switch action */
   switchChain?: string
+  /** Mismatch banner action (dropdown top row). `{chain}` placeholder is replaced with required chain name */
+  switchTo?: string
   /** Dropdown menu disconnect button text */
   disconnect?: string
   /** Dropdown menu copy address button text */
@@ -56,6 +58,7 @@ export const defaultLabels: Required<ConnectWalletLabels> = {
   connecting: 'Connecting',
   wrongChain: 'Wrong Network',
   switchChain: 'Switch Network',
+  switchTo: 'Switch to {chain}',
   disconnect: 'Disconnect',
   copyAddress: 'Copy Address',
   copied: 'Copied!',

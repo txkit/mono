@@ -1,7 +1,7 @@
 import React from 'react'
 import { WagmiProvider } from 'wagmi'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { TxKitProvider, ConnectWallet } from '@txkit/react'
+import { TxKitProvider } from '@txkit/react'
 
 import dedent from '../../helpers/dedent'
 import ThemeInfo from './ThemeInfo'
@@ -10,9 +10,84 @@ import useEmbeddedProviders from './useEmbeddedProviders'
 import { StorySection } from '../../components'
 
 
-const TxKitProviderStory = () => {
+/** Static mock button - avoids wagmi useSyncExternalStore cascade that occurs
+ *  when multiple real ConnectWallet instances mount simultaneously. */
+const MockConnectButton: React.FC<{ label?: string }> = ({ label = 'Connect Wallet' }) => (
+  <div className="txkit-cw" style={{ display: 'inline-block' }}>
+    <button type="button" className="txkit-cw-button" data-state="disconnected">
+      <span>{label}</span>
+    </button>
+  </div>
+)
+
+const EmbeddedSections = () => {
   const { wagmiConfig, queryClient } = useEmbeddedProviders()
 
+  return (
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <StorySection
+          title="Embedded Mode"
+          description="Use txKit inside an existing WagmiProvider - no duplicate providers. Chains and transports are read from the outer wagmi config automatically"
+          code={dedent`
+            import { WagmiProvider, createConfig } from 'wagmi'
+            import { TxKitProvider, ConnectWallet } from '@txkit/react'
+
+            const wagmiConfig = createConfig({
+              chains: [mainnet, sepolia],
+              transports: { ... },
+              connectors: [injected()],
+            })
+
+            <WagmiProvider config={wagmiConfig}>
+              <QueryClientProvider client={queryClient}>
+                <TxKitProvider embedded>
+                  <ConnectWallet />
+                </TxKitProvider>
+              </QueryClientProvider>
+            </WagmiProvider>
+          `}
+        >
+          <TxKitProvider embedded>
+            <MockConnectButton />
+            <EmbeddedInfo />
+          </TxKitProvider>
+        </StorySection>
+
+        <StorySection
+          title="Embedded Dark"
+          description="Theme override in embedded mode - only theme/variant/licenseKey accepted, chains come from wagmi"
+          code={dedent`
+            <TxKitProvider embedded config={{ theme: 'dark' }}>
+              <ConnectWallet />
+            </TxKitProvider>
+          `}
+        >
+          <TxKitProvider embedded config={{ theme: 'dark' }}>
+            <MockConnectButton />
+            <EmbeddedInfo />
+          </TxKitProvider>
+        </StorySection>
+
+        <StorySection
+          title="Embedded Light"
+          code={dedent`
+            <TxKitProvider embedded config={{ theme: 'light' }}>
+              <ConnectWallet />
+            </TxKitProvider>
+          `}
+        >
+          <TxKitProvider embedded config={{ theme: 'light' }}>
+            <MockConnectButton />
+            <EmbeddedInfo />
+          </TxKitProvider>
+        </StorySection>
+      </QueryClientProvider>
+    </WagmiProvider>
+  )
+}
+
+const TxKitProviderStory = () => {
   return (
     <div>
       <StorySection
@@ -34,7 +109,7 @@ const TxKitProviderStory = () => {
           </TxKitProvider>
         `}
       >
-        <ConnectWallet />
+        <MockConnectButton />
         <ThemeInfo />
       </StorySection>
 
@@ -54,7 +129,7 @@ const TxKitProviderStory = () => {
         `}
       >
         <div className="txkit-root txkit-dark">
-          <ConnectWallet />
+          <MockConnectButton />
         </div>
       </StorySection>
 
@@ -73,70 +148,11 @@ const TxKitProviderStory = () => {
         `}
       >
         <div className="txkit-root txkit-light">
-          <ConnectWallet label="Connect" />
+          <MockConnectButton label="Connect" />
         </div>
       </StorySection>
 
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <StorySection
-            title="Embedded Mode"
-            description="Use txKit inside an existing WagmiProvider - no duplicate providers. Chains and transports are read from the outer wagmi config automatically"
-            code={dedent`
-              import { WagmiProvider, createConfig } from 'wagmi'
-              import { TxKitProvider, ConnectWallet } from '@txkit/react'
-
-              const wagmiConfig = createConfig({
-                chains: [mainnet, sepolia],
-                transports: { ... },
-                connectors: [injected()],
-              })
-
-              <WagmiProvider config={wagmiConfig}>
-                <QueryClientProvider client={queryClient}>
-                  <TxKitProvider embedded>
-                    <ConnectWallet />
-                  </TxKitProvider>
-                </QueryClientProvider>
-              </WagmiProvider>
-            `}
-          >
-            <TxKitProvider embedded>
-              <ConnectWallet />
-              <EmbeddedInfo />
-            </TxKitProvider>
-          </StorySection>
-
-          <StorySection
-            title="Embedded Dark"
-            description="Theme override in embedded mode - only theme/variant/licenseKey accepted, chains come from wagmi"
-            code={dedent`
-              <TxKitProvider embedded config={{ theme: 'dark' }}>
-                <ConnectWallet />
-              </TxKitProvider>
-            `}
-          >
-            <TxKitProvider embedded config={{ theme: 'dark' }}>
-              <ConnectWallet />
-              <EmbeddedInfo />
-            </TxKitProvider>
-          </StorySection>
-
-          <StorySection
-            title="Embedded Light"
-            code={dedent`
-              <TxKitProvider embedded config={{ theme: 'light' }}>
-                <ConnectWallet />
-              </TxKitProvider>
-            `}
-          >
-            <TxKitProvider embedded config={{ theme: 'light' }}>
-              <ConnectWallet />
-              <EmbeddedInfo />
-            </TxKitProvider>
-          </StorySection>
-        </QueryClientProvider>
-      </WagmiProvider>
+      <EmbeddedSections />
     </div>
   )
 }

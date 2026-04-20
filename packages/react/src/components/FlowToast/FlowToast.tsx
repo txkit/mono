@@ -1,9 +1,10 @@
 'use client'
-import React, { useState, useEffect, useMemo, useCallback, forwardRef } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useContext, forwardRef } from 'react'
 import { createPortal } from 'react-dom'
 import { cx } from '@txkit/core'
 
 import { useFlowState, DEFAULT_FLOW_ID } from '../../hooks/useFlowState'
+import { TxKitContext } from '../TxKitProvider/TxKitProvider'
 import FlowToastDefault from './FlowToastDefault'
 import type { FlowToastProps, FlowToastRenderData } from '../../types/transaction'
 import './FlowToast.css'
@@ -19,10 +20,13 @@ const FlowToast = forwardRef<HTMLDivElement, FlowToastProps>(({
   autoDismiss = 5000,
   position = 'bottom-right',
 }, ref) => {
+  const txkit = useContext(TxKitContext)
+  const themeClass = txkit?.theme ? `txkit-${txkit.theme}` : undefined
   const flowEntry = useFlowState(flowId)
   const [ visible, setVisible ] = useState(false)
   const [ toastMessage, setToastMessage ] = useState('')
-  const [ toastType, setToastType ] = useState<'success' | 'error' | 'info'>('info')
+  const [ toastDescription, setToastDescription ] = useState<string | undefined>()
+  const [ toastType, setToastType ] = useState<'success' | 'error' | 'info' | 'warning'>('info')
   const [ toastStepId, setToastStepId ] = useState<string | undefined>()
 
   const flowStatus = flowEntry?.flow.status
@@ -35,15 +39,18 @@ const FlowToast = forwardRef<HTMLDivElement, FlowToastProps>(({
 
     if (flowStatus === 'completed') {
       setToastMessage('Transaction confirmed')
+      setToastDescription('Your transaction has been confirmed on the blockchain.')
       setToastType('success')
     } else if (flowStatus === 'error') {
       const currentStep = flowEntry?.flow.steps[flowEntry.flow.currentStepIndex]
-      setToastMessage(currentStep?.error?.message ?? 'Transaction failed')
+      setToastMessage('Transaction failed')
+      setToastDescription(currentStep?.error?.message)
       setToastType('error')
       setToastStepId(currentStep?.id)
     } else if (flowStatus === 'rejected') {
       setToastMessage('Transaction rejected')
-      setToastType('error')
+      setToastDescription('The transaction was declined in the wallet.')
+      setToastType('info')
     }
 
     setVisible(true)
@@ -58,27 +65,43 @@ const FlowToast = forwardRef<HTMLDivElement, FlowToastProps>(({
     return () => clearTimeout(timer)
   }, [ visible, autoDismiss ])
 
+  // ESC to dismiss active toast
+  useEffect(() => {
+    if (!visible) {
+      return
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setVisible(false)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [ visible ])
+
   const dismiss = useCallback(() => setVisible(false), [])
 
   const renderData: FlowToastRenderData = useMemo(() => ({
     visible,
     message: toastMessage,
+    description: toastDescription,
     type: toastType,
     stepId: toastStepId,
     dismiss,
-  }), [ visible, toastMessage, toastType, toastStepId, dismiss ])
+  }), [ visible, toastMessage, toastDescription, toastType, toastStepId, dismiss ])
 
   if (!visible) {
     return null
   }
 
+  const isErrorToast = toastType === 'error'
   const toastElement = (
     <div
       ref={ref}
-      className={cx('txkit-ft', `txkit-ft-${position}`, className)}
+      className={cx('txkit-root', themeClass, 'txkit-ft', `txkit-ft-${position}`, className)}
       data-testid={testId}
-      role="status"
-      aria-live="polite"
+      role={isErrorToast ? 'alert' : 'status'}
+      aria-live={isErrorToast ? 'assertive' : 'polite'}
     >
       {
         typeof children === 'function'

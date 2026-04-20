@@ -2,10 +2,15 @@ import React from 'react'
 import type { StepStatus, TransactionError, RiskResult, DecodedCalldata } from '@txkit/core'
 import { formatDecodedCalldata } from '@txkit/core'
 
-import CheckIcon from './CheckIcon'
-import DotLoader from './DotLoader'
 import ExternalLinkIcon from './ExternalLinkIcon'
 import type { TransactionButtonLabels } from './labels'
+
+import arrowRightIcon from '../../assets/icons/txb/arrow-right.svg'
+import loaderIcon from '../../assets/icons/txb/loader.svg'
+import checkIcon from '../../assets/icons/txb/check.svg'
+
+
+const idleStates: readonly StepStatus[] = [ 'pending', 'error', 'simulation-failed', 'rejected' ]
 
 
 export type TransactionButtonDefaultProps = {
@@ -99,10 +104,20 @@ const TransactionButtonDefault: React.FC<TransactionButtonDefaultProps> = ({
         {
           (() => {
             if (state === 'completed') {
-              return <CheckIcon />
+              return <img src={checkIcon} alt="" className="txkit-txb-icon" aria-hidden="true" />
             }
             if (isProcessing) {
-              return <DotLoader />
+              return (
+                <img
+                  src={loaderIcon}
+                  alt=""
+                  className="txkit-txb-icon txkit-txb-icon--spinning"
+                  aria-hidden="true"
+                />
+              )
+            }
+            if (idleStates.includes(state)) {
+              return <img src={arrowRightIcon} alt="" className="txkit-txb-icon" aria-hidden="true" />
             }
             return null
           })()

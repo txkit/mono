@@ -52,8 +52,8 @@ const InlineContent: React.FC<TokenBalanceDefaultProps> = ({
     }
 
     {
-      isReady && showFiat && fiatFormatted && (
-        <span className="txkit-tb-fiat">{fiatFormatted}</span>
+      showFiat && !isError && ((isReady && fiatFormatted) || !isReady) && (
+        <span className="txkit-tb-fiat">{isReady ? fiatFormatted : '\u00a0'}</span>
       )
     }
 

@@ -32,16 +32,20 @@
   --txkit-color-success: oklch(0.7 0.18 145);
   --txkit-color-success-text: oklch(0.18 0.06 145);
   --txkit-color-success-alpha: oklch(0.7 0.18 145 / 0.15);
+  --txkit-color-success-bg: oklch(0.25 0.05 145);
 
   --txkit-color-warning: oklch(0.82 0.16 65);
   --txkit-color-warning-text: oklch(0.22 0.08 65);
   --txkit-color-warning-alpha: oklch(0.82 0.16 65 / 0.15);
+  --txkit-color-warning-bg: oklch(0.28 0.05 70);
 
   --txkit-color-error: oklch(0.65 0.22 25);
   --txkit-color-error-text: oklch(1 0 0);
   --txkit-color-error-alpha: oklch(0.65 0.22 25 / 0.15);
+  --txkit-color-error-bg: oklch(0.25 0.06 25);
 
   --txkit-color-info: oklch(0.72 0.17 245);
+  --txkit-color-info-bg: oklch(0.25 0.04 240);
 
   /* --- Shadows (more pronounced on dark) --- */
   --txkit-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2), 0 1px 1px oklch(0 0 0 / 0.15);

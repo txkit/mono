@@ -4,6 +4,7 @@ import React from 'react'
 type IconProps = {
   className?: string
   size?: number
+  onClick?: React.MouseEventHandler<HTMLSpanElement>
 }
 
 /**
@@ -16,6 +17,7 @@ const Icon: React.FC<IconProps & { name: string; defaultSize: number }> = ({
   className,
   defaultSize,
   size,
+  onClick,
 }) => {
   const pixels = size ?? defaultSize
 
@@ -23,6 +25,7 @@ const Icon: React.FC<IconProps & { name: string; defaultSize: number }> = ({
     <span
       className={className ? `pg-icon pg-icon-${name} ${className}` : `pg-icon pg-icon-${name}`}
       style={{ width: pixels, height: pixels }}
+      onClick={onClick}
       aria-hidden="true"
     />
   )
