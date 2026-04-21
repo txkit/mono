@@ -91,7 +91,7 @@ See [`examples/stakewise-deposit.ts`](../../examples/stakewise-deposit.ts), [`ex
 
 ## Spec reference
 
-Canonical spec: [`spec/v0.2/prepared-transaction.md`](../../spec/v0.2/prepared-transaction.md). The `version` field in every envelope pins it to the spec version.
+Canonical spec: [`spec/v0.1/prepared-transaction.md`](../../spec/v0.1/prepared-transaction.md). The `version` field in every envelope pins it to the spec version.
 
 ## API
 
@@ -165,7 +165,7 @@ Tree-shakable zod schemas for consumers that want to compose or extend:
 
 ## Versioning
 
-- v0.2 is a draft. Breaking changes bump the `version` field to `0.3`. Additive fields within the same version are non-breaking.
+- v0.1 is a draft. Breaking changes bump the `version` field to `0.2`. Additive fields within the same version are non-breaking.
 - npm package follows semver for code-level changes (additions, bugfixes).
 
 ## License
@@ -177,6 +177,6 @@ MIT. See [LICENSE](./LICENSE).
 - [`@txkit/core`](../core) - runtime utilities (formatting, errors)
 - [`@txkit/react`](../react) - React components and hooks
 - [txKit docs](https://txkit.dev)
-- [Spec RFC](../../spec/v0.2/prepared-transaction.md)
+- [Spec RFC](../../spec/v0.1/prepared-transaction.md)
 - [OWS composition](../../app/docs/pages/protocol/ows.mdx)
-- Research synthesis: `wiki/projects/txkit-tx-protocol-spec-v0.2-research-2026-04-21.md`
+- Research synthesis: `wiki/projects/txkit-tx-protocol-spec-v0.2-research-2026-04-21.md` (historical research doc; v0.1 ships the hardened shape designed there)

@@ -1,9 +1,9 @@
 /**
  * examples/safe-delegatecall-warning.ts
  *
- * Demonstrates the v0.2 delegatecall advisory. Bybit $1.4B (Feb 2025),
+ * Demonstrates the v0.1 delegatecall advisory. Bybit $1.4B (Feb 2025),
  * UXLINK, and Radiant were all executed by UI-concealed delegatecall flips.
- * v0.2 surfaces operation as a first-class typed field so wallets can apply
+ * v0.1 surfaces operation as a first-class typed field so wallets can apply
  * allowlist-based risk rules.
  *
  * This example emits an envelope with a delegatecall; strict validation

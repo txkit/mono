@@ -120,9 +120,9 @@ Every component supports three customization levels:
 
 > _"OWS signs. txKit decides what's safe to sign."_
 
-v0.2 covers three kinds today: `evm-tx` (single EVM transaction), `evm-batch` (EIP-5792 atomic batch), `signature` (EIP-712 / SIWE / personal-sign). Nine more are reserved: `evm-userop`, `evm-frame`, `evm-7702`, `mandate`, `intent`, `psbt`, `svm-tx`, `move-tx`, `cosmos-tx`.
+v0.1 covers three kinds today: `evm-tx` (single EVM transaction), `evm-batch` (EIP-5792 atomic batch), `signature` (EIP-712 / SIWE / personal-sign). Nine more are reserved: `evm-userop`, `evm-frame`, `evm-7702`, `mandate`, `intent`, `psbt`, `svm-tx`, `move-tx`, `cosmos-tx`.
 
-- [**Spec v0.2**](./spec/v0.2/prepared-transaction.md) - canonical RFC (supersedes [v0.1 DEPRECATED](./spec/v0.1/prepared-transaction.md))
+- [**Spec v0.1**](./spec/v0.1/prepared-transaction.md) - canonical RFC
 - [**Examples**](./examples/) - StakeWise deposit, Uniswap Permit2 + swap, Safe delegatecall warning
 - [**OWS composition**](./app/docs/pages/protocol/ows.mdx) - how this composes with MoonPay Open Wallet Standard
 

@@ -1,284 +1,369 @@
-# txKit tx-protocol - Prepared Transaction Spec v0.1 (DEPRECATED)
-
-> **DEPRECATED 2026-04-21.** This spec was superseded by [v0.2](../v0.2/prepared-transaction.md) before it was ever published to npm. v0.1 had three structural flaws (no integrity binding between `description` and `data`, incompatible with EIP-5792 batches, EVM-only `chainId`) that made it unsafe for production. See [v0.2 §0 "Why v0.2 (not v0.1.1)"](../v0.2/prepared-transaction.md#0-why-v02-not-v011) and the [research synthesis in wiki](https://github.com/mike-diamond/claude-wiki/blob/main/projects/txkit-tx-protocol-spec-v0.2-research-2026-04-21.md) for the full rationale.
->
-> This file is retained as a historical design journal. Do not implement against it.
+# txKit tx-protocol - Prepared Envelope Spec v0.1
 
 | | |
 |---|---|
-| **Status** | **DEPRECATED** (superseded by v0.2) |
-| **Version** | 0.1 (unpublished) |
-| **Canonical location** | `spec/v0.2/prepared-transaction.md` |
-| **Reference implementation** | [`@txkit/tx-protocol@0.2.x`](../../packages/tx-protocol) on npm |
+| **Status** | Draft (v0.1) |
+| **Version** | 0.1 |
+| **Canonical location** | `spec/v0.1/prepared-transaction.md` |
+| **Reference implementation** | [`@txkit/tx-protocol@0.1.x`](../../packages/tx-protocol) on npm |
 | **Last updated** | 2026-04-21 |
 
-Open protocol for Web3 transactions prepared by AI / MCP tools and consumed by wallet / signer orchestrators. Defines the `PreparedTransaction` shape and the accompanying `tx-decoder` registry schema.
+Open protocol for Web3 operations prepared by AI / MCP tools and consumed by wallet / signer orchestrators. Defines an envelope + content shape that covers single EVM transactions, EIP-5792 batches, and EIP-712 signature requests, with reserved kinds for UserOp, EIP-8141 frames, intents, mandates, PSBT, Solana, Move, and Cosmos.
 
----
+## 0. Design principles
 
-## Scope and guarantees
+The shape addresses three industry-standard requirements observed across EIP-5792, ERC-7730, ERC-4337, ERC-7579/7821, EIP-8141, CAIP-2, and incident post-mortems from 2024-2026 (Bybit $1.4B, Kelp $293M, Drift $285M, 450K+ EIP-7702 drainers):
 
-> **This is a presentational protocol.**
+1. **Integrity path.** Off-chain fields (description, metadata) MUST be tamper-detectable end-to-end. Solved via `producer.signature` (post-quantum ready scheme enum) + wallet-side decoder re-verification.
+2. **Composability.** `calls[]` is the canonical execution shape (EIP-5792 / 7579 / 7821 / 8141 all N-call). Single tx is the degenerate case (`kind: 'evm-tx'` with `calls.length === 1`).
+3. **Cross-ecosystem.** CAIP-2 chain identifiers (`eip155:1`, `solana:...`, `bip122:...`) primary; legacy `chainId: number` retained as a deprecated alias.
+
+Reserved-kind namespace (declared but not validated in v0.1) lets `evm-userop`, `evm-frame`, `evm-7702`, `signature`, `mandate`, `intent`, `psbt`, `svm-tx`, `move-tx`, `cosmos-tx` be added in later versions without breaking consumers.
+
+## 1. Scope and guarantees
+
+> **This is a presentational protocol for agent-to-wallet handoff.**
 >
-> `PreparedTransaction.description` is a human-readable summary produced by the sender (typically an MCP tool). It is **NOT** signed by the protocol, **NOT** attestable on-chain, and carries **no integrity guarantee**.
+> Off-chain fields (`description`, `metadata`, `origin`, `risk`, `decoderRef`, `clearSigning`, `meta`) are **presentational** and carry **no cryptographic integrity guarantee on their own**. The authoritative representation of on-chain effect remains the tuple `{chain, calls[*].to, calls[*].data, calls[*].value}` (for EVM txs) or `{scheme, domain, message}` (for signatures).
 >
-> The only authoritative representation of on-chain effects is the raw tuple `{chainId, to, data, value}`. Consumers **MUST** treat `description`, `metadata`, and `decoderRef` as UX hints, not as security boundaries.
->
-> Policy engines, allowlists, and spend limits **MUST** validate on raw fields (`to`, `data`, `value`, decoded selector + args), **NOT** on the `description` string.
->
-> A compromised producer can emit `{to: victim, data: transfer(victim, MAX_UINT)}` with `description.short: "Stake 1 ETH"`. The decoder layer (`@txkit/tx-decoder`) is the mitigation, not the description itself.
+> Consumers **MUST** treat `description` and `metadata` as UX hints. Policy engines, allowlists, and spend limits **MUST** validate on raw fields (decoded selector + args), **NOT** on `description.short`.
 
-### Field-level guarantees
+### 1.1 Two integrity layers
 
-| Field | Guarantee | Rationale |
-|---|---|---|
-| `version` | enforced (literal `"0.1"`) | compatibility gate |
-| `chainId`, `to`, `data`, `value` | enforced | authoritative on-chain effect |
-| `description.short` | **presentational** (required) | minimum for confirmation UI |
-| `description.long` | **presentational** | extended preview |
-| `description.action` | **presentational hint** | UX categorization, not authorization |
-| `metadata.protocol` | **presentational** | UI grouping |
-| `metadata.tokenMovements` | **presentational** | minimum for policy engine - but MUST be cross-checked against decoded calldata |
-| `metadata.counterparties` | **presentational** | address list - MUST be cross-checked against `to` and decoded args |
-| `metadata.simulation` | **presentational hint** | advisory only; consumer SHOULD re-simulate |
-| `sequence` | **presentational** | flow ordering hint |
-| `decoderRef` | **presentational pointer** | lazy-load hint for registry |
-| `extensions` | **opaque / untrusted** | namespaced escape hatch |
+1. **Producer signature** (`producer.signature` with `coverage: 'envelope' | 'content'`). An agent can sign the envelope with `secp256k1` / `ed25519` / `p256` (post-quantum schemes `ml-dsa-*` / `slh-dsa-*` are reserved). Signature covers the canonical JSON bytes of the envelope (or just `content`). Tampering in transit is detected. Producer identity SHOULD be a DID, CAIP-10 account, ERC-8004 agent reference, or URL.
+2. **Wallet-side decoder re-verification** (defense in depth). Consumers SHOULD run a local decoder (`@txkit/tx-decoder`) on each `calls[*].data`, synthesize the expected `tokenMovements` and `counterparties`, and assert equivalence with the producer's claims. Mismatch MUST produce a hard UI warning or block, even if `producer.signature` is valid (a producer may be compromised or malicious).
 
----
+Neither layer is mandatory in v0.1. Both are recommended. Wallets MAY treat missing signatures as "unsigned producer" warnings (not blocks).
 
-## Why an open spec (not just a function)
-
-| Private `prepareTx()` function | Open spec |
-|---|---|
-| Single implementer | MCP in TypeScript, Python, Rust - all compatible |
-| Breaking changes silently shipped | Versioned; breaking changes bump `version` |
-| Per-implementation security audit | Audit once + conformance tests |
-| No external incentive to support | Standard → network effects |
-| Internal abstraction | Protocol (like WalletConnect) |
-
----
-
-## Artifact 1 - Prepared Transaction shape
-
-Minimum shape returned by any `prepare_*` MCP tool:
+## 2. Envelope
 
 ```typescript
-interface PreparedTransaction {
-  version: "0.1"
+interface BaseEnvelope<K extends string, C> {
+  $schema: string                 // "https://txkit.dev/schemas/v0.1/envelope.json"
+  version: '0.1'
+  kind: K                         // discriminator; see §3
+  id?: string                     // idempotency, 4096 chars max (EIP-5792 convention)
+  issuedAt: string                // RFC3339 UTC
+  expiresAt?: string              // RFC3339 UTC; SHOULD equal content.validity.notAfter
+  nonce?: `0x${string}`           // envelope-level replay protection, hex
+  producer?: Producer             // agent provenance, see §4
+  origin?: Origin                 // dApp URL + verify status, see §5
+  content: C                      // kind-specific payload, see §6
+  risk?: RiskAssessment           // unbound; wallet/scanner injects after producer, see §7
+  capabilities?: Capabilities     // EIP-5792 aligned open record, see §8
+  meta?: Record<string, unknown>  // MCP _meta-aligned; for UI not LLM context
+}
+```
 
-  // Authoritative on-chain effect (enforced)
-  chainId: number
-  to: `0x${string}`
-  data: `0x${string}`
-  value: bigint
+### 2.1 Required vs recommended
 
-  // Human-readable preview (presentational)
-  description: {
-    short: string                    // "Stake 1 ETH in Genesis Vault"
-    long?: string
-    action: ActionType               // UX categorization
-  }
+| Field | Required | Notes |
+|---|---|---|
+| `$schema`, `version`, `kind`, `issuedAt`, `content` | yes | |
+| `content` kind-specific required sub-fields | yes | see per-kind §6 |
+| `id` | no | wallets MAY assign if producer omits; required for `wallet_getCallsStatus` |
+| `expiresAt` | no | if present, MUST equal `content.validity.notAfter` for tx kinds |
+| `nonce` | no | for envelope-level replay protection across retries |
+| `producer` | strongly recommended | without it, wallet shows "unsigned producer" warning |
+| `origin` | strongly recommended | without it, wallet shows "origin unverified" warning |
+| `capabilities`, `meta`, `risk` | no | open-ended extension points |
 
-  // Policy inputs (presentational - cross-check against decoded calldata)
-  metadata: {
-    protocol: string                 // "stakewise-v3"
-    primaryToken?: TokenMovement
-    tokenMovements: TokenMovement[]
-    counterparties: Address[]
-    estimatedGas?: bigint
-    simulation?: SimulationHint
-  }
+## 3. Kind discriminator
 
-  // Multi-step flow hint (presentational)
-  sequence?: {
-    stepIndex: number
-    totalSteps: number
-    previousTxHashes?: `0x${string}`[]
-  }
+### 3.1 Implemented in v0.1
 
-  // Registry pointer (presentational)
-  decoderRef?: string                // "stakewise-v3/vault/deposit"
+- `evm-tx` - single EVM transaction (`content.calls.length === 1`)
+- `evm-batch` - EIP-5792 batch (`content.calls.length >= 2`, typically with `capabilities.atomicRequired`)
+- `signature` - EIP-712 / personal-sign / SIWE; no on-chain tx produced
 
-  // Namespaced extensions (opaque)
-  extensions?: Record<string, unknown>
+### 3.2 Reserved (declared, not validated in v0.1)
+
+These values are reserved at the protocol level. Strict validators REJECT them today. v0.3+ will add them without a major bump.
+
+| Kind | Future scope | Driving standard |
+|---|---|---|
+| `evm-userop` | ERC-4337 v0.7/v0.8 UserOperation | [EIP-4337](https://eips.ethereum.org/EIPS/eip-4337) |
+| `evm-frame` | EIP-8141 Frame Transaction | [EIP-8141](https://eips.ethereum.org/EIPS/eip-8141) |
+| `evm-7702` | SET_CODE tx type 0x04 with authorization_list | [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) |
+| `mandate` | Google AP2 / Visa TAP / Mastercard Verifiable Intent | [AP2](https://ap2-protocol.org/), [Visa TAP](https://developer.visa.com/capabilities/trusted-agent-protocol) |
+| `intent` | ERC-7683 cross-chain / Anoma / UniswapX Dutch / RFQ | [ERC-7683](https://eips.ethereum.org/EIPS/eip-7683) |
+| `psbt` | Bitcoin Partially Signed | [BIP-174](https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki) |
+| `svm-tx` | Solana (versioned) | Solana core docs |
+| `move-tx` | Aptos / Sui Move | Move spec |
+| `cosmos-tx` | Cosmos SDK Any-wrapped messages | Cosmos SDK ADR-020 |
+
+### 3.3 Strict vs permissive mode
+
+- **Strict** (default): validators reject any `kind` not in §3.1.
+- **Permissive**: validators accept unknown `kind` strings with a warning; still reject the reserved values of §3.2 because those will have specific semantics.
+
+## 4. Producer
+
+```typescript
+interface Producer {
+  id: string                      // DID, CAIP-10, ERC-8004 agent ref, URL
+  name?: string
+  signature?: ProducerSignature
 }
 
-interface TokenMovement {
-  token: Address | "native"
-  symbol: string
-  decimals: number
-  amount: bigint
-  direction: "in" | "out"            // from the user's perspective
-  usdValue?: number
+type SignatureScheme =
+  | 'secp256k1' | 'ed25519' | 'p256'
+  | 'ml-dsa-44' | 'ml-dsa-65' | 'ml-dsa-87'     // PQ reserved (NIST FIPS 204)
+  | 'slh-dsa-sha2-128s'                          // PQ reserved (NIST FIPS 205)
+  | string                                        // open for future schemes
+
+interface ProducerSignature {
+  scheme: SignatureScheme
+  publicKey?: string
+  signature: string
+  coverage: 'envelope' | 'content'
+}
+```
+
+Unknown `scheme` values MUST be treated as "unsigned" with a warning (not a hard block). Consumers that implement specific schemes MUST verify signatures locally before trusting the envelope end-to-end.
+
+## 5. Origin
+
+```typescript
+interface Origin {
+  url: string                     // dApp URL
+  verifyStatus: 'VERIFIED' | 'UNVERIFIED' | 'MISMATCH'
+  attestation?: string            // e.g. WalletConnect Verify attestation hash
+}
+```
+
+`verifyStatus: 'VERIFIED'` means the wallet (or upstream relay) has confirmed the dApp URL against an attestation source (e.g. WalletConnect Verify). `'MISMATCH'` is a hard warning. Origin binding prevents the class of UI-spoofing attacks observed against Ledger Connect Kit, WalletConnect sessions, and multisig signers (Bybit $1.4B, UXLINK).
+
+## 6. Content (per kind)
+
+### 6.1 `kind: 'evm-tx'` and `kind: 'evm-batch'`
+
+```typescript
+interface EvmTxContent {
+  chain: `eip155:${string}`                     // CAIP-2 primary (e.g. "eip155:1")
+  chainId?: number                               // legacy alias, deprecated; removed v1.0
+  from?: `0x${string}`
+  calls: EvmCall[]                               // length === 1 for 'evm-tx', >= 2 for 'evm-batch'
+  validity: Validity                             // notAfter REQUIRED
+  description: Description
+  metadata: Metadata
+  decoderRef?: string                            // "protocol/category/method"
+  clearSigning?: Record<string, unknown>         // inline ERC-7730 fragment (optional)
+}
+
+interface EvmCall {
+  to: `0x${string}`
+  value?: `0x${string}`                          // hex bigint (EIP-5792 format); default "0x0"
+  data?: `0x${string}`                           // default "0x"
+  operation?: 'call' | 'delegatecall'            // default 'call'
+  capabilities?: Record<string, unknown>          // EIP-5792 per-call (e.g. gasLimitOverride)
+}
+
+interface Validity {
+  notBefore?: number                             // Unix seconds
+  notAfter: number                               // Unix seconds; REQUIRED
+  nonceKind?: 'sequential' | 'durable' | 'bitmap'
+  blockhashRecency?: { maxAge: number }
+}
+```
+
+**Why `notAfter` is required.** The Drift $285M (April 2026) and comparable dormant-transaction attacks relied on users signing transactions months before execution under the assumption they were about to execute. Requiring an explicit expiry forces producers to declare the commit window.
+
+**Why per-call `operation`.** The Bybit $1.4B (Feb 2025), UXLINK $11-30M, and Radiant $53M exploits were all executed through UI-concealed delegatecall flips. Making `operation` a first-class, typed field allows consumers to apply risk rules (e.g. block delegatecall to any address not in an explicit allowlist).
+
+### 6.2 Description
+
+```typescript
+interface Description {
+  short: string                   // required, bounded human-readable
+  long?: string
+  action: ActionType              // closed enum + 'other' fallback
 }
 
 type ActionType =
-  | "stake" | "unstake"
-  | "swap" | "approve"
-  | "mint" | "burn"
-  | "claim" | "deposit" | "withdraw"
-  | "delegate" | "transfer"
-  | "other"
+  | 'transfer' | 'approve' | 'permit' | 'revoke-approval'
+  | 'swap' | 'stake' | 'unstake' | 'claim' | 'restake'
+  | 'mint' | 'burn' | 'deposit' | 'withdraw'
+  | 'delegate' | 'bridge' | 'admin-op' | 'other'
 ```
 
-### Field design rationale
+`action` is a closed enum: new values are added via spec PR, not via ad-hoc producer strings. `'other'` is the escape hatch; consumers MUST still render the `short` text but SHOULD show stronger confirmation friction for `'other'` because the semantic category is unclear.
 
-- **`to + data + value + chainId`** - minimum set for any wallet. Chain-agnostic within EVM.
-- **`description`** - human MUST see "what will happen" before signing. Prompt-injection mitigation is the decoder cross-check, not this field.
-- **`metadata.tokenMovements`** - structured movements enable policy engines ("LLM can sign tx with out ≤ 0.5 ETH/day"). REQUIRED and MUST be cross-checked.
-- **`sequence`** - covers legacy EOA (two tx) and EIP-7702/4337 (batched). Presentational.
-- **`decoderRef`** - lazy pointer into the registry; optional.
-
----
-
-## Artifact 2 - Tx-decoder Registry schema
-
-The decoder registry is a **content artifact**, not code. Public JSON registry contributed via PRs:
-
-```jsonc
-// registry/stakewise-v3/vault/deposit.json
-{
-  "protocol": "stakewise-v3",
-  "protocolWebsite": "https://stakewise.io",
-  "protocolAudit": ["ConsenSys 2024", "ChainSecurity 2024"],
-  "contracts": {
-    "1": {
-      "0xAC0F906E433d58FA868F936E8A43230473652885": {
-        "displayName": "Genesis Vault",
-        "category": "liquid-staking",
-        "trustLevel": "verified"
-      }
-    }
-  },
-  "methods": {
-    "0x6e553f65": {
-      "name": "deposit",
-      "abi": "function deposit(uint256 assets, address receiver, address referrer)",
-      "description": {
-        "template": "Stake {assets.eth} ETH in {contract.displayName}",
-        "longTemplate": "Deposits {assets.eth} ETH into {contract.displayName}. Mints vault shares. Earns ~{contract.currentApy}% APY."
-      },
-      "riskFlags": [],
-      "confirmationType": "standard"
-    }
-  }
-}
-```
-
-### Why registry is a public artifact
-
-- **Collaborative contribution**: Lido / Rocket / Aave can PR their protocols → viral channel
-- **Versioned**: `registry-v1.2.json` - semver
-- **Offline-usable**: wallets can cache and display readable tx without internet
-- **Standalone value**: `@txkit/tx-decoder` npm package is useful on its own
-
----
-
-## Deliverables v0.1
-
-1. **`spec/v0.1/prepared-transaction.md`** (this file) - RFC with motivation, examples, FAQ
-2. **[`@txkit/tx-protocol`](../../packages/tx-protocol)** npm package - TypeScript types + zod schemas. No React, no wagmi, no UI deps
-3. **Validation helper** - `validatePreparedTx(input)` in the package
-4. **Serialize / deserialize** - JSON transport with `bigint` roundtrip
-5. **Reference consumer** - `@txkit/react` `useExecutePreparedTx` hook (forthcoming)
-6. **Reference producer** - `stakewise/llm-tools` `prepare_stake_tx` tool (PR after read-only MCP merge)
-
----
-
-## Design principles
-
-### 1. Minimalism
-
-v0.1 **does NOT** cover:
-- Multi-signature / social recovery
-- Cross-chain bridge tx in a single `PreparedTransaction`
-- Meta-transactions via relayers (sponsored tx)
-- Every possible DeFi primitive
-
-v0.1 **DOES** cover:
-- Single chain, single or sequential tx
-- Common actions (stake/swap/mint/burn/claim/deposit/withdraw)
-- Basic token movements
-- Human-readable description
-
-This covers ~90% of DeFi staking/swap/mint/burn cases. Rest → v0.2+.
-
-### 2. Extensibility via `extensions` field
-
-Namespaced escape hatch (no spec bump needed for experimentation):
+### 6.3 Metadata
 
 ```typescript
-extensions?: {
-  "x-stakewise.vaultVersion"?: number
-  "x-uniswap.route"?: string
-  // ...
+interface Metadata {
+  protocol: string                              // "stakewise-v3", "uniswap-v4", etc
+  tokenMovements: TokenMovement[]
+  counterparties: Counterparty[]
+  feeBreakdown?: FeeBreakdown
+  estimation?: Estimation
+  estimatedGas?: string                          // stringified decimal
+}
+
+interface TokenMovement {
+  token: `0x${string}` | 'native'
+  standard: 'erc20' | 'erc721' | 'erc1155' | 'native'
+  symbol: string
+  decimals: number
+  amount: string                                 // stringified decimal
+  tokenId?: string                               // for NFT/ERC-1155; stringified
+  kind: 'transfer' | 'approve' | 'permit' | 'mint' | 'burn' | 'revoke'
+  isUnlimited?: boolean                          // true for MAX_UINT256 approvals
+  from: `0x${string}`                            // REQUIRED
+  to: `0x${string}`                              // REQUIRED
+  usdValue?: number
+}
+
+interface Counterparty {
+  address: `0x${string}`
+  role: 'recipient' | 'spender' | 'swap-venue' | 'pool' | 'bridge' | 'admin' | 'unknown'
+  label?: string                                 // "Uniswap V3 Router"
+  labelSource?: 'contact_book' | 'protocol_directory' | 'recent_interaction' | 'untrusted'
+  similarityWarning?: { similarTo: `0x${string}`; distance: number }
 }
 ```
 
-Consumers **MUST** treat extensions as opaque and untrusted.
+Rationale (from incident evidence):
 
-### 3. Validation-first
+- **`from` and `to` on every movement**: without them, "swap-as-drainer" attacks (SushiSwap routing abuse, documented by Blockaid) are indistinguishable from legitimate swaps. Wallets MUST assert that every `direction: in` movement has `to == from` of the envelope.
+- **`kind` + `isUnlimited`**: 56.7% of 2024-2025 drainer incidents used MAX_UINT256 approvals. Making them first-class lets wallets enforce hard warnings.
+- **`standard` + `tokenId`**: ERC-721 and ERC-1155 were completely unrepresentable in v0.1. Now they are first-class.
+- **`counterparties[].role` + `labelSource`**: address poisoning caused $83.8M on Ethereum + $252M on BSC (USENIX 2025). Partitioning counterparties by role and label source lets wallets flag untrusted or similarly-spelled addresses.
 
-Spec ships with runtime validators (zod schemas). Any consumer:
+### 6.4 `kind: 'signature'`
 
-```ts
-import { validatePreparedTx } from '@txkit/tx-protocol'
-const result = validatePreparedTx(jsonFromMcp)
-if (!result.ok) throw new Error(result.error)
+```typescript
+interface SignatureContent {
+  chain: `eip155:${string}`
+  from?: `0x${string}`
+  scheme: 'eip-712' | 'personal-sign' | 'siwe'
+  // EIP-712:
+  domain?: { name?, version?, chainId?, verifyingContract?, salt? }
+  types?: Record<string, Array<{ name, type }>>
+  primaryType?: string
+  message?: Record<string, unknown>
+  // personal-sign / SIWE:
+  messageText?: string
+  // common:
+  description: Description
+  metadata?: Metadata
+  validity?: Validity
+  erc6492?: boolean                              // for counterfactual smart accounts
+}
 ```
 
-Without validators, spec is just markdown. With validators, conformance is checkable in CI.
+This closes the blind-signing gap for Permit, Permit2, CoW orders, UniswapX Dutch orders, and all EIP-712-signed flows - roughly half of 2025-2026 DeFi volume. Producers MUST emit a `kind: 'signature'` envelope, NOT an `evm-tx` envelope that claims `action: 'permit'`, for off-chain signature requests.
 
-### 4. Security-first shape requirements
+## 7. Risk (unbound)
 
-Required fields for safety:
-- `description.short` - minimum for confirmation UI (presentational)
-- `metadata.tokenMovements` - minimum for policy engine (presentational, cross-check required)
-- `metadata.counterparties` - minimum for blacklist checks (cross-check required)
+```typescript
+interface RiskAssessment {
+  action: 'ALLOW' | 'WARN' | 'BLOCK'
+  score?: number                                 // 0-100
+  warnings: Array<{ code, severity, message }>
+  scanners?: Array<{ provider, verdict, url? }>
+}
+```
 
-Producers **cannot** emit `{to, data, value}` without human-readable context. Schema rejects such shape.
+Risk is NOT covered by `producer.signature` - wallets and scanners inject verdicts after reception. This matches the common Blockaid / GoPlus / Blowfish interface. Producers MAY include `risk` as self-reported findings (useful for protocol-owned tools).
 
-### 5. Chain-agnostic
+## 8. Capabilities
 
-`chainId: number` - any EVM chain (mainnet, Gnosis, Arbitrum, Base, Optimism). Future `v0.2` may extend to non-EVM via discriminated union.
+```typescript
+interface Capabilities {
+  atomicRequired?: boolean                              // EIP-5792
+  paymasterService?: { url: string; sponsor?: Address } // ERC-4337 paymaster hint
+  permissions?: { context: Hex; type: string; expiry? } // ERC-7715 session
+  requiresAccountType?: 'eoa' | 'smart-account-7702' | 'erc-4337'
+  [k: string]: unknown                                  // open for vendors; MUST use 'x-' prefix
+}
+```
 
----
+`capabilities` is intentionally open-ended to match EIP-5792's design. Vendor-specific capabilities MUST be prefixed with `x-` (e.g. `x-alchemy.gasPolicy`). Capabilities MUST NOT influence security-critical UI decisions without wallet explicitly recognizing them.
 
-## Conformance tests (v0.1 release criteria)
+## 9. Call status taxonomy (post-submit)
 
-- [x] Reference validator (`@txkit/tx-protocol`) passes ≥6 unit tests
-- [ ] Reference producer (`stakewise/llm-tools`) implements `prepare_stake_tx` - **forthcoming**
-- [ ] Reference consumer (`@txkit/react` hook) renders preview + delegates signing - **forthcoming**
-- [ ] End-to-end demo: Claude Code → StakeWise MCP → hook → wallet signature (testnet) - **forthcoming**
+Mirrors [EIP-5792 §5](https://eips.ethereum.org/EIPS/eip-5792) exactly. Consumers that observe call outcomes SHOULD use these codes:
 
----
+- `100` pending
+- `200` confirmed
+- `400` off-chain failure (never submitted)
+- `500` fully reverted
+- `600` partially reverted
 
-## Open questions (for v0.2)
+Exposed in `@txkit/tx-protocol` as `CALLS_STATUS` constant.
 
-1. **Fee / slippage for swaps** - in the shape or in `extensions`?
-2. **Multi-chain in one `PreparedTransaction`** - for bridge tx. Deferred to v0.2.
-3. **Relative amounts** ("50% of my stake") - user intent; resolve before producer. Separate "intent shape" above prepared-tx?
-4. **EIP-712 permits off-chain signatures** - separate shape or step 0 of `sequence`?
-5. **ERC-8211 atomic batches** - when standard finalizes, add as `sequence.mode: "atomic"`.
-6. **Non-EVM chains** - discriminated union on `chainId` namespace?
+## 10. Positioning against existing standards
 
----
+`@txkit/tx-protocol` does not replace or compete with any of these. It wires them together into the MCP tool -> wallet handoff:
 
-## Decision log
+- **EIP-5792 `wallet_sendCalls`**: every `evm-batch` envelope maps losslessly to a `wallet_sendCalls` request. The envelope adds a semantic layer above.
+- **ERC-7730 Clear Signing**: `decoderRef` points at a 7730 registry entry; `clearSigning` MAY embed a 7730 fragment inline. Wallets that support 7730 render `metadata` via 7730's display rules.
+- **ERC-7715 permissions**: `capabilities.permissions.context` carries the opaque `permissionsContext` from `wallet_grantPermissions`. Session-bound flows reuse the same context across many envelopes.
+- **OWS (Open Wallet Standard)**: OWS receives a serialized tx hex to sign. Our envelope sits one layer up, carrying semantic context that the OWS PolicyContext alone cannot see. Messaging: **"OWS signs. txKit decides what's safe to sign."**
+- **MCP 2025-11-25**: envelopes SHOULD live in the tool result's `structuredContent`, NOT serialized in `content[].text`. `meta` aligns with MCP `_meta` (excluded from LLM context by convention).
 
-- **2026-04-17** - use `bigint` in shape (not string). Requires JSON serializer/deserializer, but type-safe. String in JSON, bigint in TS types after parsing.
-- **2026-04-17** - `to` not optional → `PreparedTransaction` does not cover contract deployment. Deployment = separate shape (v0.2+).
-- **2026-04-17** - `decoderRef` format `"{protocol}/{category}/{method}"`, path-like. Enables lazy-load of registry JSON.
-- **2026-04-21** - `description`, `metadata`, `decoderRef`, `extensions` explicitly flagged as **presentational, no integrity guarantee**. Policy engines validate on raw `{to, data, value}`.
+## 11. Anti-features
 
----
+Do NOT add these. Each has been considered and rejected with evidence:
 
-## Not normative
+| Anti-feature | Why rejected |
+|---|---|
+| Rich JSX display tree (MetaMask SIP-3 pattern) | Couples shape to rendering. AI tools, policy engines, hardware wallets break. Use semantic facts; let wallets render. |
+| Open `extensions` field without namespacing | Security hole. Everything vendor-specific goes in `capabilities` with `x-` prefix and MUST NOT affect security UI. |
+| `safe: boolean` field | Security theater. Use `risk: { action, warnings }` with graded severity. |
+| Float or scientific-notation amounts | Precision bugs. Hex for raw EVM fields; stringified decimal for user-facing amounts. |
+| Re-inventing EIP-712 | Use verbatim EIP-712 `domain`/`types`/`primaryType`/`message`. |
+| "AI-generated" flag on description | Security theater. Producer signatures and decoder re-verify are the answer. |
+| Trusting `description.short` as sole UI source | ERC-7730 lesson: display derives from structured `metadata.*` + trusted descriptor. |
 
-This is v0.1 of an evolving draft. Breaking changes bump the `version` field (e.g., `"0.2"`), **NOT** the semver-major of the npm package. Producers and consumers **MUST** gate behavior on the `version` field in each transaction.
+## 12. Migration from v0.1
 
-See also:
-- [`packages/tx-protocol/README.md`](../../packages/tx-protocol/README.md) - package API reference
-- [OWS complementarity](../../app/docs/pages/protocol/ows.mdx) - how this spec composes with MoonPay Open Wallet Standard
-- [`examples/stakewise-deposit.ts`](../../examples/stakewise-deposit.ts) - runnable example
+No prior published version. `@txkit/tx-protocol@0.1.0` is the first public release.
+
+Old shape:
+
+```ts
+const tx: PreparedTransaction = {
+  version: '0.1', chainId: 1, to, data, value,
+  description: {...}, metadata: {...}, decoderRef
+}
+const r = validatePreparedTx(tx)
+```
+
+New shape:
+
+```ts
+import { createEvmTx, validateEnvelope } from '@txkit/tx-protocol'
+
+const env = createEvmTx({
+  chain: 'eip155:1',
+  calls: [ { to, value: '0xde0b6b3a7640000', data: '0x...' } ],
+  validity: { notAfter: Math.floor(Date.now() / 1000) + 3600 },
+  description: { short: 'Stake 1 ETH', action: 'stake' },
+  metadata: { protocol: 'stakewise-v3', tokenMovements: [...], counterparties: [...] },
+  decoderRef: 'stakewise-v3/vault/deposit',
+})
+const r = validateEnvelope(env, { mode: 'strict' })
+```
+
+`validatePreparedTx` remains exported as a thin alias for `validateEnvelope(input, { mode: 'strict' })` for early adopters.
+
+## 13. Decision log
+
+- **2026-04-17**: v0.1 design journal in [wiki](https://github.com/mike-diamond/claude-wiki/blob/main/projects/txkit-tx-protocol-spec-v0.1.md).
+- **2026-04-21**: v0.1 deprecated before publish. Full redesign after 3-agent deep research (EIP landscape, production shapes + security incidents, future-proofing) and 2 rounds of red-team self-critique. Verdict: v0.1 unsafe to publish (integrity gap). Ship v0.1 with 15 P0 changes covering discriminated union, CAIP-2, calls[], envelope/content split, signatures, delegatecall surfacing, validity, origin, rich token movements, counterparty roles, risk slot, capabilities, producer signing PQ-ready, reserved kinds, EIP-5792 status taxonomy.
+- **2026-04-21**: integrity via `producer.signature` over envelope, not a separate `integrityHash` field. Simpler, follows familiar EIP-712 pattern, same defense-in-depth.
+- **2026-04-21**: amounts hex for raw (matches EIP-5792); stringified decimal for UI (Tenderly convention).
+
+## 14. Not normative
+
+v0.1 is still a draft. Breaking changes bump the `version` field to `0.3`. Additive fields within the same version are non-breaking.
+
+## See also
+
+- [`@txkit/tx-protocol` package README](../../packages/tx-protocol/README.md)
+- [OWS composition](../../app/docs/pages/protocol/ows.mdx)
+- [`examples/stakewise-deposit.ts`](../../examples/stakewise-deposit.ts)
+- [v0.1 spec (DEPRECATED)](../v0.1/prepared-transaction.md)
