@@ -179,4 +179,4 @@ MIT. See [LICENSE](./LICENSE).
 - [txKit docs](https://txkit.dev)
 - [Spec RFC](../../spec/v0.1/prepared-transaction.md)
 - [OWS composition](../../app/docs/pages/protocol/ows.mdx)
-- Research synthesis: `wiki/projects/txkit-tx-protocol-spec-v0.2-research-2026-04-21.md` (historical research doc; v0.1 ships the hardened shape designed there)
+- Research synthesis: `wiki/projects/txkit-tx-protocol-spec-v0.1-research-2026-04-21.md` (historical research doc; v0.1 ships the hardened shape designed there)

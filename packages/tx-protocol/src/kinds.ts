@@ -1,12 +1,12 @@
 /**
  * Kind discriminator values for PreparedEnvelope.
  *
- * Implemented in v0.2:
+ * Implemented in v0.1:
  *  - evm-tx     : single EVM transaction (calls.length === 1)
  *  - evm-batch  : EIP-5792 batch (calls.length > 1, atomicRequired capability)
  *  - signature  : EIP-712 typed data / personal-sign / SIWE
  *
- * Reserved v0.2 (strict validator rejects; namespace taken so v0.3+ adds are non-breaking):
+ * Reserved v0.1 (strict validator rejects; namespace taken so v0.3+ adds are non-breaking):
  *  - evm-userop : ERC-4337 v0.7/v0.8 UserOperation
  *  - evm-frame  : EIP-8141 Frame Transaction
  *  - evm-7702   : SET_CODE tx type 0x04 with authorization_list

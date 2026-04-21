@@ -31,7 +31,7 @@ export function validateEnvelope(
       if (isReservedKind(kind)) {
         return {
           ok: false,
-          error: `kind: '${kind}' is reserved for a future spec version and cannot be validated in v0.2`,
+          error: `kind: '${kind}' is reserved for a future spec version and cannot be validated in v0.1`,
           issues: [
             {
               path: 'kind',

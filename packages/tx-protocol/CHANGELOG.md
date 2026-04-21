@@ -2,12 +2,12 @@
 
 ## 0.1.0
 
-First public release. Defines the `PreparedEnvelope` shape for agent-to-wallet handoff, with three implemented kinds (`evm-tx`, `evm-batch`, `signature`) and nine reserved kinds for v0.2+ expansion.
+First public release. Defines the `PreparedEnvelope` shape for agent-to-wallet handoff, with three implemented kinds (`evm-tx`, `evm-batch`, `signature`) and nine reserved kinds for v0.1+ expansion.
 
 ### Shape
 
 - **Envelope / content split.** `BaseEnvelope<K, C>` with stable envelope fields (`$schema`, `version`, `kind`, `id`, `issuedAt`, `expiresAt`, `nonce`, `producer`, `origin`, `content`, `risk`, `capabilities`, `meta`) and kind-specific `content`. Matches PSBT roles pattern; allows producer signing to cover the whole envelope.
-- **Kind discriminator.** Implemented: `evm-tx`, `evm-batch`, `signature`. Reserved (strict validator rejects today; v0.2+ will add without breaking): `evm-userop`, `evm-frame`, `evm-7702`, `mandate`, `intent`, `psbt`, `svm-tx`, `move-tx`, `cosmos-tx`.
+- **Kind discriminator.** Implemented: `evm-tx`, `evm-batch`, `signature`. Reserved (strict validator rejects today; v0.1+ will add without breaking): `evm-userop`, `evm-frame`, `evm-7702`, `mandate`, `intent`, `psbt`, `svm-tx`, `move-tx`, `cosmos-tx`.
 - **CAIP-2 chain identifiers.** `content.chain: "eip155:1"` is primary; `content.chainId: number` remains as a deprecated legacy alias for one release cycle.
 - **`calls[]` unconditional.** Single tx is the degenerate case (`evm-tx` with `calls.length === 1`). Batches are `evm-batch` with length >= 2. Maps losslessly to EIP-5792.
 - **Per-call `operation: 'call' | 'delegatecall'`.** First-class typed field. Validator emits a warning when `operation === 'delegatecall'` (Bybit $1.4B, UXLINK, Radiant lesson).

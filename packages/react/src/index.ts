@@ -75,6 +75,6 @@ export type { CheckboxProps } from './components/Inputs/Checkbox'
 export type { SelectProps, SelectOption } from './components/Inputs/Select'
 
 // --- ContractForm ---
-// Deferred to v0.2.0. Component code, hook, tests, and types remain in the tree
-// but are not part of the public v0.1.0 surface. Re-enable in the v0.2.0 release
+// Deferred to v0.1.0. Component code, hook, tests, and types remain in the tree
+// but are not part of the public v0.1.0 surface. Re-enable in the v0.1.0 release
 // once Phase 2b (read functions, multi-function, ENS, gas estimation) is ready.

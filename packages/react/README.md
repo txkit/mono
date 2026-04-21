@@ -17,7 +17,7 @@
 
 ---
 
-> **v0.1.0-alpha** - core primitives and transaction flow are stable. `ContractForm` is deferred to v0.2.0.
+> **v0.1.0-alpha** - core primitives and transaction flow are stable. `ContractForm` is deferred to v0.1.0.
 
 ## Features
 

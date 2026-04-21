@@ -112,7 +112,7 @@ Every component supports three customization levels:
 2. **Custom render** - `children` as render function for custom UI
 3. **Headless hooks** - full control, bring your own UI
 
-**Coming in v0.2.0:** `ContractForm` (ABI-driven form generation), `SwapWidget`, `StakingPanel`, `ApprovalManager`.
+**Coming in v0.1.0:** `ContractForm` (ABI-driven form generation), `SwapWidget`, `StakingPanel`, `ApprovalManager`.
 
 ## Protocol
 
