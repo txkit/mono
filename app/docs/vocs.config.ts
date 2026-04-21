@@ -2,13 +2,20 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
   title: 'txKit',
-  description: 'Stripe Elements for Web3',
+  description: 'Safe bridge between AI agents and Web3 transactions',
   baseUrl: 'https://docs.txkit.dev',
   iconUrl: '/favicon.svg',
   logoUrl: '/logo.svg',
   sidebar: [
     { text: 'Introduction', link: '/' },
     { text: 'Getting Started', link: '/getting-started' },
+    {
+      text: 'Protocol',
+      items: [
+        { text: 'PreparedTransaction v0.1', link: '/protocol/prepared-tx' },
+        { text: 'OWS composition', link: '/protocol/ows' },
+      ],
+    },
     {
       text: 'API',
       items: [

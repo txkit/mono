@@ -5,7 +5,11 @@
 <h1 align="center">txKit</h1>
 
 <p align="center">
-  Embeddable Web3 UI components for React - connect wallets, display balances, send transactions.
+  Safe bridge between AI agents and Web3 transactions — open protocol + reference implementation.
+</p>
+
+<p align="center">
+  Embeddable Web3 UI components for React + <a href="./spec/v0.1/prepared-transaction.md"><code>PreparedTransaction</code> spec</a> for AI / MCP tools.
 </p>
 
 <p align="center">
@@ -28,11 +32,12 @@ Works standalone or alongside **RainbowKit**, **AppKit**, **ConnectKit**, or any
 
 ## Packages
 
-| Package | Description | Version | Size |
-|---------|-------------|---------|------|
-| [`@txkit/react`](./packages/react) | React components and headless hooks | [![npm](https://img.shields.io/npm/v/@txkit/react/alpha.svg)](https://www.npmjs.com/package/@txkit/react) | [![size](https://img.shields.io/bundlephobia/minzip/@txkit/react)](https://bundlephobia.com/package/@txkit/react) |
-| [`@txkit/core`](./packages/core) | Framework-agnostic utilities and types | [![npm](https://img.shields.io/npm/v/@txkit/core/alpha.svg)](https://www.npmjs.com/package/@txkit/core) | [![size](https://img.shields.io/bundlephobia/minzip/@txkit/core)](https://bundlephobia.com/package/@txkit/core) |
-| [`@txkit/themes`](./packages/themes) | CSS themes (light, dark, variants) | [![npm](https://img.shields.io/npm/v/@txkit/themes/alpha.svg)](https://www.npmjs.com/package/@txkit/themes) | [![size](https://img.shields.io/bundlephobia/minzip/@txkit/themes)](https://bundlephobia.com/package/@txkit/themes) |
+| Package | Description | Version |
+|---------|-------------|---------|
+| [`@txkit/react`](./packages/react) | React components and headless hooks | [![npm](https://img.shields.io/npm/v/@txkit/react.svg)](https://www.npmjs.com/package/@txkit/react) |
+| [`@txkit/core`](./packages/core) | Framework-agnostic utilities and types | [![npm](https://img.shields.io/npm/v/@txkit/core.svg)](https://www.npmjs.com/package/@txkit/core) |
+| [`@txkit/themes`](./packages/themes) | CSS themes (light, dark, variants) | [![npm](https://img.shields.io/npm/v/@txkit/themes.svg)](https://www.npmjs.com/package/@txkit/themes) |
+| [`@txkit/tx-protocol`](./packages/tx-protocol) | Open protocol: `PreparedTransaction` types + zod schemas | [![npm](https://img.shields.io/npm/v/@txkit/tx-protocol.svg)](https://www.npmjs.com/package/@txkit/tx-protocol) |
 
 ## Quick Start
 
@@ -109,6 +114,25 @@ Every component supports three customization levels:
 
 **Coming in v0.2.0:** `ContractForm` (ABI-driven form generation), `SwapWidget`, `StakingPanel`, `ApprovalManager`.
 
+## Protocol
+
+[`@txkit/tx-protocol`](./packages/tx-protocol) defines an open `PreparedTransaction` shape flowing between **producers** (AI / MCP tools) and **consumers** (wallets, signer orchestrators).
+
+> _"OWS signs. txKit decides what's safe to sign."_
+
+- [**Spec v0.1**](./spec/v0.1/prepared-transaction.md) — canonical RFC for the shape
+- [**Example**](./examples/stakewise-deposit.ts) — construct and validate a StakeWise deposit tx
+- [**OWS composition**](./app/docs/pages/protocol/ows.mdx) — how this composes with MoonPay Open Wallet Standard
+
+```ts
+import { validatePreparedTx, SPEC_VERSION } from '@txkit/tx-protocol'
+// See packages/tx-protocol/README.md for the full API
+```
+
+### Regulatory notice (MiCA / US frameworks)
+
+`@txkit/tx-protocol` is a **presentational protocol** for human-readable transaction previews. It does not provide cryptographic integrity guarantees for off-chain fields (`description`, `metadata`, `decoderRef`) — the only authoritative on-chain effect is the raw `{chainId, to, data, value}` tuple. Under **EU MiCA** and similar frameworks, liability for transaction execution rests with the signing party (wallet / signer provider), not with txKit. This project does not custody keys, broker trades, or provide investment advice.
+
 ## Features
 
 - Built on [wagmi](https://wagmi.sh) + [viem](https://viem.sh) - zero vendor lock-in, bring your own RPC
@@ -132,12 +156,16 @@ pnpm lint             # Lint
 
 ```
 packages/
-  core/      - Framework-agnostic types, utilities, constants
-  react/     - React components and hooks
-  themes/    - CSS themes and visual variants
+  core/         - Framework-agnostic types, utilities, constants
+  react/        - React components and hooks
+  themes/       - CSS themes and visual variants
+  tx-protocol/  - Open PreparedTransaction protocol (types + zod schemas)
+spec/
+  v0.1/         - Canonical RFC for tx-protocol spec
+examples/       - Runnable TypeScript examples
 app/
-  docs/      - Documentation site (Vocs)
-  story/     - Component playground (Vite)
+  docs/         - Documentation site (Vocs)
+  story/        - Component playground (Vite)
 ```
 
 ## Contributing

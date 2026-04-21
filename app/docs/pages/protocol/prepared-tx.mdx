@@ -1,0 +1,80 @@
+# PreparedTransaction spec v0.1
+
+The canonical spec lives at [`spec/v0.1/prepared-transaction.md`](https://github.com/txkit/mono/blob/main/spec/v0.1/prepared-transaction.md) in the txKit repo.
+
+This page is a navigation hub for the protocol artifacts.
+
+## TL;DR
+
+`PreparedTransaction` is an **open shape** flowing from producers (MCP tools, AI agents) to consumers (wallets, orchestrators):
+
+```typescript
+interface PreparedTransaction {
+  version: "0.1"
+  chainId: number
+  to: `0x${string}`
+  data: `0x${string}`
+  value: bigint
+
+  description: {             // presentational
+    short: string
+    long?: string
+    action: ActionType
+  }
+
+  metadata: {                // presentational — cross-check against decoded calldata
+    protocol: string
+    tokenMovements: TokenMovement[]
+    counterparties: `0x${string}`[]
+    // ...
+  }
+
+  sequence?: { stepIndex: number; totalSteps: number; previousTxHashes?: `0x${string}`[] }
+  decoderRef?: string        // path-like "protocol/category/method"
+  extensions?: Record<string, unknown>  // opaque, namespaced
+}
+```
+
+## Presentational scope
+
+> **`description`, `metadata`, `decoderRef`, `extensions`** are presentational with **no cryptographic integrity guarantee**.
+>
+> The only authoritative representation of on-chain effects is `{chainId, to, data, value}`.
+>
+> Policy engines **MUST** validate on raw fields (decoded selector + args), **NOT** on `description.short`.
+
+A compromised MCP tool can emit `{to: victim, data: transfer(victim, MAX_UINT), description: "Stake 1 ETH"}`. The decoder layer (`@txkit/tx-decoder`) is the mitigation — not the description field.
+
+## Links
+
+- [Full spec RFC](https://github.com/txkit/mono/blob/main/spec/v0.1/prepared-transaction.md)
+- [`@txkit/tx-protocol` package README](https://github.com/txkit/mono/tree/main/packages/tx-protocol)
+- [Example: StakeWise deposit](https://github.com/txkit/mono/blob/main/examples/stakewise-deposit.ts)
+- [OWS composition](./ows)
+
+## Install
+
+```bash
+pnpm add @txkit/tx-protocol
+```
+
+## Minimal usage
+
+```ts
+import { validatePreparedTx, SPEC_VERSION } from '@txkit/tx-protocol'
+import type { PreparedTransaction } from '@txkit/tx-protocol'
+
+const tx: PreparedTransaction = {
+  version: SPEC_VERSION,
+  chainId: 1,
+  to: '0x...',
+  data: '0x...',
+  value: 0n,
+  description: { short: 'Claim rewards', action: 'claim' },
+  metadata: { protocol: 'my-protocol', tokenMovements: [], counterparties: [] },
+}
+
+const result = validatePreparedTx(tx)
+if (!result.ok) throw new Error(result.error)
+// result.value is a type-safe PreparedTransaction
+```
