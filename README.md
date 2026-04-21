@@ -5,7 +5,7 @@
 <h1 align="center">txKit</h1>
 
 <p align="center">
-  Safe bridge between AI agents and Web3 transactions — open protocol + reference implementation.
+  Safe bridge between AI agents and Web3 transactions - open protocol + reference implementation.
 </p>
 
 <p align="center">
@@ -116,22 +116,33 @@ Every component supports three customization levels:
 
 ## Protocol
 
-[`@txkit/tx-protocol`](./packages/tx-protocol) defines an open `PreparedTransaction` shape flowing between **producers** (AI / MCP tools) and **consumers** (wallets, signer orchestrators).
+[`@txkit/tx-protocol`](./packages/tx-protocol) defines an open envelope + content shape flowing between **producers** (AI / MCP tools, DeFi protocol adapters) and **consumers** (wallets, signer orchestrators, UI preview layers, policy engines).
 
 > _"OWS signs. txKit decides what's safe to sign."_
 
-- [**Spec v0.1**](./spec/v0.1/prepared-transaction.md) — canonical RFC for the shape
-- [**Example**](./examples/stakewise-deposit.ts) — construct and validate a StakeWise deposit tx
-- [**OWS composition**](./app/docs/pages/protocol/ows.mdx) — how this composes with MoonPay Open Wallet Standard
+v0.2 covers three kinds today: `evm-tx` (single EVM transaction), `evm-batch` (EIP-5792 atomic batch), `signature` (EIP-712 / SIWE / personal-sign). Nine more are reserved: `evm-userop`, `evm-frame`, `evm-7702`, `mandate`, `intent`, `psbt`, `svm-tx`, `move-tx`, `cosmos-tx`.
+
+- [**Spec v0.2**](./spec/v0.2/prepared-transaction.md) - canonical RFC (supersedes [v0.1 DEPRECATED](./spec/v0.1/prepared-transaction.md))
+- [**Examples**](./examples/) - StakeWise deposit, Uniswap Permit2 + swap, Safe delegatecall warning
+- [**OWS composition**](./app/docs/pages/protocol/ows.mdx) - how this composes with MoonPay Open Wallet Standard
 
 ```ts
-import { validatePreparedTx, SPEC_VERSION } from '@txkit/tx-protocol'
+import { createEvmTx, validateEnvelope } from '@txkit/tx-protocol'
+
+const envelope = createEvmTx({
+  chain: 'eip155:1',
+  calls: [ { to: '0x...', data: '0x...', value: '0xde0b6b3a7640000' } ],
+  validity: { notAfter: Math.floor(Date.now() / 1000) + 3600 },
+  description: { short: 'Stake 1 ETH', action: 'stake' },
+  metadata: { protocol: 'stakewise-v3', tokenMovements: [...], counterparties: [...] },
+})
+const result = validateEnvelope(envelope, { mode: 'strict' })
 // See packages/tx-protocol/README.md for the full API
 ```
 
 ### Regulatory notice (MiCA / US frameworks)
 
-`@txkit/tx-protocol` is a **presentational protocol** for human-readable transaction previews. It does not provide cryptographic integrity guarantees for off-chain fields (`description`, `metadata`, `decoderRef`) — the only authoritative on-chain effect is the raw `{chainId, to, data, value}` tuple. Under **EU MiCA** and similar frameworks, liability for transaction execution rests with the signing party (wallet / signer provider), not with txKit. This project does not custody keys, broker trades, or provide investment advice.
+`@txkit/tx-protocol` is a **presentational protocol** for human-readable transaction previews. Off-chain fields (`description`, `metadata`, `origin`, `risk`, `decoderRef`, `clearSigning`, `meta`) carry no cryptographic integrity guarantee on their own. Integrity comes from optional `producer.signature` covering the envelope (post-quantum schemes reserved) plus consumer-side decoder re-verification. The authoritative representation of on-chain effect is the raw `{chain, calls[*].to, calls[*].data, calls[*].value}` tuple (or `{scheme, domain, message}` for signatures). Under **EU MiCA** and similar frameworks, liability for transaction execution rests with the signing party (wallet / signer provider), not with txKit. This project does not custody keys, broker trades, or provide investment advice.
 
 ## Features
 

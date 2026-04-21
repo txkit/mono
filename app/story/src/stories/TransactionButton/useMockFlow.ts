@@ -15,7 +15,7 @@ import type {
 
 
 /**
- * Mock flow injector — writes a 2-step FlowEntry into the shared FlowStore
+ * Mock flow injector - writes a 2-step FlowEntry into the shared FlowStore
  * so real FlowSteps / FlowProgress / FlowToast compound components render
  * against mocked state (no real transactions).
  *

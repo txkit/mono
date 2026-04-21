@@ -1,29 +1,25 @@
-import type { PreparedTransaction } from './types'
-import { validatePreparedTx } from './validate'
+import type { PreparedEnvelope } from './types'
+import { validateEnvelope } from './validate'
 
-const BIGINT_SUFFIX = 'n'
-
-function bigintReplacer(_key: string, value: unknown): unknown {
-  if (typeof value === 'bigint') {
-    return value.toString() + BIGINT_SUFFIX
-  }
-  return value
+/**
+ * Serialize an envelope to canonical JSON.
+ *
+ * All amounts in content (`value`, token amounts, fees, etc.) are already
+ * strings (hex for raw EVM fields, decimal for user-facing amounts), so no
+ * bigint handling is required. This is intentional: the shape does not use
+ * bigint in any JSON-facing field.
+ */
+export function serialize(envelope: PreparedEnvelope): string {
+  return JSON.stringify(envelope)
 }
 
-function bigintReviver(_key: string, value: unknown): unknown {
-  if (typeof value === 'string' && /^-?\d+n$/.test(value)) {
-    return BigInt(value.slice(0, -1))
-  }
-  return value
-}
-
-export function serialize(tx: PreparedTransaction): string {
-  return JSON.stringify(tx, bigintReplacer)
-}
-
-export function deserialize(json: string): PreparedTransaction {
-  const parsed: unknown = JSON.parse(json, bigintReviver)
-  const result = validatePreparedTx(parsed)
+/**
+ * Parse and validate a serialized envelope.
+ * Throws if the JSON is malformed or if validation fails in strict mode.
+ */
+export function deserialize(json: string): PreparedEnvelope {
+  const parsed: unknown = JSON.parse(json)
+  const result = validateEnvelope(parsed, { mode: 'strict' })
   if (!result.ok) {
     throw new Error(`deserialize: ${result.error}`)
   }

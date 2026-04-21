@@ -363,7 +363,7 @@ export type FlowProgressProps = {
   'data-testid'?: string
   /** Flow ID to display. @default '__default__' */
   flowId?: string
-  /** Show a summary row "Overall Progress — X%" above the bar. @default false */
+  /** Show a summary row "Overall Progress - X%" above the bar. @default false */
   showSummary?: boolean
   /** Custom label for the summary row. @default 'Overall Progress' */
   summaryLabel?: string

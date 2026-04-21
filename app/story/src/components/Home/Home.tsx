@@ -12,7 +12,7 @@ const FEATURE_CARDS = [
     icon: sparklesIcon,
     color: 'blue' as const,
     title: 'Preview States',
-    description: 'Flip through every component state — idle, loading, success, error — without connecting a wallet.',
+    description: 'Flip through every component state - idle, loading, success, error - without connecting a wallet.',
   },
   {
     icon: zapIcon,
@@ -24,7 +24,7 @@ const FEATURE_CARDS = [
     icon: codeIcon,
     color: 'green' as const,
     title: 'Copy & Paste',
-    description: 'Production-grade examples for common Web3 patterns — approve + execute, chain enforcement, refresh-on-tx.',
+    description: 'Production-grade examples for common Web3 patterns - approve + execute, chain enforcement, refresh-on-tx.',
   },
 ]
 

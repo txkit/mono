@@ -1,6 +1,6 @@
 # OWS composition
 
-MoonPay's **Open Wallet Standard** (OWS — [github.com/open-wallet-standard/core](https://github.com/open-wallet-standard/core), launched 23 March 2026, 20 signatories incl. PayPal, Circle, OKX, Ripple, Ethereum Foundation, Solana Foundation, Base, Polygon, Arbitrum, Dynamic, Virtuals) defines a standard signing interface for AI agents.
+MoonPay's **Open Wallet Standard** (OWS - [github.com/open-wallet-standard/core](https://github.com/open-wallet-standard/core), launched 23 March 2026, 20 signatories incl. PayPal, Circle, OKX, Ripple, Ethereum Foundation, Solana Foundation, Base, Polygon, Arbitrum, Dynamic, Virtuals) defines a standard signing interface for AI agents.
 
 `@txkit/tx-protocol` is a **complement**, not a competitor.
 
@@ -11,14 +11,14 @@ MoonPay's **Open Wallet Standard** (OWS — [github.com/open-wallet-standard/cor
 | Layer | OWS | txKit |
 |---|---|---|
 | Key custody | ✅ encrypted vault, HSM integration | ❌ never holds keys |
-| Policy engine (raw tx) | ✅ whitelist/blocklist/limits | — |
+| Policy engine (raw tx) | ✅ whitelist/blocklist/limits | - |
 | Signing operations | ✅ `sign` / `signAndSend` / `signMessage` | ❌ delegates to OWS or wallet |
 | **Calldata decoding** | ❌ sees only raw tx | ✅ `@txkit/tx-decoder` registry |
 | **Human-readable preview** | ❌ no preview schema | ✅ `@txkit/tx-protocol` shape |
 | **Pre-sign simulation** | ❌ | ✅ `@txkit/react` hooks |
 | **Confirmation UX** | ❌ headless signing | ✅ components |
 
-OWS sees `{to, data, value}` — nothing more. Its policy engine operates on hashes and selectors; it cannot tell that `0xa9059cbb…` means `transfer(victim, 999ETH)` when an LLM tool labels it "Stake 1 ETH". The decoder layer is the mitigation, and that layer is **outside** OWS's scope by design.
+OWS sees `{to, data, value}` - nothing more. Its policy engine operates on hashes and selectors; it cannot tell that `0xa9059cbb…` means `transfer(victim, 999ETH)` when an LLM tool labels it "Stake 1 ETH". The decoder layer is the mitigation, and that layer is **outside** OWS's scope by design.
 
 ## Composition pipeline
 
@@ -51,15 +51,15 @@ LLM → Read MCP → Prepare MCP (returns PreparedTx v0.1)
 
 | Deliverable | When | Dependency |
 |---|---|---|
-| `@txkit/tx-protocol` on npm | ✅ published 2026-04-21 | — |
-| [Spec v0.1 RFC](../../../../spec/v0.1/prepared-transaction.md) | ✅ in repo | — |
+| `@txkit/tx-protocol` v0.2 on npm | ✅ published 2026-04-21 | - |
+| [Spec v0.2 RFC](../../../../spec/v0.2/prepared-transaction.md) | ✅ in repo | - |
 | `@txkit/ows-adapter` npm package | 2 weeks post-launch | requires tx-protocol v0.1+ |
-| GitHub Discussion on `open-wallet-standard/core` (propose optional `preview` sub-spec) | Weeks 1–2 post-launch | needs live npm artifact |
+| GitHub Discussion on `open-wallet-standard/core` (propose optional `preview` sub-spec) | Weeks 1-2 post-launch | needs live npm artifact |
 | Outreach to sympathetic signatories (Dynamic, Uniblock, Virtuals) | Week 3 post-launch | needs demo video |
 
 ## Why this matters now
 
-OWS v0.1 defines the signing contract. If OWS v0.2 adds an optional `Preview` or `Decode` sub-spec, the txKit moat narrows. The window to stake out the decode layer — with a live npm package and reference shape — is approximately 2–3 months.
+OWS v0.1 defines the signing contract. If OWS v0.2 adds an optional `Preview` or `Decode` sub-spec, the txKit moat narrows. The window to stake out the decode layer - with a live npm package and reference shape - is approximately 2-3 months.
 
 Shipping `@txkit/tx-protocol` first establishes a de-facto shape that any future OWS `preview` spec can reference. That's the bet.
 

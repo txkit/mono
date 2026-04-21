@@ -1,56 +1,82 @@
-# PreparedTransaction spec v0.1
+# PreparedEnvelope spec v0.2
 
-The canonical spec lives at [`spec/v0.1/prepared-transaction.md`](https://github.com/txkit/mono/blob/main/spec/v0.1/prepared-transaction.md) in the txKit repo.
-
-This page is a navigation hub for the protocol artifacts.
+Canonical spec: [`spec/v0.2/prepared-transaction.md`](https://github.com/txkit/mono/blob/main/spec/v0.2/prepared-transaction.md).
 
 ## TL;DR
 
-`PreparedTransaction` is an **open shape** flowing from producers (MCP tools, AI agents) to consumers (wallets, orchestrators):
+`PreparedEnvelope` is a discriminated union on `kind`:
 
 ```typescript
-interface PreparedTransaction {
-  version: "0.1"
-  chainId: number
-  to: `0x${string}`
-  data: `0x${string}`
-  value: bigint
+type PreparedEnvelope = EvmTxEnvelope | EvmBatchEnvelope | SignatureEnvelope
 
-  description: {             // presentational
-    short: string
-    long?: string
-    action: ActionType
-  }
-
-  metadata: {                // presentational — cross-check against decoded calldata
-    protocol: string
-    tokenMovements: TokenMovement[]
-    counterparties: `0x${string}`[]
-    // ...
-  }
-
-  sequence?: { stepIndex: number; totalSteps: number; previousTxHashes?: `0x${string}`[] }
-  decoderRef?: string        // path-like "protocol/category/method"
-  extensions?: Record<string, unknown>  // opaque, namespaced
+interface BaseEnvelope<K extends string, C> {
+  $schema: string
+  version: '0.2'
+  kind: K
+  id?: string                     // EIP-5792 idempotency
+  issuedAt: string                // RFC3339
+  expiresAt?: string
+  nonce?: `0x${string}`
+  producer?: Producer             // DID / CAIP-10 / ERC-8004 / URL, PQ-ready signing
+  origin?: Origin                 // dApp URL + verify status
+  content: C                      // kind-specific
+  risk?: RiskAssessment           // unbound; wallet/scanner injects
+  capabilities?: Capabilities     // EIP-5792 aligned open record
+  meta?: Record<string, unknown>
 }
 ```
 
-## Presentational scope
+## Kinds
 
-> **`description`, `metadata`, `decoderRef`, `extensions`** are presentational with **no cryptographic integrity guarantee**.
->
-> The only authoritative representation of on-chain effects is `{chainId, to, data, value}`.
->
-> Policy engines **MUST** validate on raw fields (decoded selector + args), **NOT** on `description.short`.
+### Implemented in v0.2
 
-A compromised MCP tool can emit `{to: victim, data: transfer(victim, MAX_UINT), description: "Stake 1 ETH"}`. The decoder layer (`@txkit/tx-decoder`) is the mitigation — not the description field.
+| `kind` | Use for | Content |
+|---|---|---|
+| `evm-tx` | Single EVM transaction | `calls[]` of length 1 |
+| `evm-batch` | EIP-5792 atomic batch | `calls[]` of length >= 2, usually with `capabilities.atomicRequired` |
+| `signature` | EIP-712 / personal-sign / SIWE | `domain`, `types`, `primaryType`, `message`, or `messageText` |
+
+### Reserved (declared, not validated today)
+
+`evm-userop` (ERC-4337), `evm-frame` (EIP-8141), `evm-7702` (set-code), `mandate` (AP2 / Visa TAP / Mastercard VI), `intent` (ERC-7683 / UniswapX / Anoma), `psbt` (Bitcoin), `svm-tx` (Solana), `move-tx` (Aptos/Sui), `cosmos-tx` (Cosmos SDK).
+
+## Security model
+
+> Off-chain fields (`description`, `metadata`, `origin`, `risk`, `decoderRef`, `clearSigning`, `meta`) are presentational and carry no cryptographic integrity on their own.
+>
+> The authoritative representation of on-chain effect is `{chain, calls[*].to, calls[*].data, calls[*].value}` for EVM txs, or `{scheme, domain, message}` for signatures.
+>
+> Policy engines, allowlists, and spend limits MUST validate on raw fields. Trusting `description.short` is a blind-signing pattern.
+
+Two integrity layers:
+
+1. **Producer signature** (`producer.signature` covers envelope bytes). Tampering in transit detected. Schemes: `secp256k1`, `ed25519`, `p256` (implemented); `ml-dsa-*`, `slh-dsa-*` (reserved post-quantum NIST FIPS 204/205).
+2. **Wallet-side decoder re-verify.** Consumer runs local decoder on `calls[*].data`, compares synthesized movements to producer's `metadata.tokenMovements`. Mismatch -> hard warning even with valid signature.
+
+## Attack-defense map
+
+v0.2 closes gaps identified in 2024-2026 incident review:
+
+| Attack | Shape defense |
+|---|---|
+| Blind signing (description vs data mismatch) | `producer.signature` + wallet decoder re-verify |
+| Multicall bait-and-switch | Nested `calls[]` with per-call `operation`; `calls.length === 1` only for `evm-tx` |
+| MAX_UINT256 approve drainer | `tokenMovement.kind: 'approve'` + `isUnlimited: true` triggers validator warning |
+| Permit / Permit2 replay | `kind: 'signature'` with full EIP-712 `domain`/`types`/`message` + `validity.notAfter` |
+| Delegatecall spoof (Bybit $1.4B) | Per-call `operation: 'delegatecall'` is first-class typed; validator emits WARN |
+| WalletConnect phishing | `origin: { url, verifyStatus, attestation? }` REQUIRED |
+| Swap-as-drainer | `tokenMovements[].from` + `to` REQUIRED; wallet asserts `to === user` for inbound |
+| Address poisoning ($336M) | `counterparties[].labelSource` + `similarityWarning` |
+| Dormant pre-signed tx (Drift $285M) | `validity.notAfter` REQUIRED + `nonceKind` awareness |
+| Bridge DVN compromise (Kelp $293M) | Reserved `content.bridgeConfig` in v0.3 |
 
 ## Links
 
-- [Full spec RFC](https://github.com/txkit/mono/blob/main/spec/v0.1/prepared-transaction.md)
+- [Full spec v0.2 RFC](https://github.com/txkit/mono/blob/main/spec/v0.2/prepared-transaction.md)
 - [`@txkit/tx-protocol` package README](https://github.com/txkit/mono/tree/main/packages/tx-protocol)
-- [Example: StakeWise deposit](https://github.com/txkit/mono/blob/main/examples/stakewise-deposit.ts)
+- [Examples](https://github.com/txkit/mono/tree/main/examples)
 - [OWS composition](./ows)
+- [v0.1 spec (DEPRECATED)](https://github.com/txkit/mono/blob/main/spec/v0.1/prepared-transaction.md)
 
 ## Install
 
@@ -61,20 +87,26 @@ pnpm add @txkit/tx-protocol
 ## Minimal usage
 
 ```ts
-import { validatePreparedTx, SPEC_VERSION } from '@txkit/tx-protocol'
-import type { PreparedTransaction } from '@txkit/tx-protocol'
+import { createEvmTx, validateEnvelope } from '@txkit/tx-protocol'
+import type { EvmTxContent } from '@txkit/tx-protocol'
 
-const tx: PreparedTransaction = {
-  version: SPEC_VERSION,
-  chainId: 1,
-  to: '0x...',
-  data: '0x...',
-  value: 0n,
+const content: EvmTxContent = {
+  chain: 'eip155:1',
+  calls: [ { to: '0x...', data: '0x...', value: '0x0' } ],
+  validity: { notAfter: Math.floor(Date.now() / 1000) + 3600 },
   description: { short: 'Claim rewards', action: 'claim' },
-  metadata: { protocol: 'my-protocol', tokenMovements: [], counterparties: [] },
+  metadata: {
+    protocol: 'my-protocol',
+    tokenMovements: [],
+    counterparties: [],
+  },
 }
 
-const result = validatePreparedTx(tx)
+const envelope = createEvmTx(content, {
+  origin: { url: 'https://app.example.io', verifyStatus: 'VERIFIED' },
+})
+
+const result = validateEnvelope(envelope, { mode: 'strict' })
 if (!result.ok) throw new Error(result.error)
-// result.value is a type-safe PreparedTransaction
+// result.value is a type-safe PreparedEnvelope
 ```

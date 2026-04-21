@@ -1,25 +1,41 @@
 /**
  * examples/stakewise-deposit.ts
  *
- * Minimal example: construct and validate a PreparedTransaction for
- * depositing 1 ETH into StakeWise Genesis Vault.
+ * Minimal example: construct and validate a PreparedEnvelope (kind: 'evm-tx')
+ * for depositing 1 ETH into the StakeWise Genesis Vault.
  *
  * Run:
  *   pnpm exec tsx examples/stakewise-deposit.ts
  */
 
-import { SPEC_VERSION, serialize, deserialize, validatePreparedTx } from '@txkit/tx-protocol'
-import type { PreparedTransaction } from '@txkit/tx-protocol'
+import {
+  createEvmTx,
+  deserialize,
+  serialize,
+  validateEnvelope,
+} from '@txkit/tx-protocol'
+import type { EvmTxContent } from '@txkit/tx-protocol'
 
 const GENESIS_VAULT = '0xAC0F906E433d58FA868F936E8A43230473652885' as const
+const USER = '0xdeadBeefdeaDbEEfDEaDbeefdEADBEeFDEaDBEEf' as const
 
-const deposit: PreparedTransaction = {
-  version: SPEC_VERSION,
+const content: EvmTxContent = {
+  chain: 'eip155:1',
   chainId: 1,
-  to: GENESIS_VAULT,
-  // encoded deposit(assets=1e18, receiver=0x...deadbeef, referrer=0x0)
-  data: '0x6e553f650000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000deadbeef0000000000000000000000000000000000000000000000000000000000000000',
-  value: 1_000_000_000_000_000_000n,
+  from: USER,
+  calls: [
+    {
+      to: GENESIS_VAULT,
+      // encoded deposit(assets=1e18, receiver=USER, referrer=0x0)
+      data: '0x6e553f650000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000deadbeef0000000000000000000000000000000000000000000000000000000000000000',
+      value: '0xde0b6b3a7640000',
+      operation: 'call',
+    },
+  ],
+  validity: {
+    notAfter: Math.floor(Date.now() / 1000) + 3600,
+    nonceKind: 'sequential',
+  },
   description: {
     short: 'Stake 1 ETH in Genesis Vault',
     long: 'Deposits 1 ETH into StakeWise Genesis Vault. Mints vault shares representing your stake. Earns staking rewards.',
@@ -30,36 +46,59 @@ const deposit: PreparedTransaction = {
     tokenMovements: [
       {
         token: 'native',
+        standard: 'native',
         symbol: 'ETH',
         decimals: 18,
-        amount: 1_000_000_000_000_000_000n,
-        direction: 'out',
+        amount: '1000000000000000000',
+        kind: 'transfer',
+        from: USER,
+        to: GENESIS_VAULT,
       },
     ],
-    counterparties: [GENESIS_VAULT],
-    estimatedGas: 120_000n,
+    counterparties: [
+      {
+        address: GENESIS_VAULT,
+        role: 'pool',
+        label: 'StakeWise Genesis Vault',
+        labelSource: 'protocol_directory',
+      },
+    ],
+    estimatedGas: '120000',
   },
   decoderRef: 'stakewise-v3/vault/deposit',
 }
 
-// 1. Validate shape against spec v0.1
-const result = validatePreparedTx(deposit)
+const envelope = createEvmTx(content, {
+  origin: { url: 'https://app.stakewise.io', verifyStatus: 'VERIFIED' },
+  producer: {
+    id: 'did:web:stakewise.io#llm-tools',
+    name: 'stakewise/llm-tools (prepare_stake_tx)',
+  },
+})
+
+const result = validateEnvelope(envelope, { mode: 'strict' })
 if (!result.ok) {
   console.error('Validation failed:', result.error)
-  if (result.issues) console.error(result.issues)
+  console.error(result.issues)
   process.exit(1)
 }
 
-console.log('Valid PreparedTransaction:', result.value.description.short)
-console.log('Chain:', result.value.chainId)
-console.log('To:', result.value.to)
-console.log('Value:', `${Number(result.value.value) / 1e18} ETH`)
+console.log('Valid PreparedEnvelope:', result.value.content.description.short)
+console.log('Kind:', result.value.kind)
+console.log('Chain:', result.value.content.chain)
+console.log('Calls:', result.value.content.calls.length)
+console.log('Origin verify status:', result.value.origin?.verifyStatus ?? 'none')
+console.log('Expires at:', result.value.expiresAt)
+if (result.warnings) {
+  console.log('Advisories:')
+  for (const w of result.warnings) {
+    console.log(`  [${w.severity}] ${w.path}: ${w.message}`)
+  }
+}
 
-// 2. Serialize for transport (e.g., over MCP tool response)
-const json = serialize(deposit)
+const json = serialize(envelope)
 console.log('\nSerialized payload (first 200 chars):')
 console.log(json.slice(0, 200) + '...')
 
-// 3. Roundtrip back from JSON
 const restored = deserialize(json)
-console.log('\nRoundtrip bigint value preserved:', restored.value === deposit.value)
+console.log('\nRoundtrip kind preserved:', restored.kind === envelope.kind)

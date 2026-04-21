@@ -52,7 +52,7 @@ const MockPreview = () => {
 
   return (
     <>
-      <p className="story-description">Pick a state — button and compound components (FlowSteps / FlowProgress / FlowToast) update together via shared TxKitProvider context</p>
+      <p className="story-description">Pick a state - button and compound components (FlowSteps / FlowProgress / FlowToast) update together via shared TxKitProvider context</p>
       <div className="story-live-layout">
         <div className="story-live-left">
           <div className="story-live-preview-card">

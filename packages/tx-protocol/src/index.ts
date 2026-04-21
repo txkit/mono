@@ -1,19 +1,59 @@
-export { SPEC_VERSION } from './version'
+export { SPEC_VERSION, SPEC_SCHEMA_URL } from './version'
 export type { SpecVersion } from './version'
 
+export { IMPLEMENTED_KINDS, RESERVED_KINDS } from './kinds'
+export type { ImplementedKind, Kind, ReservedKind } from './kinds'
+
+export { CALLS_STATUS } from './types'
 export type {
   ActionType,
+  BaseEnvelope,
+  Caip2Chain,
+  CallOperation,
+  CallsStatus,
+  Capabilities,
+  Counterparty,
+  CounterpartyLabelSource,
+  CounterpartyRole,
+  Description,
+  Eip712Domain,
+  Eip712Type,
+  Estimation,
+  EvmBatchEnvelope,
+  EvmCall,
+  EvmTxContent,
+  EvmTxEnvelope,
+  FeeBreakdown,
   HexAddress,
   HexBytes,
-  PreparedTransaction,
-  PreparedTransactionMetadata,
-  PreparedTransactionSequence,
-  SimulationHint,
-  TokenDirection,
+  HexQuantity,
+  Metadata,
+  NonceKind,
+  Origin,
+  PaymasterService,
+  Permissions,
+  PreparedEnvelope,
+  PreparedEnvelopeByKind,
+  Producer,
+  ProducerSignature,
+  RequiredAccountType,
+  RiskAssessment,
+  RiskWarning,
+  ScannerVerdict,
+  SignatureContent,
+  SignatureEnvelope,
+  SignatureScheme,
+  SignatureScheme712,
   TokenMovement,
-  TransactionDescription,
+  TokenMovementKind,
+  TokenStandard,
+  ValidateOptions,
+  ValidationIssue,
+  ValidationMode,
   ValidationResult,
+  Validity,
 } from './types'
 
-export { validatePreparedTx } from './validate'
+export { validateEnvelope, validatePreparedTx } from './validate'
 export { serialize, deserialize } from './serialize'
+export { createEvmTx, createEvmBatch, createSignature } from './helpers'
