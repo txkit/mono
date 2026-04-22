@@ -1,6 +1,9 @@
 import { z } from 'zod'
-import { SPEC_VERSION } from './version'
-import { IMPLEMENTED_KINDS, RESERVED_KINDS } from './kinds'
+import {
+  IMPLEMENTED_KINDS,
+  RESERVED_KINDS,
+  SPEC_VERSION,
+} from './types'
 import type {
   ActionType,
   Capabilities,

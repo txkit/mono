@@ -1,4 +1,4 @@
-import { SPEC_SCHEMA_URL, SPEC_VERSION } from './version'
+import { SPEC_SCHEMA_URL, SPEC_VERSION } from './types'
 import type {
   EvmBatchEnvelope,
   EvmTxContent,

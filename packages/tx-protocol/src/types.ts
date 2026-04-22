@@ -1,5 +1,39 @@
-import type { SpecVersion } from './version'
-import type { ImplementedKind } from './kinds'
+/* ======================================================================
+ * Spec version
+ * ==================================================================== */
+
+export const SPEC_VERSION = '0.1' as const
+export type SpecVersion = typeof SPEC_VERSION
+export const SPEC_SCHEMA_URL = 'https://txkit.dev/schemas/v0.1/envelope.json' as const
+
+/* ======================================================================
+ * Kind discriminator values
+ *
+ * Implemented in v0.1:
+ *  - evm-tx     : single EVM transaction (calls.length === 1)
+ *  - evm-batch  : EIP-5792 batch (calls.length > 1, atomicRequired capability)
+ *  - signature  : EIP-712 typed data / personal-sign / SIWE
+ *
+ * Reserved (strict validator rejects; namespace taken so v0.3+ adds are non-breaking).
+ * ==================================================================== */
+
+export const IMPLEMENTED_KINDS = [ 'evm-tx', 'evm-batch', 'signature' ] as const
+
+export const RESERVED_KINDS = [
+  'evm-userop',
+  'evm-frame',
+  'evm-7702',
+  'mandate',
+  'intent',
+  'psbt',
+  'svm-tx',
+  'move-tx',
+  'cosmos-tx',
+] as const
+
+export type ImplementedKind = (typeof IMPLEMENTED_KINDS)[number]
+export type ReservedKind = (typeof RESERVED_KINDS)[number]
+export type Kind = ImplementedKind | ReservedKind
 
 /* ======================================================================
  * Primitive hex types

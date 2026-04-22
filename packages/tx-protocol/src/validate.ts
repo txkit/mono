@@ -119,3 +119,25 @@ function deriveEvmAdvisories(
   })
   return advisories
 }
+
+/**
+ * Serialize an envelope to canonical JSON. All amounts in content
+ * (value, token amounts, fees) are already strings, so no bigint
+ * handling is required.
+ */
+export function serialize(envelope: PreparedEnvelope): string {
+  return JSON.stringify(envelope)
+}
+
+/**
+ * Parse and validate a serialized envelope. Throws if the JSON is
+ * malformed or if validation fails.
+ */
+export function deserialize(json: string): PreparedEnvelope {
+  const parsed: unknown = JSON.parse(json)
+  const result = validateEnvelope(parsed)
+  if (!result.ok) {
+    throw new Error(`deserialize: ${result.error}`)
+  }
+  return result.value
+}

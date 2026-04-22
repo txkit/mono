@@ -1,11 +1,15 @@
-export { SPEC_VERSION, SPEC_SCHEMA_URL } from './version'
-export type { SpecVersion } from './version'
-
-export { IMPLEMENTED_KINDS, RESERVED_KINDS } from './kinds'
-export type { ImplementedKind, Kind, ReservedKind } from './kinds'
-
-export { CALLS_STATUS } from './types'
+export {
+  CALLS_STATUS,
+  IMPLEMENTED_KINDS,
+  RESERVED_KINDS,
+  SPEC_SCHEMA_URL,
+  SPEC_VERSION,
+} from './types'
 export type {
+  ImplementedKind,
+  Kind,
+  ReservedKind,
+  SpecVersion,
   ActionType,
   BaseEnvelope,
   Caip2Chain,
@@ -52,8 +56,7 @@ export type {
   Validity,
 } from './types'
 
-export { validateEnvelope } from './validate'
-export { serialize, deserialize } from './serialize'
+export { deserialize, serialize, validateEnvelope } from './validate'
 export { createEvmTx, createEvmBatch, createSignature } from './helpers'
 
 export {
