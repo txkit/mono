@@ -1,11 +1,10 @@
 import { preparedEnvelopeSchema, isImplementedKind, isReservedKind } from './schema'
 import type { PreparedEnvelope, ValidationIssue, ValidationResult } from './types'
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
 
-function extractKind(input: unknown): string | undefined {
+const extractKind = (input: unknown): string | undefined => {
   if (!isRecord(input)) {
     return undefined
   }
@@ -13,7 +12,7 @@ function extractKind(input: unknown): string | undefined {
   return typeof kind === 'string' ? kind : undefined
 }
 
-export function validateEnvelope(input: unknown): ValidationResult<PreparedEnvelope> {
+export const validateEnvelope = (input: unknown): ValidationResult<PreparedEnvelope> => {
   const warnings: ValidationIssue[] = []
 
   const kind = extractKind(input)
@@ -42,9 +41,9 @@ export function validateEnvelope(input: unknown): ValidationResult<PreparedEnvel
 
   const parsed = preparedEnvelopeSchema.safeParse(input)
   if (!parsed.success) {
-    const issues: ValidationIssue[] = parsed.error.issues.map((i) => ({
-      path: i.path.join('.'),
-      message: i.message,
+    const issues: ValidationIssue[] = parsed.error.issues.map((issue) => ({
+      path: issue.path.join('.'),
+      message: issue.message,
       severity: 'ERROR',
     }))
     const primary = issues[0]
@@ -52,7 +51,7 @@ export function validateEnvelope(input: unknown): ValidationResult<PreparedEnvel
     return { ok: false, error, issues }
   }
 
-  const value = parsed.data as PreparedEnvelope
+  const value: PreparedEnvelope = parsed.data
 
   const expiryWarning = checkExpiryAlignment(value, warnings)
   if (expiryWarning) {
@@ -66,10 +65,10 @@ export function validateEnvelope(input: unknown): ValidationResult<PreparedEnvel
   return warnings.length > 0 ? { ok: true, value, warnings } : { ok: true, value }
 }
 
-function checkExpiryAlignment(
+const checkExpiryAlignment = (
   env: PreparedEnvelope,
   existing: ValidationIssue[],
-): ValidationIssue | undefined {
+): ValidationIssue | undefined => {
   if (!env.expiresAt) {
     return undefined
   }
@@ -85,7 +84,7 @@ function checkExpiryAlignment(
       severity: 'WARN',
     }
   }
-  if (envelopeExpiry !== validityNotAfter && !existing.find((w) => w.path === 'expiresAt')) {
+  if (envelopeExpiry !== validityNotAfter && !existing.find((warning) => warning.path === 'expiresAt')) {
     return {
       path: 'expiresAt',
       message: 'envelope.expiresAt should equal content.validity.notAfter',
@@ -95,23 +94,23 @@ function checkExpiryAlignment(
   return undefined
 }
 
-function deriveEvmAdvisories(
+const deriveEvmAdvisories = (
   env: Extract<PreparedEnvelope, { kind: 'evm-tx' | 'evm-batch' }>,
-): ValidationIssue[] {
+): ValidationIssue[] => {
   const advisories: ValidationIssue[] = []
-  env.content.calls.forEach((call, idx) => {
+  env.content.calls.forEach((call, index) => {
     if (call.operation === 'delegatecall') {
       advisories.push({
-        path: `content.calls.${idx}.operation`,
+        path: `content.calls.${index}.operation`,
         message: 'delegatecall requires explicit wallet verification against allowlisted targets',
         severity: 'WARN',
       })
     }
   })
-  env.content.metadata.tokenMovements.forEach((mv, idx) => {
-    if (mv.kind === 'approve' && mv.isUnlimited === true) {
+  env.content.metadata.tokenMovements.forEach((movement, index) => {
+    if (movement.kind === 'approve' && movement.isUnlimited === true) {
       advisories.push({
-        path: `content.metadata.tokenMovements.${idx}`,
+        path: `content.metadata.tokenMovements.${index}`,
         message: 'unlimited (MAX_UINT) approval detected; wallets MUST surface hard warning',
         severity: 'WARN',
       })
@@ -125,15 +124,13 @@ function deriveEvmAdvisories(
  * (value, token amounts, fees) are already strings, so no bigint
  * handling is required.
  */
-export function serialize(envelope: PreparedEnvelope): string {
-  return JSON.stringify(envelope)
-}
+export const serialize = (envelope: PreparedEnvelope): string => JSON.stringify(envelope)
 
 /**
  * Parse and validate a serialized envelope. Throws if the JSON is
  * malformed or if validation fails.
  */
-export function deserialize(json: string): PreparedEnvelope {
+export const deserialize = (json: string): PreparedEnvelope => {
   const parsed: unknown = JSON.parse(json)
   const result = validateEnvelope(parsed)
   if (!result.ok) {

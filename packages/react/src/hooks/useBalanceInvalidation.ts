@@ -53,7 +53,10 @@ const useBalanceInvalidation = (): UseBalanceInvalidationReturn => {
     )
 
     if (tokenEntries.length > 0) {
-      const affectedTokens = new Set(tokenEntries.map((entry) => entry.token.toLowerCase()))
+      const affectedTokens: Record<string, true> = {}
+      for (const entry of tokenEntries) {
+        affectedTokens[entry.token.toLowerCase()] = true
+      }
 
       queryClient.invalidateQueries({
         queryKey: [ 'readContracts' ],
@@ -63,7 +66,7 @@ const useBalanceInvalidation = (): UseBalanceInvalidationReturn => {
             return false
           }
           return params.contracts.some(
-            (contract) => contract.address && affectedTokens.has(contract.address.toLowerCase()),
+            (contract) => Boolean(contract.address && affectedTokens[contract.address.toLowerCase()]),
           )
         },
       })

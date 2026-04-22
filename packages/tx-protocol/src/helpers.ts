@@ -18,78 +18,72 @@ type EnvelopeCommon = {
   meta?: EvmTxEnvelope['meta']
 }
 
-function rfc3339Now(): string {
-  return new Date().toISOString()
-}
+const rfc3339Now = (): string => new Date().toISOString()
 
-function deriveExpiresAt(content: EvmTxContent | SignatureContent, fallback?: string): string | undefined {
+const deriveExpiresAt = (
+  content: EvmTxContent | SignatureContent,
+  fallback?: string,
+): string | undefined => {
   if (fallback) {
     return fallback
   }
-  const notAfter =
-    'validity' in content && content.validity ? content.validity.notAfter : undefined
+  const notAfter = 'validity' in content ? content.validity?.notAfter : undefined
   if (typeof notAfter === 'number') {
     return new Date(notAfter * 1000).toISOString()
   }
   return undefined
 }
 
-export function createEvmTx(
+export const createEvmTx = (
   content: EvmTxContent,
   envelope: EnvelopeCommon = {},
-): EvmTxEnvelope {
-  return {
-    $schema: SPEC_SCHEMA_URL,
-    version: SPEC_VERSION,
-    kind: 'evm-tx',
-    id: envelope.id,
-    issuedAt: envelope.issuedAt ?? rfc3339Now(),
-    expiresAt: deriveExpiresAt(content, envelope.expiresAt),
-    nonce: envelope.nonce,
-    producer: envelope.producer,
-    origin: envelope.origin,
-    content,
-    capabilities: envelope.capabilities,
-    meta: envelope.meta,
-  }
-}
+): EvmTxEnvelope => ({
+  $schema: SPEC_SCHEMA_URL,
+  version: SPEC_VERSION,
+  kind: 'evm-tx',
+  id: envelope.id,
+  issuedAt: envelope.issuedAt ?? rfc3339Now(),
+  expiresAt: deriveExpiresAt(content, envelope.expiresAt),
+  nonce: envelope.nonce,
+  producer: envelope.producer,
+  origin: envelope.origin,
+  content,
+  capabilities: envelope.capabilities,
+  meta: envelope.meta,
+})
 
-export function createEvmBatch(
+export const createEvmBatch = (
   content: EvmTxContent,
   envelope: EnvelopeCommon = {},
-): EvmBatchEnvelope {
-  return {
-    $schema: SPEC_SCHEMA_URL,
-    version: SPEC_VERSION,
-    kind: 'evm-batch',
-    id: envelope.id,
-    issuedAt: envelope.issuedAt ?? rfc3339Now(),
-    expiresAt: deriveExpiresAt(content, envelope.expiresAt),
-    nonce: envelope.nonce,
-    producer: envelope.producer,
-    origin: envelope.origin,
-    content,
-    capabilities: envelope.capabilities,
-    meta: envelope.meta,
-  }
-}
+): EvmBatchEnvelope => ({
+  $schema: SPEC_SCHEMA_URL,
+  version: SPEC_VERSION,
+  kind: 'evm-batch',
+  id: envelope.id,
+  issuedAt: envelope.issuedAt ?? rfc3339Now(),
+  expiresAt: deriveExpiresAt(content, envelope.expiresAt),
+  nonce: envelope.nonce,
+  producer: envelope.producer,
+  origin: envelope.origin,
+  content,
+  capabilities: envelope.capabilities,
+  meta: envelope.meta,
+})
 
-export function createSignature(
+export const createSignature = (
   content: SignatureContent,
   envelope: EnvelopeCommon = {},
-): SignatureEnvelope {
-  return {
-    $schema: SPEC_SCHEMA_URL,
-    version: SPEC_VERSION,
-    kind: 'signature',
-    id: envelope.id,
-    issuedAt: envelope.issuedAt ?? rfc3339Now(),
-    expiresAt: deriveExpiresAt(content, envelope.expiresAt),
-    nonce: envelope.nonce,
-    producer: envelope.producer,
-    origin: envelope.origin,
-    content,
-    capabilities: envelope.capabilities,
-    meta: envelope.meta,
-  }
-}
+): SignatureEnvelope => ({
+  $schema: SPEC_SCHEMA_URL,
+  version: SPEC_VERSION,
+  kind: 'signature',
+  id: envelope.id,
+  issuedAt: envelope.issuedAt ?? rfc3339Now(),
+  expiresAt: deriveExpiresAt(content, envelope.expiresAt),
+  nonce: envelope.nonce,
+  producer: envelope.producer,
+  origin: envelope.origin,
+  content,
+  capabilities: envelope.capabilities,
+  meta: envelope.meta,
+})

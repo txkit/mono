@@ -58,7 +58,7 @@
 }
 
 .control-panel-reset:disabled {
-  opacity: 0.3;
+  color: var(--pg-muted-fg);
   cursor: default;
 }
 

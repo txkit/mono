@@ -58,7 +58,7 @@ const BalanceWatcher: React.FC<BalanceWatcherProps> = ({ children }) => {
             return false
           }
           return params.contracts.some(
-            (contract) => contract.address && contract.address.toLowerCase() === token.toLowerCase(),
+            (contract) => contract.address?.toLowerCase() === token.toLowerCase(),
           )
         },
       })

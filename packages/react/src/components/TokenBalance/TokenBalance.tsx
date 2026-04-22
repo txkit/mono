@@ -59,7 +59,6 @@ const TokenBalance = forwardRef<HTMLSpanElement, TokenBalanceProps>(({
 
   const price = priceProp ?? fetchedPrice
 
-  // Formatted values
   const dustThreshold = formatOptions?.dustThreshold
   const locale = formatOptions?.locale
 
@@ -124,7 +123,6 @@ const TokenBalance = forwardRef<HTMLSpanElement, TokenBalanceProps>(({
     prevBalanceRef.current = balance
   }, [ balance ])
 
-  // Error callback
   useEffect(() => {
     if (balanceErr) {
       onErrorRef.current?.(balanceErr)

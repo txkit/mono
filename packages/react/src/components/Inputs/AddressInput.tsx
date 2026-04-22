@@ -1,7 +1,12 @@
-import React, { forwardRef, useId } from 'react'
+import React, { useId, forwardRef } from 'react'
 import type { InputHTMLAttributes } from 'react'
 
 import { cx } from '@txkit/core'
+
+import xIcon from '../../assets/icons/inputs/x.svg'
+import checkIcon from '../../assets/icons/inputs/check.svg'
+import warningIcon from '../../assets/icons/inputs/warning.svg'
+import spinnerIcon from '../../assets/icons/inputs/spinner.svg'
 
 import './Inputs.css'
 
@@ -19,37 +24,11 @@ export type AddressInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'siz
   validity?: AddressValidity
 }
 
-const CheckIcon: React.FC = () => (
-  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <path d="M3 8.5L6.5 12L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
-
-const XIcon: React.FC = () => (
-  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
-
-const WarningIcon: React.FC = () => (
-  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <path d="M8 5V9M8 11.5V11.51" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    <path d="M7.13 2.5L1.5 12.5C1.1 13.2 1.6 14 2.37 14H13.63C14.4 14 14.9 13.2 14.5 12.5L8.87 2.5C8.49 1.8 7.51 1.8 7.13 2.5Z" stroke="currentColor" strokeWidth="1.5" />
-  </svg>
-)
-
-const SpinnerIcon: React.FC = () => (
-  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" strokeOpacity="0.25" />
-    <path d="M14 8C14 4.68629 11.3137 2 8 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-  </svg>
-)
-
-const indicatorMap: Record<Exclude<AddressValidity, 'idle'>, React.ReactNode> = {
-  checking: <SpinnerIcon />,
-  valid: <CheckIcon />,
-  invalid: <XIcon />,
-  warning: <WarningIcon />,
+const iconByValidity: Record<Exclude<AddressValidity, 'idle'>, string> = {
+  valid: checkIcon,
+  invalid: xIcon,
+  warning: warningIcon,
+  checking: spinnerIcon,
 }
 
 const AddressInput = forwardRef<HTMLInputElement, AddressInputProps>((props, ref) => {
@@ -68,6 +47,10 @@ const AddressInput = forwardRef<HTMLInputElement, AddressInputProps>((props, ref
   const id = idProp ?? generatedId
   const helperId = helperText || error ? `${id}-helper` : undefined
   const stateAttr = validity === 'idle' ? undefined : validity
+  const iconUrl = validity !== 'idle' ? iconByValidity[validity] : undefined
+  const iconMaskStyle = iconUrl
+    ? { maskImage: `url("${iconUrl}")`, WebkitMaskImage: `url("${iconUrl}")` }
+    : undefined
 
   return (
     <div
@@ -98,10 +81,12 @@ const AddressInput = forwardRef<HTMLInputElement, AddressInputProps>((props, ref
           aria-describedby={helperId}
         />
         {
-          validity !== 'idle' && (
-            <span className={cx('txkit-input-indicator', `txkit-input-indicator--${validity}`)}>
-              {indicatorMap[validity]}
-            </span>
+          iconMaskStyle && (
+            <span
+              className={cx('txkit-input-indicator', `txkit-input-indicator--${validity}`)}
+              aria-hidden="true"
+              style={iconMaskStyle}
+            />
           )
         }
       </div>

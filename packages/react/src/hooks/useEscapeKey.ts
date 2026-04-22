@@ -8,7 +8,9 @@ const useEscapeKey = (handler: () => void, enabled = true) => {
     }
 
     const listener = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') handler()
+      if (event.key === 'Escape') {
+        handler()
+      }
     }
 
     document.addEventListener('keydown', listener)

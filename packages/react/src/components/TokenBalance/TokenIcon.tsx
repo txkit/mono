@@ -23,8 +23,8 @@ const TokenIcon: React.FC<TokenIconProps> = ({ icon, symbol }) => {
     )
   }
 
-  const letter = (symbol ?? '?').charAt(0).toUpperCase()
-  const bgColor = hashColor(symbol ?? 'default')
+  const letter = (symbol || '?').charAt(0).toUpperCase()
+  const bgColor = hashColor(symbol || 'default')
 
   return (
     <span

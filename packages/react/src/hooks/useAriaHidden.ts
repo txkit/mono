@@ -1,7 +1,11 @@
 import { useEffect, type RefObject } from 'react'
 
 
-const SKIP_TAGS = new Set([ 'SCRIPT', 'STYLE', 'LINK' ])
+const skipTags: Record<string, true> = {
+  LINK: true,
+  STYLE: true,
+  SCRIPT: true,
+}
 
 /**
  * Sets `aria-hidden="true"` on body children that are siblings
@@ -37,7 +41,10 @@ const useAriaHidden = (portalRef: RefObject<HTMLElement | null>) => {
     const hiddenElements: HTMLElement[] = []
 
     for (let index = 0; index < document.body.children.length; index++) {
-      const element = document.body.children[index] as HTMLElement
+      const element = document.body.children[index]
+      if (!(element instanceof HTMLElement)) {
+        continue
+      }
 
       // Skip the portal container itself
       if (element === portalRoot) {
@@ -45,7 +52,7 @@ const useAriaHidden = (portalRef: RefObject<HTMLElement | null>) => {
       }
 
       // Skip non-content elements
-      if (SKIP_TAGS.has(element.tagName)) {
+      if (skipTags[element.tagName]) {
         continue
       }
 

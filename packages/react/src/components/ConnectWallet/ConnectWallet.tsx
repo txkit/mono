@@ -106,7 +106,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
   const chains = config.displayChains
 
   const requiredChain = useMemo(
-    () => chainId ? chains.find((c) => c.id === chainId) : undefined,
+    () => chainId ? chains.find((chain) => chain.id === chainId) : undefined,
     [ chainId, chains ],
   )
 

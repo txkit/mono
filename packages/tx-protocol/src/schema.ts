@@ -332,7 +332,7 @@ const baseEnvelopeFields = {
 const _evmTxEnvelopeSchema = z.object({
   ...baseEnvelopeFields,
   kind: z.literal('evm-tx'),
-  content: evmTxContentSchema.refine((c) => c.calls.length === 1, {
+  content: evmTxContentSchema.refine((content) => content.calls.length === 1, {
     message: "kind 'evm-tx' requires exactly one call; use 'evm-batch' for more",
     path: [ 'calls' ],
   }),
@@ -341,7 +341,7 @@ const _evmTxEnvelopeSchema = z.object({
 const _evmBatchEnvelopeSchema = z.object({
   ...baseEnvelopeFields,
   kind: z.literal('evm-batch'),
-  content: evmTxContentSchema.refine((c) => c.calls.length >= 2, {
+  content: evmTxContentSchema.refine((content) => content.calls.length >= 2, {
     message: "kind 'evm-batch' requires at least 2 calls; use 'evm-tx' for a single call",
     path: [ 'calls' ],
   }),
@@ -367,10 +367,8 @@ export const preparedEnvelopeSchema: z.ZodType<PreparedEnvelope> = z.discriminat
  * Kind awareness helpers
  * ==================================================================== */
 
-export function isImplementedKind(value: string): boolean {
-  return (IMPLEMENTED_KINDS as readonly string[]).includes(value)
-}
+export const isImplementedKind = (value: string): boolean =>
+  (IMPLEMENTED_KINDS as readonly string[]).includes(value)
 
-export function isReservedKind(value: string): boolean {
-  return (RESERVED_KINDS as readonly string[]).includes(value)
-}
+export const isReservedKind = (value: string): boolean =>
+  (RESERVED_KINDS as readonly string[]).includes(value)

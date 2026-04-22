@@ -9,14 +9,12 @@ import './testnet.css'
 const exampleCode = `import { TxKitProvider, ConnectWallet, TokenBalance } from '@txkit/react'
 import '@txkit/themes'
 
-function App() {
-  return (
-    <TxKitProvider config={{ testnet: true }}>
-      <ConnectWallet />
-      <TokenBalance />
-    </TxKitProvider>
-  )
-}`
+const App = () => (
+  <TxKitProvider config={{ testnet: true }}>
+    <ConnectWallet />
+    <TokenBalance />
+  </TxKitProvider>
+)`
 
 
 // Sample address for rendering TokenBalance in disconnected state. Any valid

@@ -1,16 +1,6 @@
-import React from 'react'
-
-import BoolField from './BoolField'
-import TupleField from './TupleField'
-import BytesField from './BytesField'
-import ArrayField from './ArrayField'
-import StringField from './StringField'
-import AddressField from './AddressField'
-import IntegerField from './IntegerField'
-import UnsupportedField from './UnsupportedField'
 import PayableValueField from './PayableValueField'
-import type { ContractFormLabels } from './labels'
 import type { FieldDescriptor } from '../../types/contract'
+
 
 
 type FieldProps = {
@@ -24,8 +14,8 @@ type FieldProps = {
 }
 
 
-// --- Helper: get hint text ---
-
+// Helper: compute hint text per field kind. Not a render helper; returns
+// a plain string for the label hint row.
 const getFieldHint = (field: FieldDescriptor): string | undefined => {
   if (field.fieldType === 'address') {
     return '42 characters starting with 0x'
@@ -49,32 +39,5 @@ const getFieldHint = (field: FieldDescriptor): string | undefined => {
 }
 
 
-// --- Helper: render field input by type ---
-
-const renderFieldInput = (props: FieldProps, labels: ContractFormLabels) => {
-  switch (props.field.fieldType) {
-    case 'address':
-      return <AddressField {...props} />
-    case 'uint':
-    case 'int':
-      return <IntegerField {...props} />
-    case 'bool':
-      return <BoolField {...props} />
-    case 'string':
-      return <StringField {...props} />
-    case 'bytes':
-    case 'bytesN':
-      return <BytesField {...props} />
-    case 'array':
-    case 'tupleArray':
-      return <ArrayField {...props} />
-    case 'tuple':
-      return <TupleField {...props} />
-    default:
-      return <UnsupportedField labels={labels} />
-  }
-}
-
-
-export { renderFieldInput, getFieldHint, PayableValueField }
+export { getFieldHint, PayableValueField }
 export type { FieldProps }

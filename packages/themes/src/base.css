@@ -98,6 +98,10 @@
   --txkit-duration-normal: 200ms;
   --txkit-duration-moderate: 300ms;
   --txkit-duration-slow: 400ms;
+  --txkit-duration-slower: 600ms;
+  --txkit-duration-spin: 1000ms;
+  --txkit-duration-breathe: 1500ms;
+  --txkit-duration-loop: 2000ms;
 
   /* --- Skeleton shimmer --- */
   --txkit-skeleton-from: var(--txkit-color-bg-secondary);
@@ -128,5 +132,9 @@
     --txkit-duration-normal: 0ms;
     --txkit-duration-moderate: 0ms;
     --txkit-duration-slow: 0ms;
+    --txkit-duration-slower: 0ms;
+    --txkit-duration-spin: 0ms;
+    --txkit-duration-breathe: 0ms;
+    --txkit-duration-loop: 0ms;
   }
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import type { ReactNode } from 'react'
 
-import { hashGradient, hashPixelAvatar } from '../../helpers/hashColor'
+import CwConnectedContent from './CwConnectedContent'
 
 
 type LabelOverrides = {
@@ -60,51 +60,25 @@ const CwMockButton: React.FC<CwMockProps> = ({
     ? formatAddress(MOCK_ADDRESS, showEns ? ensName : undefined)
     : defaultDisplay
 
-  const renderConnectedContent = () => {
-    const pixel = avatarStyle === 'pixel' ? hashPixelAvatar(MOCK_ADDRESS) : null
-
-    return (
-    <>
-      {
-        showAvatar && (
-          pixel
-            ? (
-              <span className="txkit-cw-avatar-fallback" style={{ background: pixel.background, overflow: 'hidden' }} aria-hidden="true">
-                <svg viewBox="0 0 5 5" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" shapeRendering="crispEdges">
-                  {
-                    pixel.pattern.flatMap((row, rowIndex) => (
-                      row.map((filled, colIndex) => (
-                        filled
-                          ? <rect key={`${rowIndex}-${colIndex}`} x={colIndex} y={rowIndex} width={1} height={1} fill={pixel.foreground} />
-                          : null
-                      ))
-                    ))
-                  }
-                </svg>
-              </span>
-            )
-            : <span className="txkit-cw-avatar-fallback" style={{ background: hashGradient(MOCK_ADDRESS) }} aria-hidden="true" />
-        )
-      }
-      <span className="txkit-cw-address">{displayAddress}</span>
-      {
-        showBalance && (
-          <span className="txkit-cw-balance-wrap">
-            <span className="txkit-cw-balance">{balance}</span>
-            {showFiat && <span className="txkit-cw-fiat">{fiat}</span>}
-          </span>
-        )
-      }
-    </>
-    )
-  }
+  const connectedContent = (
+    <CwConnectedContent
+      fiat={fiat}
+      address={MOCK_ADDRESS}
+      balance={balance}
+      avatarStyle={avatarStyle}
+      displayAddress={displayAddress}
+      showFiat={showFiat}
+      showAvatar={showAvatar}
+      showBalance={showBalance}
+    />
+  )
 
   switch (state) {
     case 'connected':
       return (
         <div className="txkit-cw" data-size={size} data-variant={variant}>
           <button type="button" className="txkit-cw-button" data-state="connected" style={{ ...nonInteractiveStyle, ...sizeStyle }} onClick={onClick}>
-            {renderConnectedContent()}
+            {connectedContent}
           </button>
           {children}
         </div>
@@ -113,7 +87,7 @@ const CwMockButton: React.FC<CwMockProps> = ({
       return (
         <div className="txkit-cw" data-size={size} data-variant={variant}>
           <button type="button" className="txkit-cw-button" data-state="wrong-chain" style={{ ...nonInteractiveStyle, ...sizeStyle }} onClick={onClick}>
-            {renderConnectedContent()}
+            {connectedContent}
             <svg className="txkit-cw-switch-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="m16 3 4 4-4 4" />
               <path d="M20 7H4" />

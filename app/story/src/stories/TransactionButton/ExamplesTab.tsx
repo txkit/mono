@@ -37,6 +37,16 @@ const customTxMock = (opts: { status: MockTxState; stepStatus?: string; hash?: s
 )
 
 
+const stepStatus = (step: { current: boolean; done: boolean }): 'completed' | 'tx-pending' | 'pending' => {
+  if (step.done) {
+    return 'completed'
+  }
+  if (step.current) {
+    return 'tx-pending'
+  }
+  return 'pending'
+}
+
 const MockFlowSteps: React.FC<{ steps: Array<{ id: string; label: string; current: boolean; done: boolean }> }> = ({ steps }) => (
   <ol className="txkit-fs-list" aria-label="Transaction steps">
     {
@@ -44,7 +54,7 @@ const MockFlowSteps: React.FC<{ steps: Array<{ id: string; label: string; curren
         <li
           key={step.id}
           className="txkit-fs-item"
-          data-status={step.done ? 'completed' : (step.current ? 'tx-pending' : 'pending')}
+          data-status={stepStatus(step)}
           aria-current={step.current ? 'step' : undefined}
         >
           <span className="txkit-fs-bullet" aria-hidden="true" />

@@ -16,8 +16,14 @@
 }
 
 .txkit-input[data-disabled="true"] {
-  opacity: 0.5;
+  color: var(--txkit-color-text-tertiary);
   cursor: not-allowed;
+}
+
+.txkit-input[data-disabled="true"] .txkit-input-field {
+  background: var(--txkit-color-bg-secondary);
+  color: var(--txkit-color-text-tertiary);
+  border-color: var(--txkit-color-border-subtle);
 }
 
 .txkit-input-label {
@@ -147,17 +153,16 @@
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 16px;
   height: 16px;
   pointer-events: none;
-}
-
-.txkit-input-indicator svg {
-  width: 16px;
-  height: 16px;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
 }
 
 .txkit-input-indicator--valid { color: var(--txkit-color-success); }
@@ -165,7 +170,7 @@
 .txkit-input-indicator--warning { color: var(--txkit-color-warning); }
 .txkit-input-indicator--checking {
   color: var(--txkit-color-primary);
-  animation: txkit-input-spin 1s linear infinite;
+  animation: txkit-input-spin var(--txkit-duration-spin) linear infinite;
 }
 
 @keyframes txkit-input-spin {
@@ -186,8 +191,13 @@
 }
 
 .txkit-checkbox[data-disabled="true"] {
-  opacity: 0.5;
+  color: var(--txkit-color-text-tertiary);
   cursor: not-allowed;
+}
+
+.txkit-checkbox[data-disabled="true"] .txkit-checkbox-control {
+  background: var(--txkit-color-bg-secondary);
+  border-color: var(--txkit-color-border-subtle);
 }
 
 .txkit-checkbox-control {

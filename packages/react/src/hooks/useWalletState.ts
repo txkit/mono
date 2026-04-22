@@ -72,7 +72,7 @@ export type UseWalletStateReturn = {
 const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateReturn => {
   const { chainId, showBalance = true, showEns = true, connectingConnectorId } = options
 
-  const [ isTimedOut, setIsTimedOut ] = useState(false)
+  const [ isTimedOut, setTimedOut ] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const { mutate: disconnect } = useDisconnect()
@@ -86,11 +86,11 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
 
   useEffect(() => {
     if (isPending) {
-      setIsTimedOut(false)
-      timeoutRef.current = setTimeout(() => setIsTimedOut(true), timeoutMs)
+      setTimedOut(false)
+      timeoutRef.current = setTimeout(() => setTimedOut(true), timeoutMs)
     }
     else {
-      setIsTimedOut(false)
+      setTimedOut(false)
       clearTimeout(timeoutRef.current)
     }
 

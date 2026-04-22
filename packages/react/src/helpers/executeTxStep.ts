@@ -129,7 +129,6 @@ export const executeTxStep = async (
       setFlow((prev) => updateStep(prev, stepIndex, { gasEstimate: gasResult.value }))
     }
 
-    // Risk provider
     if (currentSafety.riskProvider && address) {
       try {
         const risk = await currentSafety.riskProvider.assess({
@@ -183,7 +182,6 @@ export const executeTxStep = async (
     }
   }
 
-  // Sign and send
   if (!mountedRef.current) {
     return false
   }
@@ -235,7 +233,6 @@ export const executeTxStep = async (
     return false
   }
 
-  // Check receipt status
   if (receipt.status === 'reverted') {
     invalidateAffected(receipt.logs, address)
     const txError = makeError(null, 'EXECUTION_REVERTED')
@@ -244,7 +241,6 @@ export const executeTxStep = async (
     return false
   }
 
-  // Success
   const txReceipt: TransactionReceipt = {
     blockNumber: receipt.blockNumber,
     transactionHash: receipt.transactionHash,

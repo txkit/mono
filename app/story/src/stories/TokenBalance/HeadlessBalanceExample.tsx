@@ -12,9 +12,17 @@ const HeadlessBalanceExample = () => {
     ? formatUnits(data.balance, data.decimals)
     : undefined
 
+  let status: 'loading' | 'error' | 'ready' = 'ready'
+  if (data.isLoading) {
+    status = 'loading'
+  }
+  else if (data.isError) {
+    status = 'error'
+  }
+
   return (
     <InfoGrid entries={[
-      { label: 'Status', value: data.isLoading ? 'loading' : data.isError ? 'error' : 'ready' },
+      { label: 'Status', value: status },
       { label: 'Token', value: data.symbol },
       { label: 'Balance', value: formatted, mono: true },
       { label: 'Decimals', value: data.decimals },

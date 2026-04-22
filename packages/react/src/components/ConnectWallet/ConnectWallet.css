@@ -172,7 +172,7 @@
   background: transparent;
   color: var(--txkit-color-error);
   border-color: var(--txkit-color-error);
-  animation: txkit-cw-shake 0.4s var(--txkit-ease-spring);
+  animation: txkit-cw-shake var(--txkit-duration-slow) var(--txkit-ease-spring);
 }
 
 .txkit-cw-button[data-state="error"]:hover {
@@ -199,7 +199,7 @@
   border-radius: var(--txkit-radius-full);
   background: linear-gradient(90deg, var(--txkit-skeleton-from) 25%, var(--txkit-skeleton-to) 50%, var(--txkit-skeleton-from) 75%);
   background-size: 200% 100%;
-  animation: txkit-cw-shimmer 1.5s linear infinite;
+  animation: txkit-cw-shimmer var(--txkit-duration-breathe) linear infinite;
 }
 
 .txkit-cw-skeleton-text {
@@ -208,7 +208,7 @@
   border-radius: var(--txkit-radius-sm);
   background: linear-gradient(90deg, var(--txkit-skeleton-from) 25%, var(--txkit-skeleton-to) 50%, var(--txkit-skeleton-from) 75%);
   background-size: 200% 100%;
-  animation: txkit-cw-shimmer 1.5s linear infinite;
+  animation: txkit-cw-shimmer var(--txkit-duration-breathe) linear infinite;
   animation-delay: 0.15s;
 }
 
@@ -289,7 +289,7 @@
   height: 6px;
   border-radius: var(--txkit-radius-full);
   background: currentColor;
-  animation: txkit-cw-bounce 1.4s ease-in-out infinite;
+  animation: txkit-cw-bounce var(--txkit-duration-breathe) var(--txkit-ease-smooth) infinite;
 }
 
 .txkit-cw-dot:nth-child(2) {
@@ -602,7 +602,7 @@
   border-radius: 50%;
   border: 2px solid var(--txkit-color-border);
   border-top-color: var(--txkit-color-primary);
-  animation: txkit-cw-spin 1s linear infinite;
+  animation: txkit-cw-spin var(--txkit-duration-spin) linear infinite;
 }
 
 @keyframes txkit-cw-spin {
@@ -614,7 +614,7 @@
   height: 56px;
   border-radius: var(--txkit-radius-lg);
   object-fit: contain;
-  animation: txkit-cw-pulse 2s ease-in-out infinite;
+  animation: txkit-cw-pulse var(--txkit-duration-loop) var(--txkit-ease-smooth) infinite;
 }
 
 @keyframes txkit-cw-pulse {
@@ -633,7 +633,7 @@
   font-size: 24px;
   font-weight: 700;
   color: var(--txkit-color-text-secondary);
-  animation: txkit-cw-pulse 2s ease-in-out infinite;
+  animation: txkit-cw-pulse var(--txkit-duration-loop) var(--txkit-ease-smooth) infinite;
 }
 
 .txkit-cw-connecting-status {
@@ -1075,7 +1075,7 @@ a.txkit-cw-dropdown-identity-link:focus-visible {
     var(--txkit-color-bg-secondary) 75%
   );
   background-size: 200% 100%;
-  animation: txkit-cw-shimmer 1.5s ease-in-out infinite;
+  animation: txkit-cw-shimmer var(--txkit-duration-breathe) var(--txkit-ease-smooth) infinite;
 }
 
 /* QR skeleton reuses @keyframes txkit-cw-shimmer defined above */

@@ -14,7 +14,7 @@ export const SPEC_SCHEMA_URL = 'https://txkit.dev/schemas/v0.1/envelope.json' as
  *  - evm-batch  : EIP-5792 batch (calls.length > 1, atomicRequired capability)
  *  - signature  : EIP-712 typed data / personal-sign / SIWE
  *
- * Reserved (strict validator rejects; namespace taken so v0.3+ adds are non-breaking).
+ * Reserved (strict validator rejects; namespace taken so v0.2+ adds are non-breaking).
  * ==================================================================== */
 
 export const IMPLEMENTED_KINDS = [ 'evm-tx', 'evm-batch', 'signature' ] as const

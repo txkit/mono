@@ -139,17 +139,17 @@ export const executeFlowLoop = async (deps: ExecuteFlowLoopDeps): Promise<void> 
             onStepCompleteRef,
           })
         }
-      } catch (err) {
+      } catch (error) {
         if (!mountedRef.current) {
           break
         }
 
-        const code = classifyError(err)
+        const code = classifyError(error)
 
         if (code === 'USER_REJECTED') {
-          setFlow((prev) => rejectStep(prev, index, makeError(err, 'USER_REJECTED')))
+          setFlow((prev) => rejectStep(prev, index, makeError(error, 'USER_REJECTED')))
         } else {
-          const txError = makeError(err)
+          const txError = makeError(error)
           setFlow((prev) => failStep(prev, index, txError))
           step.onError?.({ ...buildContext(), error: txError })
           onStepErrorRef.current?.(txError, step.id)
@@ -181,12 +181,12 @@ export const executeFlowLoop = async (deps: ExecuteFlowLoopDeps): Promise<void> 
         abortControllerRef.current = new AbortController()
         try {
           await step.waitForCondition(buildContext(), abortControllerRef.current.signal)
-        } catch (err) {
+        } catch (error) {
           if (abortControllerRef.current.signal.aborted) {
             break // Expected - flow was canceled
           }
           // Real error in waitForCondition
-          const txError = makeError(err, 'TIMEOUT')
+          const txError = makeError(error, 'TIMEOUT')
           setFlow((prev) => failStep(prev, index, txError))
           onStepErrorRef.current?.(txError, step.id)
           break

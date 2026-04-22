@@ -34,7 +34,9 @@
   height: 100%;
   background: var(--txkit-color-primary);
   border-radius: var(--txkit-radius-full);
-  transition: width 500ms ease-out, background-color 200ms ease;
+  transition:
+    width var(--txkit-duration-slow) var(--txkit-ease-exit),
+    background-color var(--txkit-duration-normal) var(--txkit-ease-default);
 }
 
 .txkit-fp-fill[data-status="running"] {
@@ -52,7 +54,7 @@
     rgba(255, 255, 255, 0.3) 50%,
     transparent 100%
   );
-  animation: txkit-fp-shimmer 1.5s ease-in-out infinite;
+  animation: txkit-fp-shimmer var(--txkit-duration-breathe) var(--txkit-ease-smooth) infinite;
 }
 
 @keyframes txkit-fp-shimmer {

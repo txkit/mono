@@ -16,15 +16,17 @@ export { type TransactionButtonLabels }
 
 const processingStates: readonly StepStatus[] = [ 'simulating', 'signing', 'tx-pending' ]
 
-const mapStepStatusToButtonLabel = (
-  status: StepStatus | undefined,
-  labels: Required<TransactionButtonLabels>,
+type ButtonLabelInput = {
   label: string | undefined
-): string => {
+  status: StepStatus | undefined
+  labels: Required<TransactionButtonLabels>
+}
+
+const mapStepStatusToButtonLabel = ({ label, status, labels }: ButtonLabelInput): string => {
   switch (status) {
     case 'pending':
     case undefined:
-      return label ?? labels.send
+      return label || labels.send
     case 'simulating':
       return labels.simulating
     case 'confirming-risk':
@@ -44,21 +46,23 @@ const mapStepStatusToButtonLabel = (
     case 'rejected':
       return labels.retry
     case 'skipped':
-      return label ?? labels.send
+      return label || labels.send
     case 'canceled':
       return labels.retry
   }
 }
 
-const mapStepStatusToMessage = (
-  status: StepStatus | undefined,
-  labels: Required<TransactionButtonLabels>,
-  errorMessage: string | undefined,
+type StatusMessageInput = {
+  status: StepStatus | undefined
   stepLabel: string | undefined
-): string => {
+  errorMessage: string | undefined
+  labels: Required<TransactionButtonLabels>
+}
+
+const mapStepStatusToMessage = ({ status, stepLabel, errorMessage, labels }: StatusMessageInput): string => {
   switch (status) {
     case 'simulating':
-      return `Simulating ${stepLabel ?? 'transaction'}...`
+      return `Simulating ${stepLabel || 'transaction'}...`
     case 'confirming-risk':
       return 'Review transaction details before confirming'
     case 'simulation-failed':
@@ -66,9 +70,9 @@ const mapStepStatusToMessage = (
     case 'signing':
       return labels.awaitingSignature
     case 'tx-pending':
-      return `${stepLabel ?? 'Transaction'} submitted. Waiting for confirmation...`
+      return `${stepLabel || 'Transaction'} submitted. Waiting for confirmation...`
     case 'waiting':
-      return `Waiting for ${stepLabel ?? 'condition'}...`
+      return `Waiting for ${stepLabel || 'condition'}...`
     case 'completed':
       return 'Transaction confirmed!'
     case 'error':
@@ -136,7 +140,6 @@ const TransactionButton = forwardRef<HTMLDivElement, TransactionButtonProps>(({
   const currentStepDef = stepDefs[flow.currentStepIndex]
   const currentStatus = currentStep?.status ?? 'pending'
 
-  // Explorer URL from current step hash
   const explorerUrl = useMemo(() => {
     if (!currentStep?.hash || !chainId) {
       return undefined
@@ -144,16 +147,19 @@ const TransactionButton = forwardRef<HTMLDivElement, TransactionButtonProps>(({
     return getExplorerUrl(chainId, currentStep.hash, 'tx')
   }, [ currentStep?.hash, chainId ])
 
-  // Button label
   const buttonLabel = useMemo(
-    () => mapStepStatusToButtonLabel(currentStatus, mergedLabels, label),
-    [ currentStatus, mergedLabels, label ],
+    () => mapStepStatusToButtonLabel({ label, status: currentStatus, labels: mergedLabels }),
+    [ label, mergedLabels, currentStatus ],
   )
 
-  // Status message for aria-live
   const statusMessage = useMemo(
-    () => mapStepStatusToMessage(currentStatus, mergedLabels, currentStep?.error?.message, currentStepDef?.label),
-    [ currentStatus, mergedLabels, currentStep?.error?.message, currentStepDef?.label ],
+    () => mapStepStatusToMessage({
+      status: currentStatus,
+      stepLabel: currentStepDef?.label,
+      errorMessage: currentStep?.error?.message,
+      labels: mergedLabels,
+    }),
+    [ mergedLabels, currentStatus, currentStepDef?.label, currentStep?.error?.message ],
   )
 
   const isProcessing = processingStates.includes(currentStatus) || currentStatus === 'waiting'

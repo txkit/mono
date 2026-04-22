@@ -86,11 +86,17 @@ const useTokenPrice = (options: UseTokenPriceOptions = {}): UseTokenPriceReturn 
   })
 
   const price = useMemo(() => {
-    if (usdPrice === undefined || usdPrice === null) return undefined
-    if (!needsForex) return usdPrice
+    if (usdPrice === undefined || usdPrice === null) {
+      return undefined
+    }
+    if (!needsForex) {
+      return usdPrice
+    }
 
     const rate = fiatRates?.[fiatCurrency]
-    if (!rate) return undefined
+    if (!rate) {
+      return undefined
+    }
 
     return usdPrice * rate
   }, [ usdPrice, needsForex, fiatRates, fiatCurrency ])

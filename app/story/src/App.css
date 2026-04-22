@@ -1,5 +1,5 @@
 /* In playground, txkit-root doesn't paint its own background.
-   We want the surrounding playground surface to show through —
+   We want the surrounding playground surface to show through:
    component's own chips/buttons/text keep their theme colors,
    but the big "theme canvas" belongs to the playground. */
 .playground .txkit-root {

@@ -23,8 +23,14 @@ export const createFlowStore = (): FlowStore => ({
   listeners: new Set(),
 })
 
+export type SetFlowEntryInput = {
+  flowId: string
+  entry: FlowEntry
+  store: FlowStore
+}
+
 /** Write entry without notifying (used during render in useTransactionFlow) */
-export const setFlowEntry = (store: FlowStore, flowId: string, entry: FlowEntry) => {
+export const setFlowEntry = ({ flowId, entry, store }: SetFlowEntryInput) => {
   store.entries.set(flowId, entry)
   store.version++
 }

@@ -95,7 +95,7 @@
 .txkit-txb-button[data-state="completed"] {
   background: var(--txkit-color-success, #059669);
   color: var(--txkit-color-success-text, #fff);
-  animation: txkit-txb-success-glow 0.6s ease;
+  animation: txkit-txb-success-glow var(--txkit-duration-slower) var(--txkit-ease-default);
 }
 
 /* State: skipped */
@@ -113,7 +113,7 @@
 
 /* States: error / simulation-failed
  *
- * Retry CTA uses amber/warning — not red — because Retry is a recovery
+ * Retry CTA uses amber/warning (not red) because Retry is a recovery
  * action, not destructive. Reserving red for destructive CTAs (Revoke,
  * Cancel Pending) avoids "red alarm fatigue" when the rest of the UI
  * (icon, step label, toast) is already signalling error in red.
@@ -123,7 +123,7 @@
 .txkit-txb-button[data-state="simulation-failed"] {
   background: var(--txkit-color-warning);
   color: var(--txkit-color-warning-text, #fff);
-  animation: txkit-txb-shake 0.4s ease;
+  animation: txkit-txb-shake var(--txkit-duration-slow) var(--txkit-ease-default);
 }
 
 .txkit-txb-button[data-state="error"]:hover:not(:disabled),
@@ -174,7 +174,7 @@
 }
 
 .txkit-txb-icon--spinning {
-  animation: txkit-txb-spin 1s linear infinite;
+  animation: txkit-txb-spin var(--txkit-duration-spin) linear infinite;
 }
 
 @keyframes txkit-txb-spin {
@@ -252,7 +252,7 @@
 .txkit-txb-details[data-expanded="true"] {
   max-height: 300px;
   padding: var(--txkit-space-sm);
-  animation: txkit-txb-details-in 200ms ease;
+  animation: txkit-txb-details-in var(--txkit-duration-normal) var(--txkit-ease-default);
 }
 
 @keyframes txkit-txb-details-in {

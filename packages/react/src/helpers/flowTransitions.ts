@@ -1,6 +1,6 @@
-import type { StepStatus, TransactionError } from '@txkit/core'
+import type { TransactionError } from '@txkit/core'
 
-import type { FlowState, StepState, FlowStep } from '../types/transaction'
+import type { FlowStep, FlowState, StepState } from '../types/transaction'
 
 
 /** Create initial flow state from step definitions */
@@ -10,7 +10,7 @@ export const createFlowState = (steps: FlowStep[]): FlowState => ({
   totalSteps: steps.length,
   steps: steps.map((step) => ({
     id: step.id,
-    status: 'pending' as StepStatus,
+    status: 'pending',
     confirmCountdown: 0,
   })),
 })
@@ -38,10 +38,10 @@ export const failStep = (
   status: error.code === 'USER_REJECTED' ? 'rejected' : 'error',
   steps: flow.steps.map((step, index) => {
     if (index === stepIndex) {
-      return { ...step, status: 'error' as StepStatus, error }
+      return { ...step, status: 'error', error }
     }
     if (index > stepIndex) {
-      return { ...step, status: 'canceled' as StepStatus }
+      return { ...step, status: 'canceled' }
     }
     return step
   }),
@@ -58,10 +58,10 @@ export const rejectStep = (
   status: 'rejected',
   steps: flow.steps.map((step, index) => {
     if (index === stepIndex) {
-      return { ...step, status: 'rejected' as StepStatus, error }
+      return { ...step, status: 'rejected', error }
     }
     if (index > stepIndex) {
-      return { ...step, status: 'canceled' as StepStatus }
+      return { ...step, status: 'canceled' }
     }
     return step
   }),
@@ -77,7 +77,7 @@ export const retryFrom = (flow: FlowState, stepIndex: number): FlowState => ({
     if (index >= stepIndex) {
       return {
         ...step,
-        status: 'pending' as StepStatus,
+        status: 'pending',
         error: undefined,
         hash: undefined,
         receipt: undefined,
@@ -119,7 +119,7 @@ export const cancelFlow = (flow: FlowState, fromIndex: number): FlowState => ({
   status: 'error',
   steps: flow.steps.map((step, index) => {
     if (index >= fromIndex && step.status !== 'completed' && step.status !== 'skipped') {
-      return { ...step, status: 'canceled' as StepStatus }
+      return { ...step, status: 'canceled' }
     }
     return step
   }),
@@ -133,7 +133,7 @@ export const resetFlow = (flow: FlowState): FlowState => ({
   currentStepIndex: 0,
   steps: flow.steps.map((step) => ({
     id: step.id,
-    status: 'pending' as StepStatus,
+    status: 'pending',
     confirmCountdown: 0,
   })),
 })

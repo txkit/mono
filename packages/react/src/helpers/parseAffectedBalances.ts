@@ -27,15 +27,15 @@ const parseAffectedBalances = (
   logs: LogEntry[],
   senderAddress: `0x${string}`
 ): AffectedBalance[] => {
-  const seen = new Set<string>()
+  const seen: Record<string, true> = {}
   const result: AffectedBalance[] = []
 
   const add = (address: `0x${string}`, token?: `0x${string}`) => {
     const key = `${address.toLowerCase()}:${token?.toLowerCase() ?? 'native'}`
-    if (seen.has(key)) {
+    if (seen[key]) {
       return
     }
-    seen.add(key)
+    seen[key] = true
     result.push({ address, token })
   }
 

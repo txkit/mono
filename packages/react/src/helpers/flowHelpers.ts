@@ -114,7 +114,7 @@ export const approveAndExecute = (params: ApproveAndExecuteParams): FlowStep[] =
   {
     id: 'execute',
     type: 'tx',
-    label: params.label ?? 'Execute',
+    label: params.label || 'Execute',
     tx: params.tx,
     safety: params.safety,
     gas: params.gas,
@@ -149,7 +149,7 @@ export const multiApproveAndExecute = (params: MultiApproveAndExecuteParams): Fl
   ...params.approvals.map((approval, index): FlowStepTx => ({
     id: `approve-${index}`,
     type: 'tx',
-    label: approval.label ?? `Approve ${index + 1}`,
+    label: approval.label || `Approve ${index + 1}`,
     tx: {
       address: approval.token,
       abi: erc20Abi,
@@ -164,7 +164,7 @@ export const multiApproveAndExecute = (params: MultiApproveAndExecuteParams): Fl
   {
     id: 'execute',
     type: 'tx',
-    label: params.label ?? 'Execute',
+    label: params.label || 'Execute',
     tx: params.tx,
     safety: params.safety,
   },

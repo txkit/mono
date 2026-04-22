@@ -1,14 +1,14 @@
 import React from 'react'
 
-import TransactionButton from '../TransactionButton/TransactionButton'
+import FieldInput from './FieldInput'
 import WarningBanner from './WarningBanner'
 import CalldataPreview from './CalldataPreview'
-import { renderFieldInput, getFieldHint, PayableValueField } from './ContractFormFields'
+import TransactionButton from '../TransactionButton/TransactionButton'
+import { getFieldHint, PayableValueField } from './ContractFormFields'
 import type { FieldProps } from './ContractFormFields'
-
 import type { ContractFormLabels } from './labels'
-import type { ContractFormRenderData } from '../../types/contract'
 import type { FlowStep, StepResult } from '../../types/transaction'
+import type { ContractFormRenderData } from '../../types/contract'
 
 
 type ContractFormDefaultProps = ContractFormRenderData & {
@@ -98,7 +98,7 @@ const ContractFormDefault: React.FC<ContractFormDefaultProps> = ({
                 )
               }
 
-              {renderFieldInput(fieldProps, labels)}
+              <FieldInput {...fieldProps} labels={labels} />
 
               {
                 fieldProps.touched && fieldProps.error && (

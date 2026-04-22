@@ -4,7 +4,10 @@ import { useEffect, type RefObject } from 'react'
 const useClickOutside = (ref: RefObject<HTMLElement | null>, handler: () => void) => {
   useEffect(() => {
     const listener = (event: MouseEvent | TouchEvent) => {
-      if (!ref.current || ref.current.contains(event.target as Node)) {
+      if (!ref.current || !(event.target instanceof Node)) {
+        return
+      }
+      if (ref.current.contains(event.target)) {
         return
       }
       handler()

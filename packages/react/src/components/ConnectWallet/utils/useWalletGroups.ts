@@ -39,14 +39,14 @@ const isEip6963 = (connector: Connector): boolean =>
 const useWalletGroups = ({ connectors, recentIds }: UseWalletGroupsOptions): WalletGroups => {
   return useMemo(() => {
     // Collect EIP-6963 wallet ids for dedup
-    const eip6963Ids = new Set<string>()
+    const eip6963Ids: Record<string, true> = {}
+    let hasEip6963Wallets = false
     for (const connector of connectors) {
       if (isEip6963(connector)) {
-        eip6963Ids.add(connector.id)
+        eip6963Ids[connector.id] = true
+        hasEip6963Wallets = true
       }
     }
-
-    const hasEip6963Wallets = eip6963Ids.size > 0
 
     // Filter out redundant connectors before grouping
     const filtered = connectors.filter((connector) => {
@@ -58,14 +58,14 @@ const useWalletGroups = ({ connectors, recentIds }: UseWalletGroupsOptions): Wal
 
       // Hide SDK connectors when same wallet detected via EIP-6963
       // (e.g. coinbaseWalletSDK has rdns 'com.coinbase.wallet', EIP-6963 id matches)
-      if (connector.id === 'coinbaseWalletSDK' && eip6963Ids.has('com.coinbase.wallet')) {
+      if (connector.id === 'coinbaseWalletSDK' && eip6963Ids['com.coinbase.wallet']) {
         return false
       }
 
       return true
     })
 
-    const assigned = new Set<string>()
+    const assigned: Record<string, true> = {}
     const installed: Connector[] = []
     const recent: Connector[] = []
     const popular: Connector[] = []
@@ -75,35 +75,35 @@ const useWalletGroups = ({ connectors, recentIds }: UseWalletGroupsOptions): Wal
     for (const connector of filtered) {
       if (isEip6963(connector)) {
         installed.push(connector)
-        assigned.add(connector.uid)
+        assigned[connector.uid] = true
       }
     }
 
     // 2. Recent wallets (by stored IDs, preserving order)
     for (const recentId of recentIds) {
       const connector = filtered.find(
-        (connector) => connector.id === recentId && !assigned.has(connector.uid)
+        (connector) => connector.id === recentId && !assigned[connector.uid]
       )
       if (connector) {
         recent.push(connector)
-        assigned.add(connector.uid)
+        assigned[connector.uid] = true
       }
     }
 
     // 3. Popular wallets (by known RDNS list - only non-installed)
     for (const connector of filtered) {
-      if (assigned.has(connector.uid)) {
+      if (assigned[connector.uid]) {
         continue
       }
       if (POPULAR_WALLET_RDNS.includes(connector.id)) {
         popular.push(connector)
-        assigned.add(connector.uid)
+        assigned[connector.uid] = true
       }
     }
 
     // 4. Everything else (WalletConnect, SDK connectors, generic injected if no EIP-6963)
     for (const connector of filtered) {
-      if (!assigned.has(connector.uid)) {
+      if (!assigned[connector.uid]) {
         other.push(connector)
       }
     }

@@ -49,7 +49,7 @@ const ContractForm = forwardRef<HTMLDivElement, ContractFormProps>(({
   // Wire onSuccess: extract receipt from flow results
   const handleFlowComplete = useCallback((results: Record<string, StepResult>) => {
     const txResult = Object.values(results).find((result) => result.type === 'tx')
-    if (txResult && txResult.type === 'tx' && onSuccess) {
+    if (txResult?.type === 'tx' && onSuccess) {
       onSuccess(txResult.receipt)
     }
   }, [ onSuccess ])

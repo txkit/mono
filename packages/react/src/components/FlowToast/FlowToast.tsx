@@ -70,8 +70,8 @@ const FlowToast = forwardRef<HTMLDivElement, FlowToastProps>(({
     if (!visible) {
       return
     }
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
         setVisible(false)
       }
     }

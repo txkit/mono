@@ -65,7 +65,7 @@ const useContractForm = (options: UseContractFormOptions): UseContractFormReturn
     const allFields = buildFields(abiFunction)
 
     // Phase 3: filter out hidden params
-    if (hiddenParams && hiddenParams.length > 0) {
+    if (hiddenParams?.length) {
       return allFields.filter((field) => !hiddenParams.includes(field.name))
     }
 

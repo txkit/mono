@@ -207,20 +207,18 @@ const useTransactionFlow = (options: UseTransactionFlowOptions): UseTransactionF
       return
     }
 
-    // Reset refs
     resultsRef.current = {}
     cachedSignaturesRef.current = {}
 
-    // Chain switch if needed
     if (currentChainId !== targetChainId) {
       try {
         await switchChainAsync({ chainId: targetChainId })
-      } catch (err) {
-        const code = classifyError(err)
+      } catch (error) {
+        const code = classifyError(error)
         if (code === 'USER_REJECTED') {
-          setFlow((prev) => rejectStep(prev, 0, makeError(err, 'USER_REJECTED')))
+          setFlow((prev) => rejectStep(prev, 0, makeError(error, 'USER_REJECTED')))
         } else {
-          setFlow((prev) => failStep(prev, 0, makeError(err, 'CHAIN_MISMATCH')))
+          setFlow((prev) => failStep(prev, 0, makeError(error, 'CHAIN_MISMATCH')))
         }
         return
       }
@@ -254,7 +252,6 @@ const useTransactionFlow = (options: UseTransactionFlowOptions): UseTransactionF
     // Abort pending waitForCondition
     abortControllerRef.current?.abort()
 
-    // Call step.onCancel if defined
     const currentStepDef = stepDefsRef.current[flow.currentStepIndex]
     if (currentStepDef?.onCancel) {
       try {
@@ -356,7 +353,11 @@ const useTransactionFlow = (options: UseTransactionFlowOptions): UseTransactionF
 
   // Sync write (no notify, no re-render)
   if (flowStore) {
-    setFlowEntry(flowStore, flowId, { flow, steps: stepDefs, actions: actionsRef.current })
+    setFlowEntry({
+      flowId,
+      entry: { flow, steps: stepDefs, actions: actionsRef.current },
+      store: flowStore,
+    })
   }
 
   // Notify subscribers only on meaningful changes (flow status or current step status)

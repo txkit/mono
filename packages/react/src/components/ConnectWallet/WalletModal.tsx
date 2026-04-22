@@ -71,7 +71,6 @@ const WalletModal: React.FC<WalletModalProps> = ({
     return { flatList: flat, groupOffsets: offsets }
   }, [ groupedConnectors ])
 
-  // Filter by search
   const filteredList = useMemo(() => {
     if (!search.trim()) {
       return flatList
@@ -83,7 +82,6 @@ const WalletModal: React.FC<WalletModalProps> = ({
   const showSearch = connectors.length >= SEARCH_THRESHOLD
   const isSearching = search.trim().length > 0
 
-  // Find the connecting connector
   const connectingConnector = useMemo(() => {
     if (!connectingWallet) {
       return undefined

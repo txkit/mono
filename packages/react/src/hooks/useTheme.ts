@@ -10,7 +10,7 @@ type UseThemeOptions = {
 
 type UseThemeReturn = {
   theme: ThemeResolved
-  setTheme: (t: ThemeInput) => void
+  setTheme: (theme: ThemeInput) => void
 }
 
 const getSystemTheme = (): ThemeResolved =>

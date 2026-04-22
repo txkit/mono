@@ -43,9 +43,11 @@ const useDisplayUri = (connector: Connector | undefined, isPending: boolean): Us
       if (typeof data !== 'object' || data === null) {
         return
       }
-      const message = data as Record<string, unknown>
-      if (message.type === 'display_uri' && typeof message.data === 'string') {
-        setDisplayUri(message.data)
+      if (!('type' in data) || !('data' in data)) {
+        return
+      }
+      if (data.type === 'display_uri' && typeof data.data === 'string') {
+        setDisplayUri(data.data)
       }
     }
 

@@ -62,7 +62,7 @@
   font-family: var(--txkit-font-mono, 'IBM Plex Mono', ui-monospace, monospace);
   font-size: var(--txkit-font-size-sm, 0.875rem);
   line-height: 1.5;
-  transition: border-color var(--txkit-transition, 150ms ease), box-shadow var(--txkit-transition, 150ms ease);
+  transition: border-color var(--txkit-duration-fast) var(--txkit-ease-default), box-shadow var(--txkit-duration-fast) var(--txkit-ease-default);
 }
 
 .txkit-cf-input--string {
@@ -114,7 +114,7 @@
   background: var(--txkit-color-bg, #fff);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background var(--txkit-transition, 150ms ease), border-color var(--txkit-transition, 150ms ease);
+  transition: background var(--txkit-duration-fast) var(--txkit-ease-default), border-color var(--txkit-duration-fast) var(--txkit-ease-default);
 }
 
 .txkit-cf-checkbox:checked {
@@ -183,12 +183,16 @@
 
 .txkit-cf-warning-icon {
   flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--txkit-radius-full);
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
 }
 
 .txkit-cf-warning-message {
@@ -204,8 +208,7 @@
 }
 
 .txkit-cf-warning[data-level="warning"] .txkit-cf-warning-icon {
-  background: var(--txkit-color-warning);
-  color: var(--txkit-color-warning-text);
+  color: var(--txkit-color-warning);
 }
 
 .txkit-cf-warning[data-level="danger"] {
@@ -215,8 +218,7 @@
 }
 
 .txkit-cf-warning[data-level="danger"] .txkit-cf-warning-icon {
-  background: var(--txkit-color-error);
-  color: var(--txkit-color-error-text);
+  color: var(--txkit-color-error);
 }
 
 
@@ -248,7 +250,7 @@
 .txkit-cf-review summary::before {
   content: '\25B8';
   margin-right: var(--txkit-space-sm, 8px);
-  transition: transform var(--txkit-transition, 150ms ease);
+  transition: transform var(--txkit-duration-fast) var(--txkit-ease-default);
 }
 
 .txkit-cf-review[open] summary::before {
@@ -298,7 +300,7 @@
   font-size: var(--txkit-font-size-xs, 0.75rem);
   cursor: pointer;
   opacity: 0;
-  transition: opacity var(--txkit-transition, 150ms ease), background var(--txkit-transition, 150ms ease);
+  transition: opacity var(--txkit-duration-fast) var(--txkit-ease-default), background var(--txkit-duration-fast) var(--txkit-ease-default);
 }
 
 .txkit-cf-review-content:hover .txkit-cf-copy,

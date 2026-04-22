@@ -96,13 +96,19 @@ const useMockFlow = (activeState: string, flowId: string = DEFAULT_FLOW_ID) => {
   const store = useFlowStore()
 
   useEffect(() => {
-    if (!store) return
+    if (!store) {
+      return
+    }
 
     const flow = buildMockFlowState(activeState)
-    setFlowEntry(store, flowId, {
-      flow,
-      steps: mockStepDefs,
-      actions: mockActions,
+    setFlowEntry({
+      flowId,
+      entry: {
+        flow,
+        steps: mockStepDefs,
+        actions: mockActions,
+      },
+      store,
     })
     notifyFlowListeners(store)
 

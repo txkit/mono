@@ -63,9 +63,7 @@ const validEvmContent: EvmTxContent = {
   decoderRef: 'stakewise-v3/vault/deposit',
 }
 
-function evmTx(content: EvmTxContent = validEvmContent) {
-  return createEvmTx(content)
-}
+const evmTx = (content: EvmTxContent = validEvmContent) => createEvmTx(content)
 
 describe('envelope + evm-tx validation', () => {
   it('accepts a canonical evm-tx envelope', () => {
@@ -92,7 +90,7 @@ describe('envelope + evm-tx validation', () => {
     const result = validateEnvelope(env)
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.issues.some((i) => i.message.includes("'evm-tx'"))).toBe(true)
+      expect(result.issues.some((issue) => issue.message.includes("'evm-tx'"))).toBe(true)
     }
   })
 
@@ -118,7 +116,7 @@ describe('required fields', () => {
     const result = validateEnvelope(env)
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.issues.some((i) => i.path.includes('description.short'))).toBe(true)
+      expect(result.issues.some((issue) => issue.path.includes('description.short'))).toBe(true)
     }
   })
 
@@ -133,7 +131,7 @@ describe('required fields', () => {
     const result = validateEnvelope(env)
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.issues.some((i) => i.path.includes('chain'))).toBe(true)
+      expect(result.issues.some((issue) => issue.path.includes('chain'))).toBe(true)
     }
   })
 
@@ -174,7 +172,7 @@ describe('token movement safety', () => {
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(
-        result.warnings?.some((w) => w.message.toLowerCase().includes('unlimited')),
+        result.warnings?.some((warning) => warning.message.toLowerCase().includes('unlimited')),
       ).toBe(true)
     }
   })
@@ -211,7 +209,7 @@ describe('delegatecall surfacing', () => {
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(
-        result.warnings?.some((w) => w.message.toLowerCase().includes('delegatecall')),
+        result.warnings?.some((warning) => warning.message.toLowerCase().includes('delegatecall')),
       ).toBe(true)
     }
   })

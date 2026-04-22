@@ -46,7 +46,7 @@
     0 4px 6px -1px oklch(0 0 0 / 0.08),
     0 2px 4px -1px oklch(0 0 0 / 0.04),
     0 0 0 1px oklch(0 0 0 / 0.03);
-  animation: txkit-ft-slide-in-right 200ms var(--txkit-ease-enter);
+  animation: txkit-ft-slide-in-right var(--txkit-duration-normal) var(--txkit-ease-enter);
 }
 
 /* Direction-aware slide-in: toasts in left corners slide from the left */
@@ -158,7 +158,7 @@
   background: transparent;
   color: var(--txkit-color-text-secondary);
   cursor: pointer;
-  transition: background-color 150ms ease;
+  transition: background-color var(--txkit-duration-fast) var(--txkit-ease-default);
 }
 
 .txkit-ft-dismiss:hover {
@@ -215,7 +215,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .txkit-ft-content {
-    animation: txkit-ft-fade-in 200ms ease-out;
+    animation: txkit-ft-fade-in var(--txkit-duration-normal) var(--txkit-ease-default);
   }
 
   .txkit-ft-dismiss {

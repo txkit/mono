@@ -36,11 +36,11 @@
 }
 
 .txkit-fs-item:nth-child(1) { animation-delay: 0ms; }
-.txkit-fs-item:nth-child(2) { animation-delay: 100ms; }
-.txkit-fs-item:nth-child(3) { animation-delay: 200ms; }
-.txkit-fs-item:nth-child(4) { animation-delay: 300ms; }
-.txkit-fs-item:nth-child(5) { animation-delay: 400ms; }
-.txkit-fs-item:nth-child(n+6) { animation-delay: 500ms; }
+.txkit-fs-item:nth-child(2) { animation-delay: var(--txkit-duration-fast); }
+.txkit-fs-item:nth-child(3) { animation-delay: var(--txkit-duration-normal); }
+.txkit-fs-item:nth-child(4) { animation-delay: var(--txkit-duration-moderate); }
+.txkit-fs-item:nth-child(5) { animation-delay: var(--txkit-duration-slow); }
+.txkit-fs-item:nth-child(n+6) { animation-delay: calc(var(--txkit-duration-slow) + var(--txkit-duration-fast)); }
 
 @keyframes txkit-fs-step-appear {
   from { opacity: 0; transform: translateX(-10px); }
@@ -93,7 +93,10 @@
   border-radius: 50%;
   background: var(--txkit-color-bg-secondary);
   color: var(--txkit-color-text-tertiary);
-  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+  transition:
+    background var(--txkit-duration-normal) var(--txkit-ease-default),
+    border-color var(--txkit-duration-normal) var(--txkit-ease-default),
+    color var(--txkit-duration-normal) var(--txkit-ease-default);
 }
 
 .txkit-fs-indicator-number {
@@ -109,7 +112,7 @@
 }
 
 .txkit-fs-indicator-icon--spinning {
-  animation: txkit-fs-spin 1s linear infinite;
+  animation: txkit-fs-spin var(--txkit-duration-spin) linear infinite;
 }
 
 @keyframes txkit-fs-spin {
@@ -169,7 +172,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 200ms ease;
+  transition: color var(--txkit-duration-normal) var(--txkit-ease-default);
 }
 
 .txkit-fs-description {
@@ -194,7 +197,7 @@
   line-height: 1.4;
   white-space: nowrap;
   flex-shrink: 0;
-  animation: txkit-fs-pill-pop 400ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  animation: txkit-fs-pill-pop var(--txkit-duration-slow) var(--txkit-ease-spring) backwards;
 }
 
 @keyframes txkit-fs-pill-pop {
