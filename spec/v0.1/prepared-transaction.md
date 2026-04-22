@@ -317,21 +317,9 @@ Do NOT add these. Each has been considered and rejected with evidence:
 | "AI-generated" flag on description | Security theater. Producer signatures and decoder re-verify are the answer. |
 | Trusting `description.short` as sole UI source | ERC-7730 lesson: display derives from structured `metadata.*` + trusted descriptor. |
 
-## 12. Migration from v0.1
+## 12. Migration
 
-No prior published version. `@txkit/tx-protocol@0.1.0` is the first public release.
-
-Old shape:
-
-```ts
-const tx: PreparedTransaction = {
-  version: '0.1', chainId: 1, to, data, value,
-  description: {...}, metadata: {...}, decoderRef
-}
-const r = validatePreparedTx(tx)
-```
-
-New shape:
+`@txkit/tx-protocol@0.1.0` is the first published release. No migration path exists. The canonical call shape is:
 
 ```ts
 import { createEvmTx, validateEnvelope } from '@txkit/tx-protocol'
@@ -346,8 +334,6 @@ const env = createEvmTx({
 })
 const r = validateEnvelope(env)
 ```
-
-No legacy compatibility shim is exported; consumers call `validateEnvelope` directly.
 
 ## 13. Decision log
 
