@@ -54,6 +54,6 @@ export type {
   Validity,
 } from './types'
 
-export { validateEnvelope, validatePreparedTx } from './validate'
+export { validateEnvelope } from './validate'
 export { serialize, deserialize } from './serialize'
 export { createEvmTx, createEvmBatch, createSignature } from './helpers'

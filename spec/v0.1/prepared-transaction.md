@@ -348,7 +348,7 @@ const env = createEvmTx({
 const r = validateEnvelope(env, { mode: 'strict' })
 ```
 
-`validatePreparedTx` remains exported as a thin alias for `validateEnvelope(input, { mode: 'strict' })` for early adopters.
+No legacy compatibility shim is exported; consumers call `validateEnvelope` directly.
 
 ## 13. Decision log
 

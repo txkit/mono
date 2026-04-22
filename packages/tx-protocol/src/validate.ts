@@ -143,10 +143,3 @@ function deriveEvmAdvisories(
   })
   return advisories
 }
-
-/**
- * Legacy alias for v0.1 consumers. Delegates to validateEnvelope with strict mode.
- */
-export function validatePreparedTx(input: unknown): ValidationResult<PreparedEnvelope> {
-  return validateEnvelope(input, { mode: 'strict' })
-}

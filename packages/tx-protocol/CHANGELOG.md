@@ -32,7 +32,6 @@ First public release. Defines the `PreparedEnvelope` shape for agent-to-wallet h
 - `CALLS_STATUS` constant mirrors EIP-5792 status taxonomy: 100 pending, 200 confirmed, 400 off-chain failure, 500 reverted, 600 partially reverted.
 - `IMPLEMENTED_KINDS`, `RESERVED_KINDS` constants.
 - `SPEC_VERSION = '0.1'`, `SPEC_SCHEMA_URL` exposed.
-- `validatePreparedTx` re-exported as a thin alias for `validateEnvelope(input, { mode: 'strict' })`.
 - Tree-shakable zod schemas at `@txkit/tx-protocol/schema` (discriminated union + all sub-schemas).
 
 ### Security

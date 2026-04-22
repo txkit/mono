@@ -109,7 +109,6 @@ Each pre-fills `$schema`, `version`, `kind`, `issuedAt`, and derives `expiresAt`
 
 ```ts
 validateEnvelope(input: unknown, options?: { mode: 'strict' | 'permissive' }): ValidationResult<PreparedEnvelope>
-validatePreparedTx(input: unknown): ValidationResult<PreparedEnvelope>   // alias for strict mode
 ```
 
 Result shape: `{ ok: true, value, warnings? } | { ok: false, error, issues }`.
