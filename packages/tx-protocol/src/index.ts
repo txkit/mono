@@ -47,9 +47,7 @@ export type {
   TokenMovement,
   TokenMovementKind,
   TokenStandard,
-  ValidateOptions,
   ValidationIssue,
-  ValidationMode,
   ValidationResult,
   Validity,
 } from './types'

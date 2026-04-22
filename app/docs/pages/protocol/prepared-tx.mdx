@@ -106,7 +106,7 @@ const envelope = createEvmTx(content, {
   origin: { url: 'https://app.example.io', verifyStatus: 'VERIFIED' },
 })
 
-const result = validateEnvelope(envelope, { mode: 'strict' })
+const result = validateEnvelope(envelope)
 if (!result.ok) throw new Error(result.error)
 // result.value is a type-safe PreparedEnvelope
 ```

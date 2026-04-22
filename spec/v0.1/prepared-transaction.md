@@ -92,10 +92,9 @@ These values are reserved at the protocol level. Strict validators REJECT them t
 | `move-tx` | Aptos / Sui Move | Move spec |
 | `cosmos-tx` | Cosmos SDK Any-wrapped messages | Cosmos SDK ADR-020 |
 
-### 3.3 Strict vs permissive mode
+### 3.3 Validator behavior
 
-- **Strict** (default): validators reject any `kind` not in §3.1.
-- **Permissive**: validators accept unknown `kind` strings with a warning; still reject the reserved values of §3.2 because those will have specific semantics.
+Validators reject any `kind` not in §3.1. Reserved values from §3.2 produce a dedicated "reserved, not yet implemented in v0.1" error so consumers can route them to future decoders without guessing. Unknown values outside both lists are rejected as unknown.
 
 ## 4. Producer
 
@@ -345,7 +344,7 @@ const env = createEvmTx({
   metadata: { protocol: 'stakewise-v3', tokenMovements: [...], counterparties: [...] },
   decoderRef: 'stakewise-v3/vault/deposit',
 })
-const r = validateEnvelope(env, { mode: 'strict' })
+const r = validateEnvelope(env)
 ```
 
 No legacy compatibility shim is exported; consumers call `validateEnvelope` directly.

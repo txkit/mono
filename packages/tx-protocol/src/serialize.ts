@@ -19,7 +19,7 @@ export function serialize(envelope: PreparedEnvelope): string {
  */
 export function deserialize(json: string): PreparedEnvelope {
   const parsed: unknown = JSON.parse(json)
-  const result = validateEnvelope(parsed, { mode: 'strict' })
+  const result = validateEnvelope(parsed)
   if (!result.ok) {
     throw new Error(`deserialize: ${result.error}`)
   }

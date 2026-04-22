@@ -76,7 +76,7 @@ const envelope = createEvmTx(content, {
   },
 })
 
-const result = validateEnvelope(envelope, { mode: 'strict' })
+const result = validateEnvelope(envelope)
 if (!result.ok) {
   console.error('Validation failed:', result.error)
   console.error(result.issues)

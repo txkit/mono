@@ -26,7 +26,7 @@ First public release. Defines the `PreparedEnvelope` shape for agent-to-wallet h
 ### API
 
 - `createEvmTx`, `createEvmBatch`, `createSignature` helpers pre-fill envelope fields.
-- `validateEnvelope(input, { mode: 'strict' | 'permissive' })`. Strict rejects unknown and reserved kinds; permissive accepts unknown with warnings.
+- `validateEnvelope(input)`. Rejects unknown and reserved kinds with distinct error messages; no mode toggle in v0.1.
 - Non-blocking advisories emitted on successful validation for unlimited approvals and delegatecall operations.
 - `serialize(envelope)` / `deserialize(json)` for canonical JSON transport.
 - `CALLS_STATUS` constant mirrors EIP-5792 status taxonomy: 100 pending, 200 confirmed, 400 off-chain failure, 500 reverted, 600 partially reverted.

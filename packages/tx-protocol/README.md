@@ -66,7 +66,7 @@ const envelope = createEvmTx(content, {
   origin: { url: 'https://app.stakewise.io', verifyStatus: 'VERIFIED' },
 })
 
-const result = validateEnvelope(envelope, { mode: 'strict' })
+const result = validateEnvelope(envelope)
 if (!result.ok) {
   throw new Error(result.error)
 }
@@ -108,12 +108,12 @@ Each pre-fills `$schema`, `version`, `kind`, `issuedAt`, and derives `expiresAt`
 ### Validation
 
 ```ts
-validateEnvelope(input: unknown, options?: { mode: 'strict' | 'permissive' }): ValidationResult<PreparedEnvelope>
+validateEnvelope(input: unknown): ValidationResult<PreparedEnvelope>
 ```
 
 Result shape: `{ ok: true, value, warnings? } | { ok: false, error, issues }`.
 
-Strict mode rejects unknown and reserved kinds. Permissive accepts unknown kinds with warnings (still rejects reserved because those will have specific future semantics).
+Unknown and reserved kinds are rejected. Reserved kinds carry explicit "not yet implemented in v0.1" errors so consumers can route them to future decoders without guessing.
 
 Advisories emitted even on successful validation:
 

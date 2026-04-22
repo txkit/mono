@@ -136,7 +136,7 @@ const envelope = createEvmTx({
   description: { short: 'Stake 1 ETH', action: 'stake' },
   metadata: { protocol: 'stakewise-v3', tokenMovements: [...], counterparties: [...] },
 })
-const result = validateEnvelope(envelope, { mode: 'strict' })
+const result = validateEnvelope(envelope)
 // See packages/tx-protocol/README.md for the full API
 ```
 

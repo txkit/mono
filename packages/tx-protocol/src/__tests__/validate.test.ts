@@ -217,8 +217,8 @@ describe('delegatecall surfacing', () => {
   })
 })
 
-describe('kind awareness (strict vs permissive)', () => {
-  it('rejects reserved kinds in strict mode with a clear reason', () => {
+describe('kind awareness', () => {
+  it('rejects reserved kinds with a clear reason', () => {
     const env = { ...evmTx(), kind: 'evm-userop' as never }
     const result = validateEnvelope(env)
     expect(result.ok).toBe(false)
@@ -227,15 +227,9 @@ describe('kind awareness (strict vs permissive)', () => {
     }
   })
 
-  it('rejects unknown kinds in strict mode', () => {
+  it('rejects unknown kinds', () => {
     const env = { ...evmTx(), kind: 'totally-made-up' as never }
     const result = validateEnvelope(env)
-    expect(result.ok).toBe(false)
-  })
-
-  it('in permissive mode emits warning for unknown kind before schema parse', () => {
-    const env = { ...evmTx(), kind: 'totally-made-up' as never }
-    const result = validateEnvelope(env, { mode: 'permissive' })
     expect(result.ok).toBe(false)
   })
 

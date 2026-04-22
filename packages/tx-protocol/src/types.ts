@@ -308,12 +308,6 @@ export type ValidationResult<T> =
   | { ok: true; value: T; warnings?: ValidationIssue[] }
   | { ok: false; error: string; issues: ValidationIssue[] }
 
-export type ValidationMode = 'strict' | 'permissive'
-
-export interface ValidateOptions {
-  mode?: ValidationMode
-}
-
 /* ======================================================================
  * EIP-5792 status taxonomy (for post-submit tracking)
  * ==================================================================== */

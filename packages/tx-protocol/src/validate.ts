@@ -1,10 +1,5 @@
 import { preparedEnvelopeSchema, isImplementedKind, isReservedKind } from './schema'
-import type {
-  PreparedEnvelope,
-  ValidateOptions,
-  ValidationIssue,
-  ValidationResult,
-} from './types'
+import type { PreparedEnvelope, ValidationIssue, ValidationResult } from './types'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -18,49 +13,30 @@ function extractKind(input: unknown): string | undefined {
   return typeof kind === 'string' ? kind : undefined
 }
 
-export function validateEnvelope(
-  input: unknown,
-  options: ValidateOptions = {},
-): ValidationResult<PreparedEnvelope> {
-  const mode = options.mode ?? 'strict'
+export function validateEnvelope(input: unknown): ValidationResult<PreparedEnvelope> {
   const warnings: ValidationIssue[] = []
 
   const kind = extractKind(input)
-  if (typeof kind === 'string') {
-    if (!isImplementedKind(kind)) {
-      if (isReservedKind(kind)) {
-        return {
-          ok: false,
-          error: `kind: '${kind}' is reserved for a future spec version and cannot be validated in v0.1`,
-          issues: [
-            {
-              path: 'kind',
-              message: `reserved kind '${kind}' is not yet implemented`,
-              severity: 'ERROR',
-            },
-          ],
-        }
+  if (typeof kind === 'string' && !isImplementedKind(kind)) {
+    if (isReservedKind(kind)) {
+      return {
+        ok: false,
+        error: `kind: '${kind}' is reserved for a future spec version and cannot be validated in v0.1`,
+        issues: [
+          {
+            path: 'kind',
+            message: `reserved kind '${kind}' is not yet implemented`,
+            severity: 'ERROR',
+          },
+        ],
       }
-
-      if (mode === 'strict') {
-        return {
-          ok: false,
-          error: `kind: '${kind}' is unknown and strict mode rejects it`,
-          issues: [
-            {
-              path: 'kind',
-              message: `unknown kind '${kind}' in strict mode`,
-              severity: 'ERROR',
-            },
-          ],
-        }
-      }
-
-      warnings.push({
-        path: 'kind',
-        message: `unknown kind '${kind}' accepted in permissive mode`,
-        severity: 'WARN',
-      })
+    }
+    return {
+      ok: false,
+      error: `kind: '${kind}' is unknown`,
+      issues: [
+        { path: 'kind', message: `unknown kind '${kind}'`, severity: 'ERROR' },
+      ],
     }
   }
 
