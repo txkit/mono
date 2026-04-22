@@ -16,7 +16,7 @@ npm install @txkit/tx-protocol
 yarn add @txkit/tx-protocol
 ```
 
-Zero UI dependencies. Only runtime dep is `zod`. `viem` is an optional peer for strict type narrowing.
+Zero UI dependencies. Only runtime dep is `zod`. No peer dependencies - hex types (`0x${string}`) are defined locally, so consumers without viem work as-is.
 
 ## Quick example
 

@@ -47,7 +47,7 @@ First public release. Defines the `PreparedEnvelope` shape for agent-to-wallet h
 
 ### Dependencies
 
-Runtime: `zod ^3.23.8`. Peer (optional): `viem >=2`. Zero UI deps (no React, wagmi, or emotion in the dependency tree).
+Runtime: `zod ^3.23.8`. No peer dependencies. Zero UI deps (no React, wagmi, viem, or emotion in the dependency tree). Hex literal types (`0x${string}`) are defined locally.
 
 ### References
 
