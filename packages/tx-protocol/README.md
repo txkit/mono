@@ -142,14 +142,15 @@ import { CALLS_STATUS } from '@txkit/tx-protocol'
 // PENDING: 100, CONFIRMED: 200, OFFCHAIN_FAILURE: 400, REVERTED: 500, PARTIALLY_REVERTED: 600
 ```
 
-### Schema module (`@txkit/tx-protocol/schema`)
+### Zod schemas
 
-Tree-shakable zod schemas for consumers that want to compose or extend:
+Composable zod schemas for consumers that want to extend validation. Import from the main entry:
 
-- `preparedEnvelopeSchema` (discriminated union over `kind`)
-- `evmTxEnvelopeSchema`, `evmBatchEnvelopeSchema`, `signatureEnvelopeSchema`
-- Content schemas: `evmTxContentSchema`, `signatureContentSchema`
-- Sub-schemas: `producerSchema`, `originSchema`, `riskAssessmentSchema`, `capabilitiesSchema`, `tokenMovementSchema`, `counterpartySchema`, `validitySchema`, `descriptionSchema`, `metadataSchema`, `feeBreakdownSchema`, `estimationSchema`, `evmCallSchema`, `actionTypeSchema`, `eip712DomainSchema`
+```ts
+import { preparedEnvelopeSchema, tokenMovementSchema } from '@txkit/tx-protocol'
+```
+
+Exposed: `preparedEnvelopeSchema` (discriminated union over `kind`), `evmTxEnvelopeSchema`, `evmBatchEnvelopeSchema`, `signatureEnvelopeSchema`, `evmTxContentSchema`, `signatureContentSchema`, plus every sub-schema (`producerSchema`, `originSchema`, `riskAssessmentSchema`, `capabilitiesSchema`, `tokenMovementSchema`, `counterpartySchema`, `validitySchema`, `descriptionSchema`, `metadataSchema`, `feeBreakdownSchema`, `estimationSchema`, `evmCallSchema`, `actionTypeSchema`, `eip712DomainSchema`).
 
 ## Security invariants
 

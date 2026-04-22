@@ -45,16 +45,6 @@
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
-    },
-    "./schema": {
-      "import": {
-        "types": "./dist/schema.d.ts",
-        "default": "./dist/schema.js"
-      },
-      "require": {
-        "types": "./dist/schema.d.cts",
-        "default": "./dist/schema.cjs"
-      }
     }
   },
   "main": "./dist/index.cjs",
