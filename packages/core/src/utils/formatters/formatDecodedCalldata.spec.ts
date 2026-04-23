@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { formatDecodedCalldata } from './index'
 
-import type { DecodedCalldata } from '../types'
+import type { DecodedCalldata } from '../../types'
 
 
 describe('formatDecodedCalldata', () => {

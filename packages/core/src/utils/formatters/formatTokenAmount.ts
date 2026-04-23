@@ -1,9 +1,5 @@
 import { formatUnits } from 'viem'
 
-import type { DecodedCalldata } from '../types'
-
-import { shortenAddress } from './address'
-
 
 /** Format a raw bigint token amount with progressive decimal precision */
 export const formatTokenAmount = (
@@ -64,43 +60,4 @@ export const formatTokenAmountSplit = (
     fraction: full.slice(dotIndex),
     full,
   }
-}
-
-/** Format a number as fiat currency using Intl.NumberFormat */
-export const formatFiatAmount = (
-  value: number,
-  currency = 'USD',
-  locale?: string,
-): string => {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 2,
-  }).format(value)
-}
-
-/** Format a decoded arg value into human-readable string */
-const formatArgValue = (value: unknown, type: string): string => {
-  if (typeof value === 'bigint') {
-    return value.toString()
-  }
-  if (type === 'address' && typeof value === 'string') {
-    return shortenAddress(value)
-  }
-  if (Array.isArray(value)) {
-    return `[${value.map((element) => formatArgValue(element, type.replace('[]', ''))).join(', ')}]`
-  }
-  if (value !== null && typeof value === 'object') {
-    return JSON.stringify(value, (_key, jsonValue) => typeof jsonValue === 'bigint' ? jsonValue.toString() : jsonValue)
-  }
-  return String(value)
-}
-
-/** Format decoded calldata into human-readable lines */
-export const formatDecodedCalldata = (decoded: DecodedCalldata): string => {
-  const formattedArgs = decoded.args
-    .map((arg) => `  ${arg.name} (${arg.type}): ${formatArgValue(arg.value, arg.type)}`)
-    .join('\n')
-
-  return `${decoded.functionName}(\n${formattedArgs}\n)`
 }
