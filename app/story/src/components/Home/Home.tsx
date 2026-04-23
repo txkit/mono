@@ -28,44 +28,56 @@ const FEATURE_CARDS = [
   },
 ]
 
-const Home: React.FC = () => (
-  <div className="home-page">
-    <div className="home-hero">
-      <div className="home-hero-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <rect x="3" y="3" width="7" height="7" rx="1" />
-          <rect x="14" y="3" width="7" height="7" rx="1" />
-          <rect x="3" y="14" width="7" height="7" rx="1" />
-          <rect x="14" y="14" width="7" height="7" rx="1" />
-        </svg>
-      </div>
-      <h1 className="home-title">txKit Component Playground</h1>
-      <p className="home-tagline">
-        Explore, test, and integrate production-ready Web3 UI components for your dApp.
-      </p>
-    </div>
+type HomeProps = {
+  onStart: () => void
+  startLabel: string
+}
 
-    <div className="home-cards">
-      {FEATURE_CARDS.map((card) => (
-        <div key={card.title} className="home-card">
-          <div
-            className="home-card-icon"
-            data-color={card.color}
-            style={{ '--home-icon-url': `url(${card.icon})` } as React.CSSProperties}
-            aria-hidden="true"
-          />
-          <h3 className="home-card-title">{card.title}</h3>
-          <p className="home-card-description">{card.description}</p>
+const Home: React.FC<HomeProps> = (props) => {
+  const {
+    onStart,
+    startLabel,
+  } = props
+
+  return (
+    <div className="home-page">
+      <div className="home-hero">
+        <div className="home-hero-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
         </div>
-      ))}
-    </div>
+        <h1 className="home-title">txKit Component Playground</h1>
+        <p className="home-tagline">
+          Explore, test, and integrate production-ready Web3 UI components for your dApp.
+        </p>
+      </div>
 
-    <p className="home-hint">
-      Select a component from the sidebar to get started
-      <span aria-hidden="true"> →</span>
-    </p>
-  </div>
-)
+      <div className="home-cards">
+        {FEATURE_CARDS.map((card) => (
+          <div key={card.title} className="home-card">
+            <div
+              className="home-card-icon"
+              data-color={card.color}
+              style={{ '--home-icon-url': `url(${card.icon})` } as React.CSSProperties}
+              aria-hidden="true"
+            />
+            <h3 className="home-card-title">{card.title}</h3>
+            <p className="home-card-description">{card.description}</p>
+          </div>
+        ))}
+      </div>
+
+      <button type="button" className="home-cta" onClick={onStart}>
+        Explore {startLabel}
+        <span aria-hidden="true" className="home-cta-arrow">→</span>
+      </button>
+    </div>
+  )
+}
 
 
 export default Home
