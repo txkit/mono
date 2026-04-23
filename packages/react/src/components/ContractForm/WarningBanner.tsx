@@ -1,7 +1,7 @@
 import React from 'react'
 
-import dangerIcon from '../../assets/icons/contract-form/danger.svg'
-import warningIcon from '../../assets/icons/contract-form/warning.svg'
+import dangerIcon from '../../assets/icons/danger.svg'
+import warningIcon from '../../assets/icons/warning.svg'
 import type { SecurityWarning } from '../../types/contract'
 
 

@@ -2,11 +2,11 @@ import React, { useEffect, useRef } from 'react'
 
 import type { FlowToastRenderData } from '../../types/transaction'
 
-import checkCircleIcon from '../../assets/icons/toast/check-circle.svg'
-import alertCircleIcon from '../../assets/icons/toast/alert-circle.svg'
-import infoIcon from '../../assets/icons/toast/info.svg'
-import alertTriangleIcon from '../../assets/icons/toast/alert-triangle.svg'
-import xIcon from '../../assets/icons/toast/x.svg'
+import checkCircleIcon from '../../assets/icons/check-circle.svg'
+import alertCircleIcon from '../../assets/icons/alert-circle.svg'
+import infoIcon from '../../assets/icons/info.svg'
+import alertTriangleIcon from '../../assets/icons/alert-triangle.svg'
+import xIcon from '../../assets/icons/x.svg'
 
 
 const iconByType: Record<FlowToastRenderData['type'], string> = {
