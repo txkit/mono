@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { Abi, PublicClient, TypedDataDomain, WalletClient } from 'viem'
+import type { Abi, PublicClient, TypedDataDomain } from 'viem'
 
 import type {
   FlowStatus,

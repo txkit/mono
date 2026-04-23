@@ -5,7 +5,7 @@
 // ENS, gas estimation) is ready.
 import React, { forwardRef, useCallback, useMemo } from 'react'
 import { cx } from '@txkit/core'
-import type { TransactionReceipt, TransactionError } from '@txkit/core'
+import type { TransactionError } from '@txkit/core'
 
 import useDeepMemo from '../../hooks/useDeepMemo'
 import type { StepResult } from '../../types/transaction'

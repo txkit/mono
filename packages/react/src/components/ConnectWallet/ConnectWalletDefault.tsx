@@ -22,7 +22,7 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = ({
   resolvedDisplayAddress,
   chain,
   requiredChain,
-  chains,
+  chains: _chains,
   connectors,
   groupedConnectors,
   recentIds,

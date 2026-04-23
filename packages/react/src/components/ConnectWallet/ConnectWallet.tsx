@@ -121,7 +121,6 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
   }, [ state ])
 
   const connectingWallet = state === 'connecting' ? selectedConnector?.name : undefined
-  const connectingConnector = state === 'connecting' ? selectedConnector : undefined
 
   // onConnect / onDisconnect callbacks
   useEffect(() => {

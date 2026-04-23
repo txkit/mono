@@ -20,7 +20,6 @@ import { setFlowEntry, notifyFlowListeners } from '../helpers/flowStore'
 import { useFlowStore } from './useFlowState'
 import { executeFlowLoop } from '../helpers/executeFlowLoop'
 import type {
-  FlowStep,
   FlowState,
   StepResult,
   StepContext,
@@ -110,7 +109,7 @@ const useTransactionFlow = (options: UseTransactionFlowOptions): UseTransactionF
   const targetChainId = chainIdProp ?? currentChainId
   const publicClient = usePublicClient({ chainId: targetChainId })
   const { data: walletClient } = useWalletClient()
-  const { invalidateAffected, invalidateAll } = useBalanceInvalidation()
+  const { invalidateAffected } = useBalanceInvalidation()
   const { mutateAsync: switchChainAsync } = useSwitchChain()
   const { mutateAsync: sendTransactionAsync } = useSendTransaction()
   const { mutateAsync: writeContractAsync } = useWriteContract()

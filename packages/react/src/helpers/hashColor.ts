@@ -45,7 +45,6 @@ export type PixelAvatar = {
 export const hashPixelAvatar = (address: string): PixelAvatar => {
   const hex = (address.startsWith('0x') ? address.slice(2) : address).padEnd(40, '0')
   const byte0 = parseInt(hex.slice(0, 2), 16) || 0
-  const byte1 = parseInt(hex.slice(6, 8), 16) || 0
   const hue = Math.round((byte0 * 360) / 255)
   const hueAlt = (hue + 180) % 360
 

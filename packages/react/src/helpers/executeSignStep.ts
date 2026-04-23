@@ -1,5 +1,3 @@
-import type { TransactionError } from '@txkit/core'
-
 import type {
   FlowState,
   FlowStepSign,

@@ -1,11 +1,8 @@
 'use client'
 import { useState, useMemo, useCallback, useRef } from 'react'
-import type { AbiFunction } from 'viem'
-
-import type { TransactionError, TransactionReceipt } from '@txkit/core'
 
 import { txStep } from '../helpers/flowHelpers'
-import type { ContractTransactionProps, FlowStep, StepResult } from '../types/transaction'
+import type { ContractTransactionProps, FlowStep } from '../types/transaction'
 
 import {
   buildArgs,
@@ -15,11 +12,9 @@ import {
   getAbiFunction,
   getInitialValues,
   getSecurityWarnings,
-  validateFormat,
   validateFull,
 } from '../helpers/abiFields'
 import type {
-  FieldDescriptor,
   SecurityWarning,
   UseContractFormOptions,
   UseContractFormReturn,
@@ -31,9 +26,6 @@ const useContractForm = (options: UseContractFormOptions): UseContractFormReturn
     abi,
     address,
     functionName,
-    chainId,
-    safety,
-    disabled,
     computedParams,
     defaultParams,
     hiddenParams,
