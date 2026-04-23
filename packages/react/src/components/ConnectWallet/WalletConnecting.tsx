@@ -1,5 +1,6 @@
 import React from 'react'
 
+import DotLoader from './DotLoader'
 import type { ConnectWalletLabels } from './labels'
 
 
@@ -37,11 +38,7 @@ const WalletConnecting: React.FC<WalletConnectingProps> = ({
       <div className="txkit-cw-connecting-status" role="status" aria-live="polite">
         <span className="txkit-cw-connecting-text">{statusText}</span>
 
-        <span className="txkit-cw-dots">
-          <span className="txkit-cw-dot" />
-          <span className="txkit-cw-dot" />
-          <span className="txkit-cw-dot" />
-        </span>
+        <DotLoader />
       </div>
 
       {

@@ -19,6 +19,24 @@ import { SEARCH_THRESHOLD } from '../../helpers/connectConstants'
 import { WALLET_FALLBACK_ICONS } from '../../helpers/walletIcons'
 
 
+type WalletGroupKey = keyof WalletGroups
+type WalletLabelKey = 'installedWallets' | 'recentWallets' | 'popularWallets' | 'allWallets'
+
+type WalletGroupConfigItem = {
+  key: WalletGroupKey
+  labelKey: WalletLabelKey
+  labelId: string
+  variant?: 'accent' | 'default'
+}
+
+const WALLET_GROUP_CONFIG: readonly WalletGroupConfigItem[] = [
+  { key: 'installed', labelKey: 'installedWallets', labelId: 'txkit-group-installed', variant: 'accent' },
+  { key: 'recent', labelKey: 'recentWallets', labelId: 'txkit-group-recent' },
+  { key: 'popular', labelKey: 'popularWallets', labelId: 'txkit-group-popular' },
+  { key: 'other', labelKey: 'allWallets', labelId: 'txkit-group-other' },
+]
+
+
 type WalletModalProps = {
   labels: Required<ConnectWalletLabels>
   connectors: readonly Connector[]
@@ -31,17 +49,19 @@ type WalletModalProps = {
   onCancelConnect: () => void
 }
 
-const WalletModal: React.FC<WalletModalProps> = ({
-  labels,
-  connectors,
-  groupedConnectors,
-  recentIds,
-  connectingWallet,
-  isTimedOut,
-  onClose,
-  onSelect,
-  onCancelConnect,
-}) => {
+const WalletModal: React.FC<WalletModalProps> = (props) => {
+  const {
+    labels,
+    connectors,
+    groupedConnectors,
+    recentIds,
+    connectingWallet,
+    isTimedOut,
+    onClose,
+    onSelect,
+    onCancelConnect,
+  } = props
+
   const modalRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
   const [ search, setSearch ] = useState('')
@@ -133,7 +153,6 @@ const WalletModal: React.FC<WalletModalProps> = ({
   const { displayUri, isLoadingUri } = useDisplayUri(connectingConnector, Boolean(connectingWallet))
   const isWalletConnect = connectingConnector?.id === 'walletConnect'
 
-  // Show connecting view - extract to variable to avoid double ternary in JSX
   const showConnectingView = Boolean(connectingWallet)
   const connectingIcon = connectingConnector?.icon || WALLET_FALLBACK_ICONS[connectingConnector?.id ?? '']
 
@@ -142,6 +161,55 @@ const WalletModal: React.FC<WalletModalProps> = ({
     + groupedConnectors.recent.length
     + groupedConnectors.popular.length
     + groupedConnectors.other.length
+
+  const emptySearchNode = (
+    <div className="txkit-cw-empty">
+      No wallets found
+    </div>
+  )
+
+  const emptyAvailableNode = (
+    <div className="txkit-cw-empty">
+      No wallets available
+    </div>
+  )
+
+  const searchResultsNode = filteredList.length > 0
+    ? filteredList.map((connector, index) => (
+      <WalletItem
+        key={connector.uid}
+        connector={connector}
+        isActive={index === activeIndex}
+        isRecent={recentIds.includes(connector.id)}
+        tabIndex={getTabIndex(index)}
+        onSelect={handleSelect}
+      />
+    ))
+    : emptySearchNode
+
+  const groupedListingNode = (
+    <>
+      {
+        WALLET_GROUP_CONFIG.map((group) => (
+          <WalletGroupSection
+            key={group.key}
+            label={labels[group.labelKey]}
+            labelId={group.labelId}
+            variant={group.variant}
+            connectors={groupedConnectors[group.key]}
+            recentIds={recentIds}
+            activeIndex={activeIndex}
+            indexOffset={groupOffsets[group.key]}
+            getTabIndex={getTabIndex}
+            onSelect={handleSelect}
+          />
+        ))
+      }
+    </>
+  )
+
+  const listingNode = totalWallets > 0 ? groupedListingNode : emptyAvailableNode
+  const contentNode = isSearching ? searchResultsNode : listingNode
 
   return (
     <Portal>
@@ -245,78 +313,7 @@ const WalletModal: React.FC<WalletModalProps> = ({
                     onKeyDown={handleKeyDown}
                     className="txkit-cw-modal-list"
                   >
-                    {
-                      isSearching
-                        ? (
-                          filteredList.length > 0
-                            ? filteredList.map((connector, index) => (
-                              <WalletItem
-                                key={connector.uid}
-                                connector={connector}
-                                isActive={index === activeIndex}
-                                isRecent={recentIds.includes(connector.id)}
-                                tabIndex={getTabIndex(index)}
-                                onSelect={handleSelect}
-                              />
-                            ))
-                            : (
-                              <div className="txkit-cw-empty">
-                                No wallets found
-                              </div>
-                            )
-                        )
-                        : totalWallets > 0
-                          ? (
-                            <>
-                              <WalletGroupSection
-                                label={labels.installedWallets}
-                                labelId="txkit-group-installed"
-                                variant="accent"
-                                connectors={groupedConnectors.installed}
-                                recentIds={recentIds}
-                                activeIndex={activeIndex}
-                                indexOffset={groupOffsets.installed}
-                                getTabIndex={getTabIndex}
-                                onSelect={handleSelect}
-                              />
-                              <WalletGroupSection
-                                label={labels.recentWallets}
-                                labelId="txkit-group-recent"
-                                connectors={groupedConnectors.recent}
-                                recentIds={recentIds}
-                                activeIndex={activeIndex}
-                                indexOffset={groupOffsets.recent}
-                                getTabIndex={getTabIndex}
-                                onSelect={handleSelect}
-                              />
-                              <WalletGroupSection
-                                label={labels.popularWallets}
-                                labelId="txkit-group-popular"
-                                connectors={groupedConnectors.popular}
-                                recentIds={recentIds}
-                                activeIndex={activeIndex}
-                                indexOffset={groupOffsets.popular}
-                                getTabIndex={getTabIndex}
-                                onSelect={handleSelect}
-                              />
-                              <WalletGroupSection
-                                label={labels.allWallets}
-                                labelId="txkit-group-other"
-                                connectors={groupedConnectors.other}
-                                recentIds={recentIds}
-                                activeIndex={activeIndex}
-                                indexOffset={groupOffsets.other}
-                                getTabIndex={getTabIndex}
-                                onSelect={handleSelect}
-                              />
-                            </>
-                          )
-                          : (
-                            <div className="txkit-cw-empty">
-                              No wallets available
-                            </div>
-                          )
-                    }
+                    {contentNode}
                   </div>
                 </>
               )
