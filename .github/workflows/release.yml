@@ -31,17 +31,22 @@ jobs:
       - run: pnpm build
 
       - name: Publish @txkit/core
-        run: pnpm --filter @txkit/core publish --provenance --no-git-checks
+        run: pnpm --filter @txkit/core publish --tag alpha --provenance --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @txkit/tx-protocol
+        run: pnpm --filter @txkit/tx-protocol publish --tag alpha --provenance --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @txkit/react
-        run: pnpm --filter @txkit/react publish --provenance --no-git-checks
+        run: pnpm --filter @txkit/react publish --tag alpha --provenance --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @txkit/themes
-        run: pnpm --filter @txkit/themes publish --provenance --no-git-checks
+        run: pnpm --filter @txkit/themes publish --tag alpha --provenance --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

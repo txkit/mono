@@ -39,7 +39,7 @@
     "./variants/sharp": "./dist/variants/sharp.css",
     "./variants/rounded": "./dist/variants/rounded.css"
   },
-  "files": ["dist", "LICENSE", "README.md"],
+  "files": ["dist", "LICENSE", "README.md", "CHANGELOG.md"],
   "scripts": {
     "prepublishOnly": "pnpm run build",
     "build": "mkdir -p dist dist/variants && postcss src/index.css -o dist/index.css && cp src/base.css src/dark.css dist/ && cp src/variants/*.css dist/variants/",
