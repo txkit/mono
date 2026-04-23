@@ -37,25 +37,27 @@ export type TransactionButtonDefaultProps = {
 
 const explorerStates: readonly StepStatus[] = [ 'tx-pending', 'completed', 'error' ]
 
-const TransactionButtonDefault: React.FC<TransactionButtonDefaultProps> = ({
-  state,
-  buttonLabel,
-  explorerUrl,
-  statusMessage,
-  error,
-  riskResult,
-  mergedLabels,
-  decodedCalldata,
-  confirmCountdown,
-  isProcessing,
-  showExplorerLink,
-  isButtonDisabled,
-  currentStepIndex,
-  totalSteps,
-  onClick,
-  onCancel,
-  onForceSubmit,
-}) => {
+const TransactionButtonDefault: React.FC<TransactionButtonDefaultProps> = (props) => {
+  const {
+    state,
+    buttonLabel,
+    explorerUrl,
+    statusMessage,
+    error,
+    riskResult,
+    mergedLabels,
+    decodedCalldata,
+    confirmCountdown,
+    isProcessing,
+    showExplorerLink,
+    isButtonDisabled,
+    currentStepIndex,
+    totalSteps,
+    onClick,
+    onCancel,
+    onForceSubmit,
+  } = props
+
   const showDetails = state === 'confirming-risk' && Boolean(decodedCalldata || riskResult)
   const showExplorer = showExplorerLink && explorerUrl && explorerStates.includes(state)
   const showProgressDots = totalSteps > 1
@@ -73,19 +75,19 @@ const TransactionButtonDefault: React.FC<TransactionButtonDefaultProps> = ({
             aria-label={`Step ${currentStepIndex + 1} of ${totalSteps}`}
           >
             {
-              Array.from({ length: totalSteps }).map((_, index) => (
-                <span
-                  key={index}
-                  className="txkit-txb-progress-dot"
-                  data-state={
-                    index < currentStepIndex
-                      ? 'completed'
-                      : index === currentStepIndex
-                        ? 'current'
-                        : 'pending'
-                  }
-                />
-              ))
+              Array.from({ length: totalSteps }).map((_, index) => {
+                const dotState = index < currentStepIndex
+                  ? 'completed'
+                  : index === currentStepIndex ? 'current' : 'pending'
+
+                return (
+                  <span
+                    key={index}
+                    className="txkit-txb-progress-dot"
+                    data-state={dotState}
+                  />
+                )
+              })
             }
             <span className="txkit-txb-progress-label">
               {currentStepIndex + 1} of {totalSteps}

@@ -22,18 +22,20 @@ type AccountDropdownProps = {
   onChainSwitch: (chainId: number) => void
 }
 
-const AccountDropdown: React.FC<AccountDropdownProps> = ({
-  address,
-  ensName,
-  ensAvatar,
-  avatarStyle = 'gradient',
-  chain,
-  requiredChain,
-  labels,
-  onClose,
-  onDisconnect,
-  onChainSwitch,
-}) => {
+const AccountDropdown: React.FC<AccountDropdownProps> = (props) => {
+  const {
+    address,
+    ensName,
+    ensAvatar,
+    avatarStyle = 'gradient',
+    chain,
+    requiredChain,
+    labels,
+    onClose,
+    onDisconnect,
+    onChainSwitch,
+  } = props
+
   const dropdownRef = useRef<HTMLDivElement>(null)
   const copiedTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const [ copied, setCopied ] = useState(false)
