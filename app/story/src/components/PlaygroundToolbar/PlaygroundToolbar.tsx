@@ -13,6 +13,7 @@ const colorSchemes = [
   { id: 'violet' as const, color: 'oklch(0.65 0.22 292)', label: 'Violet' },
   { id: 'emerald' as const, color: 'oklch(0.68 0.18 155)', label: 'Emerald' },
   { id: 'amber' as const, color: 'oklch(0.78 0.17 65)', label: 'Amber' },
+  { id: 'black' as const, color: 'oklch(0.2 0 0)', label: 'Black' },
 ]
 
 const PlaygroundToolbar: React.FC = () => {

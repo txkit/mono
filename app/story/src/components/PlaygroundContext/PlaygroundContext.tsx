@@ -3,7 +3,7 @@ import { createContext, useState, useContext, useMemo, useCallback } from 'react
 import type { ReactNode } from 'react'
 
 
-type ColorScheme = 'violet' | 'indigo' | 'emerald' | 'amber'
+type ColorScheme = 'violet' | 'indigo' | 'emerald' | 'amber' | 'black'
 
 type PlaygroundState = {
   theme: TxKit.Theme
