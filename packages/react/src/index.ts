@@ -24,7 +24,7 @@ export type { UseTokenBalanceOptions, UseTokenBalanceReturn } from './hooks/useT
 export type { TokenBalanceItem, UseTokenBalancesOptions, UseTokenBalancesReturn } from './hooks/useTokenBalances'
 export type { UseBalanceInvalidationReturn } from './hooks/useBalanceInvalidation'
 export type { BalanceContextValue } from './hooks/useBalanceContext'
-export type { AffectedBalance } from './helpers/parseAffectedBalances'
+export type { AffectedBalance } from './components/TokenBalance/utils/parseAffectedBalances'
 export type {
   TokenBalanceProps,
   TokenBalanceRenderData,

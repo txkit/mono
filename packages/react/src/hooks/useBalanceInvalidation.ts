@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
-import parseAffectedBalances, { type AffectedBalance } from '../helpers/parseAffectedBalances'
+import parseAffectedBalances, { type AffectedBalance } from '../components/TokenBalance/utils/parseAffectedBalances'
 
 
 type LogEntry = {
