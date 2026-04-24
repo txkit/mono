@@ -51,7 +51,9 @@ const renderItem = (entry: ControlEntry, dimmed: boolean) => {
 const ControlPanel: React.FC<ControlPanelProps> = ({ entries, dimmedKeys, code, isDefault = false, onReset }) => {
   const [ showCode, setShowCode ] = useState(false)
   const [ copied, setCopied ] = useState(false)
+  const [ resetSpinning, setResetSpinning ] = useState(false)
   const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const resetTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const handleCopy = useCallback(() => {
     if (!code) {
@@ -62,6 +64,13 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ entries, dimmedKeys, code, 
     clearTimeout(copiedTimer.current)
     copiedTimer.current = setTimeout(() => setCopied(false), 2000)
   }, [ code ])
+
+  const handleReset = useCallback(() => {
+    onReset()
+    setResetSpinning(true)
+    clearTimeout(resetTimer.current)
+    resetTimer.current = setTimeout(() => setResetSpinning(false), 400)
+  }, [ onReset ])
 
   const dimmedSet = new Set(dimmedKeys ?? [])
   const fields = entries.filter((e) => e.def.type !== 'boolean' && e.def.type !== 'state')
@@ -79,9 +88,20 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ entries, dimmedKeys, code, 
           type="button"
           className="control-panel-reset"
           disabled={isDefault}
-          onClick={onReset}
+          onClick={handleReset}
         >
-          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            width="12"
+            height="12"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            data-spinning={resetSpinning ? '' : undefined}
+          >
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
             <path d="M3 3v5h5" />
           </svg>

@@ -51,12 +51,19 @@
   transition: all 150ms ease;
 }
 
-.control-panel-reset svg {
-  transition: transform 400ms ease;
+@keyframes control-panel-reset-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
 }
 
-.control-panel-reset:active svg {
-  transform: rotate(-360deg);
+.control-panel-reset svg[data-spinning] {
+  animation: control-panel-reset-spin 400ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control-panel-reset svg[data-spinning] {
+    animation: none;
+  }
 }
 
 .control-panel-reset:hover:not(:disabled) {
