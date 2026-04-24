@@ -22,25 +22,26 @@ type ContractFormDefaultProps = ContractFormRenderData & {
 }
 
 
-const ContractFormDefault: React.FC<ContractFormDefaultProps> = ({
-  fields,
-  values,
-  errors,
-  touched,
-  warnings,
-  calldataPreview,
-  isValid,
-  formError,
-  steps,
-  labels,
-  label,
-  disabled,
-  chainId,
-  setFieldValue,
-  setFieldTouched,
-  onFlowComplete,
-  onError,
-}) => {
+const ContractFormDefault: React.FC<ContractFormDefaultProps> = (props) => {
+  const {
+    fields,
+    values,
+    errors,
+    touched,
+    warnings,
+    calldataPreview,
+    isValid,
+    formError,
+    steps,
+    labels,
+    label,
+    disabled,
+    chainId,
+    setFieldValue,
+    setFieldTouched,
+    onFlowComplete,
+    onError,
+  } = props
   // Separate payable value field from regular fields
   const valueField = fields.find((field) => field.isPayableValue)
   const regularFields = fields.filter((field) => !field.isPayableValue)
