@@ -3,7 +3,7 @@ import { mainnet, sepolia } from 'viem/chains'
 import { ConnectWallet, useWalletState } from '@txkit/react'
 
 import generateCode from '../../helpers/generateCode'
-import { useControls, ControlPanel, CodeBlock } from '../../components'
+import { useControls, ControlPanel, CodeBlock, StateVisualizer } from '../../components'
 
 
 
@@ -16,6 +16,15 @@ const allPropKeys: readonly string[] = [
   'label', 'size', 'variant', 'avatarStyle', 'chainId',
   'showBalance', 'showFiat', 'showAvatar', 'showEns',
 ]
+
+const CW_STATES = [
+  { id: 'initializing', label: 'Initializing', color: '#94a3b8' },
+  { id: 'disconnected', label: 'Disconnected', color: '#64748b' },
+  { id: 'connecting', label: 'Connecting', color: '#f59e0b' },
+  { id: 'connected', label: 'Connected', color: '#10b981' },
+  { id: 'wrong-chain', label: 'Wrong Chain', color: '#f59e0b' },
+  { id: 'error', label: 'Error', color: '#ef4444' },
+] as const
 
 /** Which props visually affect the rendered button in each wallet state */
 const activePropsByState: Record<string, readonly string[]> = {
@@ -54,6 +63,7 @@ const InteractiveConnectWallet = () => {
   return (
     <div className="story-live-layout">
       <div className="story-live-left">
+        <StateVisualizer states={CW_STATES} currentState={walletState.state} />
         <div className="story-live-preview-card">
           <div className="story-live-preview-inner">
             <ConnectWallet
@@ -70,15 +80,6 @@ const InteractiveConnectWallet = () => {
           </div>
         </div>
         <CodeBlock code={code} />
-        <div
-          style={{
-            fontSize: 11,
-            color: '#64748b',
-            fontFamily: "'IBM Plex Mono', monospace",
-          }}
-        >
-          State: <strong style={{ color: '#818cf8' }}>{walletState.state}</strong>
-        </div>
       </div>
       <div className="story-live-right">
         <ControlPanel entries={entries} dimmedKeys={dimmedKeys} isDefault={isDefault} onReset={reset} />
