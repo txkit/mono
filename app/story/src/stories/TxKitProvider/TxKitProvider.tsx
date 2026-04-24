@@ -20,6 +20,12 @@ const MockConnectButton: React.FC<{ label?: string }> = ({ label = 'Connect Wall
   </div>
 )
 
+const StackedPreview: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="story-stack" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%' }}>
+    {children}
+  </div>
+)
+
 const EmbeddedSections = () => {
   const { wagmiConfig, queryClient } = useEmbeddedProviders()
 
@@ -49,8 +55,10 @@ const EmbeddedSections = () => {
           `}
         >
           <TxKitProvider embedded>
-            <MockConnectButton />
-            <EmbeddedInfo />
+            <StackedPreview>
+              <MockConnectButton />
+              <EmbeddedInfo />
+            </StackedPreview>
           </TxKitProvider>
         </StorySection>
 
@@ -64,8 +72,10 @@ const EmbeddedSections = () => {
           `}
         >
           <TxKitProvider embedded config={{ theme: 'dark' }}>
-            <MockConnectButton />
-            <EmbeddedInfo />
+            <StackedPreview>
+              <MockConnectButton />
+              <EmbeddedInfo />
+            </StackedPreview>
           </TxKitProvider>
         </StorySection>
 
@@ -78,8 +88,10 @@ const EmbeddedSections = () => {
           `}
         >
           <TxKitProvider embedded config={{ theme: 'light' }}>
-            <MockConnectButton />
-            <EmbeddedInfo />
+            <StackedPreview>
+              <MockConnectButton />
+              <EmbeddedInfo />
+            </StackedPreview>
           </TxKitProvider>
         </StorySection>
       </QueryClientProvider>
@@ -109,8 +121,10 @@ const TxKitProviderStory = () => {
           </TxKitProvider>
         `}
       >
-        <MockConnectButton />
-        <ThemeInfo />
+        <StackedPreview>
+          <MockConnectButton />
+          <ThemeInfo />
+        </StackedPreview>
       </StorySection>
 
       <StorySection
