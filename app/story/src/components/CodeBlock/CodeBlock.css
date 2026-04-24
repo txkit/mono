@@ -2,8 +2,11 @@
 
 .code-block {
   position: relative;
-  border-top: 1px solid var(--pg-border);
-  background: var(--pg-muted);
+  margin: 0;
+  border: 1px solid var(--pg-border);
+  border-radius: var(--pg-radius-md);
+  background: var(--pg-surface-sunken);
+  overflow: hidden;
 }
 
 .code-block-copy {

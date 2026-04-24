@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import CodeBlock from '../CodeBlock/CodeBlock'
 import StorySectionTitle from './StorySectionTitle'
 import { ChevronDownIcon } from '../Icons/icons'
+import wrapJsx from '../../helpers/wrapJsx'
 
 
 type StorySectionProps = {
@@ -30,7 +31,9 @@ const StorySection: React.FC<StorySectionProps> = ({
   const sectionId = id ?? slugify(title)
 
   const handleTitleClick = () => {
-    window.location.hash = sectionId
+    const current = window.location.hash.slice(1).split('/')[0]
+    const newHash = current ? `${current}/${sectionId}` : sectionId
+    window.location.hash = newHash
     navigator.clipboard.writeText(window.location.href)
   }
 
@@ -74,7 +77,7 @@ const StorySection: React.FC<StorySectionProps> = ({
       </div>
       {
         showCode && code && (
-          <CodeBlock code={code} />
+          <CodeBlock code={wrapJsx(code)} />
         )
       }
     </div>
