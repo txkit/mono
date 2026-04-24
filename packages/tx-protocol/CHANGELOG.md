@@ -1,6 +1,6 @@
 # @txkit/tx-protocol
 
-## 0.1.0
+## 0.1.0 - 2026-04-23
 
 First public release. Defines the `PreparedEnvelope` shape for agent-to-wallet handoff, with three implemented kinds (`evm-tx`, `evm-batch`, `signature`) and nine reserved kinds for v0.1+ expansion.
 

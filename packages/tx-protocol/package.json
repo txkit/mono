@@ -32,7 +32,8 @@
     "erc-7702"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "type": "module",
   "exports": {

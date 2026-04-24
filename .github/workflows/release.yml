@@ -1,18 +1,18 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:
-  publish:
-    name: Publish to npm
+  publish-tx-protocol:
+    name: Publish @txkit/tx-protocol
     runs-on: ubuntu-latest
+    if: startsWith(github.event.release.tag_name, 'v')
     steps:
       - uses: actions/checkout@v4
 
@@ -28,29 +28,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm build
+      - run: pnpm --filter @txkit/tx-protocol typecheck
 
-      - name: Publish @txkit/core
-        run: pnpm --filter @txkit/core publish --tag alpha --provenance --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: pnpm --filter @txkit/tx-protocol test
+
+      - run: pnpm --filter @txkit/tx-protocol build
 
       - name: Publish @txkit/tx-protocol
-        run: pnpm --filter @txkit/tx-protocol publish --tag alpha --provenance --no-git-checks
+        run: pnpm --filter @txkit/tx-protocol publish --provenance --no-git-checks --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @txkit/react
-        run: pnpm --filter @txkit/react publish --tag alpha --provenance --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @txkit/themes
-        run: pnpm --filter @txkit/themes publish --tag alpha --provenance --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Create GitHub Release
-        run: gh release create ${{ github.ref_name }} --generate-notes
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
