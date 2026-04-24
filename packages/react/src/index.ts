@@ -38,9 +38,9 @@ export { default as FlowProgress } from './components/FlowProgress/FlowProgress'
 export { default as FlowToast } from './components/FlowToast/FlowToast'
 export { default as useTransactionFlow } from './hooks/useTransactionFlow'
 export { useFlowState, useFlowStore, DEFAULT_FLOW_ID } from './hooks/useFlowState'
-export { setFlowEntry, notifyFlowListeners } from './helpers/flowStore'
-export type { FlowStore, FlowEntry } from './helpers/flowStore'
-export { txStep, approveAndExecute, multiApproveAndExecute, signAndSubmit } from './helpers/flowHelpers'
+export { setFlowEntry, notifyFlowListeners } from './components/TxKitProvider/utils/flowStore'
+export type { FlowStore, FlowEntry } from './components/TxKitProvider/utils/flowStore'
+export { txStep, approveAndExecute, multiApproveAndExecute, signAndSubmit } from './components/TxKitProvider/utils/flowHelpers'
 export type { TransactionButtonLabels } from './components/TransactionButton/labels'
 export type {
   TransactionButtonProps,

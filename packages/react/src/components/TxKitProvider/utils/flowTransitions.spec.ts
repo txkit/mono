@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 
 import type { TransactionError } from '@txkit/core'
 
-import type { FlowState, FlowStep } from '../types/transaction'
+import type { FlowState, FlowStep } from '../../../types/transaction'
 import {
   advanceStep,
   cancelFlow,

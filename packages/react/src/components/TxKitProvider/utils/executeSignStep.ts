@@ -3,7 +3,7 @@ import type {
   FlowStepSign,
   StepContext,
   StepResult,
-} from '../types/transaction'
+} from '../../../types/transaction'
 import { updateStep } from './flowTransitions'
 
 

@@ -3,12 +3,12 @@ import { injected, walletConnect, coinbaseWallet } from 'wagmi/connectors'
 import type { Chain, Transport } from 'viem'
 
 import '../types/global'
-import { DEFAULT_POLLING_INTERVAL } from '../helpers/providerConstants'
+import { DEFAULT_POLLING_INTERVAL } from '../components/TxKitProvider/utils/providerConstants'
 import {
   TESTNET_CHAINS,
   TESTNET_TRANSPORTS,
   TESTNET_DISPLAY_CHAINS,
-} from '../helpers/testnetDefaults'
+} from '../components/TxKitProvider/utils/testnetDefaults'
 
 
 const defaultWallets = (projectId: string | null): TxKit.WalletConfig[] => [

@@ -9,7 +9,7 @@ import type {
   StepContext,
   StepResult,
   SafetyConfig,
-} from '../types/transaction'
+} from '../../../types/transaction'
 import {
   advanceStep,
   failStep,

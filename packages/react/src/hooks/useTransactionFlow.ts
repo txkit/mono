@@ -16,9 +16,9 @@ import type { StepStatus, TransactionError } from '@txkit/core'
 
 import useObjectState from './useObjectState'
 import useDeepMemo from './useDeepMemo'
-import { setFlowEntry, notifyFlowListeners } from '../helpers/flowStore'
+import { setFlowEntry, notifyFlowListeners } from '../components/TxKitProvider/utils/flowStore'
 import { useFlowStore } from './useFlowState'
-import { executeFlowLoop } from '../helpers/executeFlowLoop'
+import { executeFlowLoop } from '../components/TxKitProvider/utils/executeFlowLoop'
 import type {
   FlowState,
   StepResult,
@@ -37,7 +37,7 @@ import {
   skipStep,
   startFlow,
   updateStep,
-} from '../helpers/flowTransitions'
+} from '../components/TxKitProvider/utils/flowTransitions'
 
 
 const DEFAULT_SAFETY: SafetyConfig = {

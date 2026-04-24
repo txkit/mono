@@ -9,7 +9,7 @@ import type {
   SafetyConfig,
   SignData,
   StepSignRequest,
-} from '../types/transaction'
+} from '../../../types/transaction'
 
 
 // --- Allowance check utility ---

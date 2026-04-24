@@ -1,6 +1,6 @@
 import { createContext, useContext, useRef, useSyncExternalStore, useCallback } from 'react'
 
-import type { FlowStore, FlowEntry } from '../helpers/flowStore'
+import type { FlowStore, FlowEntry } from '../components/TxKitProvider/utils/flowStore'
 
 
 // --- Context ---

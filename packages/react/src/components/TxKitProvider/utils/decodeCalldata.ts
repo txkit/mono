@@ -2,7 +2,7 @@ import { encodeFunctionData, decodeFunctionData } from 'viem'
 
 import type { DecodedCalldata } from '@txkit/core'
 
-import type { TxParams, ContractTransactionProps } from '../types/transaction'
+import type { TxParams, ContractTransactionProps } from '../../../types/transaction'
 
 
 export const isContractCall = (tx: TxParams): tx is ContractTransactionProps => 'abi' in tx

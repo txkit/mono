@@ -7,7 +7,7 @@ import '../../types/global'
 import TxKitInner from './TxKitInner'
 import useConfig from '../../hooks/useConfig'
 import useTheme from '../../hooks/useTheme'
-import validateConfig from '../../helpers/validateConfig'
+import validateConfig from '../../components/TxKitProvider/utils/validateConfig'
 
 
 const StandaloneProvider = ({ children, config }: { children: ReactNode; config: TxKit.Config }) => {

@@ -11,7 +11,7 @@ import type {
   StepResult,
   SafetyConfig,
   TxParams,
-} from '../types/transaction'
+} from '../../../types/transaction'
 import { failStep, updateStep } from './flowTransitions'
 import { isContractCall, decodeCalldata } from './decodeCalldata'
 

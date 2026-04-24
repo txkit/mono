@@ -3,7 +3,7 @@ import { WagmiContext } from 'wagmi'
 import { MissingWagmiProviderError } from '@txkit/core'
 
 import '../types/global'
-import { DEFAULT_POLLING_INTERVAL } from '../helpers/providerConstants'
+import { DEFAULT_POLLING_INTERVAL } from '../components/TxKitProvider/utils/providerConstants'
 
 
 const MAINNET_CHAIN_ID = 1

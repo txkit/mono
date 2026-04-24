@@ -1,4 +1,4 @@
-import type { FlowState, FlowStep, FlowActions } from '../types/transaction'
+import type { FlowState, FlowStep, FlowActions } from '../../../types/transaction'
 
 
 // --- Flow Registry Entry ---

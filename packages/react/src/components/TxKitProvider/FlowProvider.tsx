@@ -2,7 +2,7 @@
 import React, { useState, type ReactNode } from 'react'
 
 import { FlowStoreContext } from '../../hooks/useFlowState'
-import { createFlowStore } from '../../helpers/flowStore'
+import { createFlowStore } from '../../components/TxKitProvider/utils/flowStore'
 
 
 type FlowProviderProps = {

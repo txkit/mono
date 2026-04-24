@@ -1,6 +1,6 @@
 import type { TransactionError } from '@txkit/core'
 
-import type { FlowStep, FlowState, StepState } from '../types/transaction'
+import type { FlowStep, FlowState, StepState } from '../../../types/transaction'
 
 
 /** Create initial flow state from step definitions */

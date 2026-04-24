@@ -1,7 +1,7 @@
 'use client'
 import { useState, useMemo, useCallback, useRef } from 'react'
 
-import { txStep } from '../helpers/flowHelpers'
+import { txStep } from '../components/TxKitProvider/utils/flowHelpers'
 import type { ContractTransactionProps, FlowStep } from '../types/transaction'
 
 import {
