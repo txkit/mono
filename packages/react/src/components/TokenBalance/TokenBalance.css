@@ -150,11 +150,11 @@
 }
 
 .txkit-tb[data-state="loading"] .txkit-tb-amount {
-  min-width: 80px;
+  min-width: 120px;
 }
 
 .txkit-tb[data-state="loading"] .txkit-tb-fiat {
-  min-width: 60px;
+  min-width: 72px;
 }
 
 .txkit-tb[data-state="loading"] .txkit-tb-icon,
