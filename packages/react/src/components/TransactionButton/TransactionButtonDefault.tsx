@@ -5,9 +5,9 @@ import { formatDecodedCalldata } from '@txkit/core'
 import ExternalLinkIcon from './ExternalLinkIcon'
 import type { TransactionButtonLabels } from './labels'
 
-import arrowRightIcon from '../../assets/icons/txb/arrow-right.svg'
-import loaderIcon from '../../assets/icons/txb/loader.svg'
-import checkIcon from '../../assets/icons/txb/check.svg'
+import arrowRightIcon from '../../assets/icons/arrow-right.svg'
+import loaderIcon from '../../assets/icons/loader.svg'
+import checkIcon from '../../assets/icons/check.svg'
 
 
 const idleStates: readonly StepStatus[] = [ 'pending', 'error', 'simulation-failed', 'rejected' ]

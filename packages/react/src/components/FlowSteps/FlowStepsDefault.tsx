@@ -3,12 +3,12 @@ import type { StepStatus } from '@txkit/core'
 
 import type { FlowStepsRenderData } from '../../types/transaction'
 
-import loaderIcon from '../../assets/icons/flow-steps/loader.svg'
-import checkIcon from '../../assets/icons/flow-steps/check.svg'
-import alertCircleIcon from '../../assets/icons/flow-steps/alert-circle.svg'
-import xCircleIcon from '../../assets/icons/flow-steps/x-circle.svg'
-import banIcon from '../../assets/icons/flow-steps/ban.svg'
-import skipForwardIcon from '../../assets/icons/flow-steps/skip-forward.svg'
+import loaderIcon from '../../assets/icons/loader.svg'
+import checkIcon from '../../assets/icons/check.svg'
+import alertCircleIcon from '../../assets/icons/alert-circle.svg'
+import xCircleIcon from '../../assets/icons/x-circle.svg'
+import banIcon from '../../assets/icons/ban.svg'
+import skipForwardIcon from '../../assets/icons/skip-forward.svg'
 
 
 type FlowStepsDefaultProps = FlowStepsRenderData & {
