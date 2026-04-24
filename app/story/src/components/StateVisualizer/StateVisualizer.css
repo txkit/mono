@@ -1,33 +1,69 @@
-/* --- State Visualizer (figma PreviewTab style) --- */
+/* --- State Visualizer (embla carousel, single row, swipe + chevron) --- */
 
 .state-visualizer {
-  padding: 24px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
   border-radius: var(--pg-radius-lg);
   border: 1px solid var(--pg-border);
   background: var(--pg-muted);
 }
 
-.state-flow {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  gap: 4px;
+/* --- Embla viewport + track --- */
+
+.state-viz-embla {
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
 }
 
-.state-node-wrapper {
+.state-viz-track {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 0;
+  gap: 8px;
 }
 
-/* --- Pill-shaped state node --- */
+/* --- Chevron arrows --- */
+
+.state-viz-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--pg-border);
+  border-radius: 9999px;
+  background: var(--pg-card);
+  color: var(--pg-fg);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.state-viz-arrow:hover:not(:disabled) {
+  border-color: var(--pg-border-hover);
+}
+
+.state-viz-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.state-viz-arrow:focus-visible {
+  outline: 2px solid var(--pg-primary);
+  outline-offset: 2px;
+}
+
+/* --- Pill-shaped state node (flex-shrink:0 so they don't collapse) --- */
 
 .state-node {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
   padding: 8px 16px;
   border-radius: 9999px;
   border: 1px solid var(--pg-border);
@@ -42,7 +78,6 @@
   cursor: pointer;
 }
 
-/* Current: outline ring (not clipped by overflow), subtle tinted bg */
 .state-node.active {
   border-color: var(--state-color);
   background: var(--pg-bg);
@@ -50,7 +85,6 @@
   outline-offset: 0;
 }
 
-/* Past: normal opacity, white bg, only dot coloured */
 .state-node.past {
   border-color: var(--pg-border);
   background: var(--pg-bg);
@@ -60,7 +94,6 @@
   border-color: var(--pg-border-hover);
 }
 
-/* Future: 40% opacity, neutral */
 .state-node.future {
   opacity: 0.4;
   border-color: var(--pg-border);
@@ -83,10 +116,7 @@
   transition: background 200ms ease;
 }
 
-.state-node.active .state-dot {
-  background: var(--state-color);
-}
-
+.state-node.active .state-dot,
 .state-node.past .state-dot {
   background: var(--state-color);
 }
@@ -111,22 +141,12 @@
   color: var(--pg-muted-fg);
 }
 
-/* --- Connector line (thin, colored for past) --- */
-
-.state-connector {
-  width: 32px;
-  height: 2px;
-  flex-shrink: 0;
-  border-radius: 1px;
-  transition: background 200ms ease;
-}
-
 /* --- Reduced motion --- */
 
 @media (prefers-reduced-motion: reduce) {
   .state-node,
   .state-dot,
-  .state-connector {
+  .state-viz-arrow {
     transition: none;
   }
 }
