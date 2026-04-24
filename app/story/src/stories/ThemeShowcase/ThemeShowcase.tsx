@@ -1,4 +1,7 @@
 import React, { useState } from 'react'
+import { cx } from '@txkit/core'
+
+import CodeBlock from '../../components/CodeBlock/CodeBlock'
 
 import './ThemeShowcase.css'
 
@@ -20,6 +23,8 @@ const variants: readonly { id: Variant; label: string }[] = [
   { id: 'sharp', label: 'Sharp' },
   { id: 'rounded', label: 'Rounded' },
 ]
+
+const themes: readonly Theme[] = [ 'light', 'dark' ]
 
 
 const MiniCell: React.FC<{ scheme: ColorScheme; variant: Variant }> = ({ scheme, variant }) => (
@@ -58,66 +63,28 @@ const generateCss = (scheme: ColorScheme, theme: Theme): string => {
 }
 
 
-const CopyThemePanel: React.FC<{ scheme: ColorScheme; theme: Theme }> = ({ scheme, theme }) => {
-  const [ copied, setCopied ] = useState(false)
-  const css = generateCss(scheme, theme)
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(css)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // clipboard unavailable
-    }
-  }
-
-  return (
-    <div className="tshow-copy">
-      <div className="tshow-copy-header">
-        <span className="tshow-copy-label">CSS Variables ({scheme}, {theme})</span>
-        <button type="button" className="tshow-copy-btn" onClick={handleCopy}>
-          {copied ? '✓ Copied' : '⎘ Copy'}
-        </button>
-      </div>
-      <pre className="tshow-copy-code">{css}</pre>
-    </div>
-  )
-}
-
-
 const ThemeShowcase: React.FC = () => {
   const [ previewTheme, setPreviewTheme ] = useState<Theme>('dark')
   const [ selectedScheme, setSelectedScheme ] = useState<ColorScheme>('violet')
 
   return (
     <div className="tshow">
-      <div className="tshow-intro">
-        <h2 className="tshow-title">Theme Customization</h2>
-        <p className="tshow-description">
-          4 color schemes × 4 variants × 2 themes = 32 combinations.
-          Click any scheme to get a ready-to-copy CSS snippet.
-        </p>
-      </div>
-
       <div className="tshow-section">
         <div className="tshow-section-header">
           <h3 className="tshow-section-title">All schemes × variants</h3>
-          <div className="tshow-theme-toggle">
-            <button
-              type="button"
-              className={previewTheme === 'light' ? 'active' : ''}
-              onClick={() => setPreviewTheme('light')}
-            >
-              Light
-            </button>
-            <button
-              type="button"
-              className={previewTheme === 'dark' ? 'active' : ''}
-              onClick={() => setPreviewTheme('dark')}
-            >
-              Dark
-            </button>
+          <div className="playground-toolbar-buttons">
+            {
+              themes.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={cx('playground-toolbar-btn', { active: previewTheme === t })}
+                  onClick={() => setPreviewTheme(t)}
+                >
+                  {t}
+                </button>
+              ))
+            }
           </div>
         </div>
 
@@ -158,8 +125,8 @@ const ThemeShowcase: React.FC = () => {
       </div>
 
       <div className="tshow-section">
-        <h3 className="tshow-section-title">Copy theme</h3>
-        <CopyThemePanel scheme={selectedScheme} theme={previewTheme} />
+        <h3 className="tshow-section-title">Copy theme ({selectedScheme}, {previewTheme})</h3>
+        <CodeBlock code={generateCss(selectedScheme, previewTheme)} language="css" showLineNumbers={false} />
       </div>
     </div>
   )

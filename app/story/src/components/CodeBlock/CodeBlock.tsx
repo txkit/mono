@@ -1,6 +1,7 @@
 import React, { useState, useSyncExternalStore } from 'react'
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
 import tsxLang from 'react-syntax-highlighter/dist/esm/languages/hljs/typescript'
+import cssLang from 'react-syntax-highlighter/dist/esm/languages/hljs/css'
 import { atomOneDark, atomOneLight } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
 import { CopyIcon, CheckIcon } from '../Icons/icons'
@@ -9,6 +10,7 @@ import { usePlayground } from '../PlaygroundContext/PlaygroundContext'
 
 SyntaxHighlighter.registerLanguage('tsx', tsxLang)
 SyntaxHighlighter.registerLanguage('typescript', tsxLang)
+SyntaxHighlighter.registerLanguage('css', cssLang)
 
 
 type CodeBlockProps = {
