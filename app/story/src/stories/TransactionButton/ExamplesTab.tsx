@@ -5,38 +5,6 @@ import dedent from '../../helpers/dedent'
 import TxbMockButton from './TxbMockButton'
 
 
-type MockTxState = 'idle' | 'running' | 'completed' | 'error'
-
-const customTxMock = (opts: { status: MockTxState; stepStatus?: string; hash?: string }) => (
-  <div className="custom-tx-render">
-    <div>
-      Flow: <strong>{opts.status}</strong>
-      {opts.stepStatus && <> | Step: <strong>{opts.stepStatus}</strong></>}
-    </div>
-    {
-      opts.hash && (
-        <code className="custom-tx-hash">{opts.hash.slice(0, 18)}...</code>
-      )
-    }
-    {
-      opts.status === 'idle' && (
-        <button type="button" className="headless-tx-btn">Custom Send Button</button>
-      )
-    }
-    {
-      opts.status === 'error' && (
-        <button type="button" className="headless-tx-btn headless-tx-btn--retry">Custom Retry</button>
-      )
-    }
-    {
-      opts.status === 'completed' && (
-        <button type="button" className="headless-tx-btn headless-tx-btn--success">Done - Reset</button>
-      )
-    }
-  </div>
-)
-
-
 const stepStatus = (step: { current: boolean; done: boolean }): 'completed' | 'tx-pending' | 'pending' => {
   if (step.done) {
     return 'completed'
@@ -128,14 +96,6 @@ const ExamplesTab = () => (
     </StorySection>
 
     <StorySection
-      title="Simulation Failed"
-      description="Pre-sign simulation catches reverts before costing gas"
-      code={`safety={{ simulate: true }}`}
-    >
-      <TxbMockButton state="simulation-failed" />
-    </StorySection>
-
-    <StorySection
       title="Rejected by User"
       description="Distinct state from error - user closed the wallet prompt"
     >
@@ -161,48 +121,6 @@ const ExamplesTab = () => (
         <div className="txkit-fp" role="progressbar" aria-valuenow={50} aria-valuemin={0} aria-valuemax={100}>
           <div className="txkit-fp-bar" style={{ width: '50%' }} />
         </div>
-      </div>
-    </StorySection>
-
-    <StorySection
-      title="Custom Render (children-as-function)"
-      description="Same render function, three flow states"
-      code={dedent`
-        <TransactionButton steps={[...]}>
-          {({ flow, currentStep, explorerUrl, start, retry, reset }) => (
-            <>
-              Flow: {flow.status} | Step: {currentStep?.status}
-              {currentStep?.hash && <code>{currentStep.hash.slice(0, 18)}...</code>}
-              {flow.status === 'idle' && <button onClick={start}>Custom Send</button>}
-              {flow.status === 'error' && <button onClick={retry}>Custom Retry</button>}
-              {flow.status === 'completed' && <button onClick={reset}>Done - Reset</button>}
-            </>
-          )}
-        </TransactionButton>
-      `}
-      headless
-    >
-      <div className="story-row" style={{ flexWrap: 'wrap' }}>
-        {customTxMock({ status: 'idle' })}
-        {customTxMock({ status: 'running', stepStatus: 'tx-pending', hash: '0x1234567890abcdef12' })}
-        {customTxMock({ status: 'completed' })}
-      </div>
-    </StorySection>
-
-    <StorySection
-      title="Balance Refresh After Transaction"
-      description="TokenBalance auto-updates after TransactionButton completes via targeted invalidation"
-      code={dedent`
-        <TokenBalance /> {/* auto-refreshes after tx */}
-        <TransactionButton steps={[...]} />
-      `}
-    >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <span className="txkit-tb" data-state="ready">
-          <span className="txkit-tb-amount">1.2345 ETH</span>
-          <span className="txkit-tb-fiat">$4,321.98</span>
-        </span>
-        <TxbMockButton state="completed" label="Sent" />
       </div>
     </StorySection>
 
