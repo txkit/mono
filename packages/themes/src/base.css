@@ -75,10 +75,10 @@
   --txkit-space-2xl: 2rem;
 
   /* --- Radii (default variant) --- */
-  --txkit-radius-sm: 6px;
-  --txkit-radius-md: 8px;
-  --txkit-radius-lg: 12px;
-  --txkit-radius-xl: 20px;
+  --txkit-radius-sm: 4px;
+  --txkit-radius-md: 6px;
+  --txkit-radius-lg: 8px;
+  --txkit-radius-xl: 12px;
   --txkit-radius-full: 9999px;
   --txkit-radius-button: var(--txkit-radius-md);
 
