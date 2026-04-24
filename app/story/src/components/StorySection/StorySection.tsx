@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
+import React from 'react'
 import type { ReactNode } from 'react'
 
 import CodeBlock from '../CodeBlock/CodeBlock'
 import StorySectionTitle from './StorySectionTitle'
-import { ChevronDownIcon } from '../Icons/icons'
 import wrapJsx from '../../helpers/wrapJsx'
 
 
@@ -27,7 +26,6 @@ const StorySection: React.FC<StorySectionProps> = ({
   code,
   headless,
 }) => {
-  const [ showCode, setShowCode ] = useState(false)
   const sectionId = id ?? slugify(title)
 
   const handleTitleClick = () => {
@@ -56,27 +54,12 @@ const StorySection: React.FC<StorySectionProps> = ({
             )
           }
         </div>
-        {
-          code && (
-            <button
-              type="button"
-              className="story-code-toggle"
-              onClick={() => setShowCode(!showCode)}
-            >
-              {showCode ? 'Hide Code' : 'Show Code'}
-              <ChevronDownIcon
-                size={14}
-                className={`story-code-chevron ${showCode ? 'rotated' : ''}`}
-              />
-            </button>
-          )
-        }
       </div>
       <div className="story-section-stage">
         {children}
       </div>
       {
-        showCode && code && (
+        code && (
           <CodeBlock code={wrapJsx(code)} />
         )
       }
