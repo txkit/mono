@@ -1,4 +1,4 @@
-import type { SolidityFieldType } from '../types/contract'
+import type { SolidityFieldType } from '../../../types/contract'
 
 
 // --- Type Dispatch ---

@@ -13,7 +13,7 @@ import {
   getInitialValues,
   getSecurityWarnings,
   validateFull,
-} from '../helpers/abiFields'
+} from '../components/ContractForm/utils'
 import type {
   SecurityWarning,
   UseContractFormOptions,

@@ -1,6 +1,6 @@
 import { isAddress, parseEther } from 'viem'
 
-import type { FieldDescriptor } from '../types/contract'
+import type { FieldDescriptor } from '../../../types/contract'
 
 import { getFieldType } from './abiTypeDispatch'
 

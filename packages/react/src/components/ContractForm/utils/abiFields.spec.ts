@@ -17,7 +17,7 @@ import {
   getSecurityWarnings,
   buildCalldataPreview,
 } from './abiFields'
-import type { FieldDescriptor } from '../types/contract'
+import type { FieldDescriptor } from '../../../types/contract'
 
 
 // --- Test ABI Fixtures ---

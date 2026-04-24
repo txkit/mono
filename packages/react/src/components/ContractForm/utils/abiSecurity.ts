@@ -4,7 +4,7 @@ import { encodeFunctionData, decodeFunctionData } from 'viem'
 import { isMaxApproval } from '@txkit/core'
 import type { DecodedCalldata } from '@txkit/core'
 
-import type { FieldDescriptor, SecurityWarning } from '../types/contract'
+import type { FieldDescriptor, SecurityWarning } from '../../../types/contract'
 
 
 // --- Security ---
