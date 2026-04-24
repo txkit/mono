@@ -13,7 +13,7 @@ import {
 } from 'wagmi'
 import { shortenAddress, formatTokenAmount } from '@txkit/core'
 
-import { CONNECTION_TIMEOUT_MS, QR_TIMEOUT_MS } from '../helpers/connectConstants'
+import { CONNECTION_TIMEOUT_MS, QR_TIMEOUT_MS } from '../components/ConnectWallet/utils/connectConstants'
 
 
 /** Wallet connection state machine states */

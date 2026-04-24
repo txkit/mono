@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { Connector } from 'wagmi'
 
-import { POPULAR_WALLET_RDNS } from '../../../helpers/connectConstants'
+import { POPULAR_WALLET_RDNS } from './connectConstants'
 
 
 export type WalletGroups = {

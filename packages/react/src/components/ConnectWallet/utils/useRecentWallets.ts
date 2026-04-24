@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 
 import safeStorage from '../../../helpers/safeStorage'
-import { MAX_RECENT_WALLETS, RECENT_WALLETS_KEY } from '../../../helpers/connectConstants'
+import { MAX_RECENT_WALLETS, RECENT_WALLETS_KEY } from './connectConstants'
 
 
 type UseRecentWalletsReturn = {

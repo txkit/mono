@@ -15,7 +15,7 @@ import WalletGroupSection from './WalletGroupSection'
 import useArrowNavigation from '../../hooks/useArrowNavigation'
 import type { ConnectWalletLabels } from './labels'
 import type { WalletGroups } from './utils/useWalletGroups'
-import { SEARCH_THRESHOLD } from '../../helpers/connectConstants'
+import { SEARCH_THRESHOLD } from './utils/connectConstants'
 import { WALLET_FALLBACK_ICONS } from '../../helpers/walletIcons'
 
 
