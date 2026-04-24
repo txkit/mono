@@ -84,7 +84,15 @@ const useControls = <T extends ControlSchema>(schema: T): UseControlsReturn<T> =
   }, [])
 
   const reset = useCallback(() => {
-    setValues(getDefaults(schema))
+    setValues((prev) => {
+      const next = getDefaults(schema)
+      for (const key of Object.keys(schema)) {
+        if (schema[key].type === 'state') {
+          next[key] = prev[key]
+        }
+      }
+      return next
+    })
   }, [ schema ])
 
   const entries: ControlEntry[] = Object.keys(schema).map((key) => ({
@@ -94,7 +102,12 @@ const useControls = <T extends ControlSchema>(schema: T): UseControlsReturn<T> =
     setValue: (v: boolean | string | number) => setValue(key, v),
   }))
 
-  const isDefault = Object.keys(schema).every((key) => values[key] === schema[key].default)
+  const isDefault = Object.keys(schema).every((key) => {
+    if (schema[key].type === 'state') {
+      return true
+    }
+    return values[key] === schema[key].default
+  })
 
   return {
     values: values as ResolvedValues<T>,

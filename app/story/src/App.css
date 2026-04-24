@@ -1,5 +1,5 @@
 /* In playground, txkit-root doesn't paint its own background.
-   We want the surrounding playground surface to show through:
+   We want the surrounding playground surface to show through —
    component's own chips/buttons/text keep their theme colors,
    but the big "theme canvas" belongs to the playground. */
 .playground .txkit-root {
@@ -9,14 +9,13 @@
 /* --- Playground OKLCH Token System --- */
 
 :root {
-  /* Surface - dark neutral palette (Figma playground reference)
-     Hierarchy: body (darkest) < card (mid) < sunken inset (lightest). */
-  --pg-bg: oklch(0.08 0 0);
+  /* Surface - dark neutral palette (v0 reference) */
+  --pg-bg: oklch(0.145 0 0);
   --pg-fg: oklch(0.95 0 0);
-  --pg-card: oklch(0.145 0 0);
+  --pg-card: oklch(0.175 0 0);
   --pg-card-fg: oklch(0.95 0 0);
   --pg-surface-elevated: oklch(0.2 0 0);
-  --pg-surface-sunken: oklch(0.21 0 0);
+  --pg-surface-sunken: oklch(0.12 0 0);
 
   /* UI - single muted neutral used for sidebar, segmented containers, panel backgrounds */
   --pg-primary: oklch(0.511 0.262 276);
@@ -35,10 +34,10 @@
   --pg-border-hover: oklch(0.3 0 0);
   --pg-input: oklch(0.18 0 0);
 
-  /* Sidebar matches the elevated card surface (white in light / mid-dark in dark) */
-  --pg-sidebar: oklch(0.145 0 0);
+  /* Sidebar = pg-muted (same surface family, just structural position) */
+  --pg-sidebar: oklch(0.2 0 0);
   --pg-sidebar-fg: oklch(0.95 0 0);
-  --pg-sidebar-accent: oklch(0.22 0 0);
+  --pg-sidebar-accent: oklch(0.25 0 0);
   --pg-sidebar-accent-fg: oklch(0.95 0 0);
   --pg-sidebar-border: oklch(0.22 0 0);
 
@@ -56,13 +55,13 @@
 }
 
 .bg-light {
-  /* Body grey, card white, sunken insets grey (Figma playground hierarchy) */
-  --pg-bg: oklch(0.97 0 0);
+  /* Main bg slightly off-white; muted neutral shared by sidebar + segmented + panels */
+  --pg-bg: oklch(0.985 0 0);
   --pg-fg: oklch(0.145 0 0);
   --pg-card: oklch(1 0 0);
   --pg-card-fg: oklch(0.145 0 0);
   --pg-surface-elevated: oklch(1 0 0);
-  --pg-surface-sunken: oklch(0.97 0 0);
+  --pg-surface-sunken: oklch(0.96 0 0);
 
   --pg-primary: oklch(0.511 0.262 276);
   --pg-primary-text: oklch(0.511 0.262 276);
@@ -79,10 +78,10 @@
   --pg-border-hover: oklch(0.82 0 0);
   --pg-input: oklch(1 0 0);
 
-  /* Sidebar uses the card surface (white) - sits beside the grey body */
-  --pg-sidebar: oklch(1 0 0);
+  /* Sidebar shares the muted neutral - one grey across the whole UI */
+  --pg-sidebar: oklch(0.96 0 0);
   --pg-sidebar-fg: oklch(0.145 0 0);
-  --pg-sidebar-accent: oklch(0.94 0 0);
+  --pg-sidebar-accent: oklch(0.92 0 0);
   --pg-sidebar-accent-fg: oklch(0.205 0 0);
   --pg-sidebar-border: oklch(0.9 0 0);
 
@@ -323,7 +322,7 @@ body {
   gap: 12px;
   padding: 12px 40px;
   margin: 0 0 32px;
-  background: var(--pg-card);
+  background: var(--pg-bg);
   border-bottom: 1px solid var(--pg-border);
 }
 
@@ -395,7 +394,7 @@ body {
   color: var(--pg-muted-fg);
   padding: 8px 12px;
   border-left: 2px solid var(--pg-primary);
-  background: color-mix(in oklch, var(--pg-primary) 12%, transparent);
+  background: var(--pg-surface-sunken);
   border-radius: 0 4px 4px 0;
 }
 
@@ -482,7 +481,7 @@ body {
 }
 
 .playground-toolbar-btn.active {
-  background: var(--pg-card);
+  background: var(--pg-bg);
   color: var(--pg-fg);
   box-shadow: 0 1px 2px oklch(0 0 0 / 0.08), 0 1px 1px oklch(0 0 0 / 0.06);
 }
@@ -562,14 +561,10 @@ body {
 /* --- Story sections (unified figma-style card) --- */
 
 .story-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
   margin: 0 0 16px;
-  padding: 24px;
   border-radius: var(--pg-radius-lg);
   border: 1px solid var(--pg-border);
-  background: var(--pg-card);
+  background: transparent;
   /* Do NOT set overflow:hidden - it clips dropdowns/modals rendered inline
      by child components (e.g. ConnectWallet AccountDropdown). Children that
      need to respect the rounded corners inherit border-radius explicitly. */
@@ -585,8 +580,11 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 0;
-  background: transparent;
+  padding: 14px 20px;
+  background: var(--pg-muted);
+  border-bottom: 1px solid var(--pg-border);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
 }
 
 .story-section-meta {
@@ -635,10 +633,10 @@ body {
 }
 
 .story-section-desc {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--pg-muted-fg);
   margin: 0;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
 .story-code-toggle {
@@ -676,9 +674,9 @@ body {
 }
 
 .story-section-stage {
-  margin: 0;
-  padding: 32px;
-  background: var(--pg-surface-sunken);
+  margin: 16px;
+  padding: 32px 24px;
+  background: var(--pg-muted);
   border: 1px solid var(--pg-border);
   border-radius: var(--pg-radius-md);
   display: flex;
@@ -699,7 +697,7 @@ body {
   padding: 24px;
   border-radius: var(--pg-radius-lg);
   border: 1px solid var(--pg-border);
-  background: var(--pg-card);
+  background: transparent;
   transition: border-color 200ms ease;
 }
 
@@ -743,8 +741,8 @@ body {
   border: 1px solid var(--pg-border);
   background: linear-gradient(
     135deg,
-    color-mix(in oklch, var(--pg-primary) 5%, var(--pg-card)) 0%,
-    color-mix(in oklch, var(--txkit-color-info, var(--pg-primary)) 5%, var(--pg-card)) 100%
+    color-mix(in srgb, var(--pg-primary) 5%, var(--pg-card)) 0%,
+    color-mix(in srgb, var(--txkit-color-info, var(--pg-primary)) 5%, var(--pg-card)) 100%
   );
 }
 

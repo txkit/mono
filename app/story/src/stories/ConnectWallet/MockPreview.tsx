@@ -2,7 +2,7 @@ import { useRef, useMemo, useState, useEffect } from 'react'
 
 import CwMockButton from './CwMockButton'
 import CwMockDropdown from './CwMockDropdown'
-import { useControls, ControlPanel, useTxkitThemeClass } from '../../components'
+import { useControls, ControlPanel, StatePanel, useTxkitThemeClass } from '../../components'
 
 
 const CW_STATES = [
@@ -53,6 +53,7 @@ const MockPreview = () => {
   const canToggleDropdown = dropdownStates.includes(currentState)
   const activeKeys = activePropsByState[currentState] ?? []
   const dimmedKeys = allPropKeys.filter((key) => !activeKeys.includes(key))
+  const stateEntry = entries.find((e) => e.def.type === 'state')
 
   // Close dropdown when leaving a dropdown-capable state
   useEffect(() => {
@@ -81,23 +82,14 @@ const MockPreview = () => {
     }
   }
 
-  const hint = (() => {
-    if (currentState === 'connected') {
-      return ' - click the button to toggle the dropdown'
-    }
-    if (currentState === 'wrong-chain') {
-      return ' - click to see mismatch banner in dropdown'
-    }
-    return ''
-  })()
-
   return (
     <>
       <p className="story-description">Mock component - switch states to preview each visual without a wallet</p>
       <div className="story-live-layout">
         <div className="story-live-left">
+          <StatePanel entry={stateEntry} />
           <div className="story-live-preview-card">
-            <div ref={wrapperRef} className={`txkit-root ${txkitThemeClass} story-live-preview-inner`} style={{ display: 'flex', justifyContent: 'center' }}>
+            <div ref={wrapperRef} className={`txkit-root ${txkitThemeClass} story-live-preview-inner`} style={{ alignItems: 'center' }}>
               <CwMockButton
                 state={currentState}
                 label={String(values.label ?? 'Connect Wallet')}
@@ -114,16 +106,6 @@ const MockPreview = () => {
                 {dropdownOpen && canToggleDropdown && <CwMockDropdown wrongChain={currentState === 'wrong-chain'} />}
               </CwMockButton>
             </div>
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: 'var(--pg-muted-fg)',
-              fontFamily: "'IBM Plex Mono', monospace",
-            }}
-          >
-            State: <strong style={{ color: 'var(--pg-primary-text)' }}>{currentState}</strong>
-            {hint && <span>{hint}</span>}
           </div>
         </div>
         <div className="story-live-right">

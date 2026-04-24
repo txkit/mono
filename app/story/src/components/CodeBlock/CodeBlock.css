@@ -2,10 +2,9 @@
 
 .code-block {
   position: relative;
-  margin: 0;
   border: 1px solid var(--pg-border);
-  border-radius: var(--pg-radius-md);
-  background: var(--pg-surface-sunken);
+  border-radius: var(--pg-radius-lg);
+  background: var(--pg-muted);
   overflow: hidden;
 }
 

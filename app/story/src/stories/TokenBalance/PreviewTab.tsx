@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useControls, ControlPanel, useTxkitThemeClass } from '../../components'
+import { useControls, ControlPanel, StatePanel, useTxkitThemeClass } from '../../components'
 import TbMockBalance from './TbMockBalance'
 
 
@@ -20,6 +20,7 @@ const PreviewTab = () => {
 
   const { values, entries, isDefault, reset } = useControls(schema)
   const activeState = String(values.state ?? 'loading-inline')
+  const stateEntry = entries.find((e) => e.def.type === 'state')
 
   const isRow = activeState === 'loading-row' || activeState === 'ready-row'
   const variant: 'inline' | 'row' = isRow ? 'row' : 'inline'
@@ -38,6 +39,7 @@ const PreviewTab = () => {
       <p className="story-description">Click a state to see how TokenBalance renders - no wallet needed</p>
       <div className="story-live-layout">
         <div className="story-live-left">
+          <StatePanel entry={stateEntry} />
           <div className="story-live-preview-card">
             <div
               className={`txkit-root ${txkitThemeClass} story-live-preview-inner`}

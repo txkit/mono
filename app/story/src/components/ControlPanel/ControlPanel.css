@@ -19,6 +19,12 @@
   }
 }
 
+.state-panel {
+  position: static;
+  top: auto;
+  z-index: auto;
+}
+
 .control-panel-header {
   display: flex;
   align-items: center;
@@ -58,7 +64,7 @@
 }
 
 .control-panel-reset:disabled {
-  color: var(--pg-muted-fg);
+  opacity: 0.3;
   cursor: default;
 }
 

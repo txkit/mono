@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { FlowSteps, FlowProgress, FlowToast } from '@txkit/react'
 
-import { useControls, ControlPanel, useTxkitThemeClass } from '../../components'
+import { useControls, ControlPanel, StatePanel, useTxkitThemeClass } from '../../components'
 import useMockFlow from './useMockFlow'
 
 
@@ -47,6 +47,7 @@ const MockPreview = () => {
   const { values, entries, isDefault, reset } = useControls(schema)
   const activeState = String(values.state ?? 'pending')
   const dataState = activeState === 'pending' ? 'idle' : activeState
+  const stateEntry = entries.find((e) => e.def.type === 'state')
 
   useMockFlow(activeState)
 
@@ -55,6 +56,7 @@ const MockPreview = () => {
       <p className="story-description">Pick a state - button and compound components (FlowSteps / FlowProgress / FlowToast) update together via shared TxKitProvider context</p>
       <div className="story-live-layout">
         <div className="story-live-left">
+          <StatePanel entry={stateEntry} />
           <div className="story-live-preview-card">
             <div className={`txkit-root ${txkitThemeClass} story-live-preview-inner`}>
               <div className="txkit-txb">

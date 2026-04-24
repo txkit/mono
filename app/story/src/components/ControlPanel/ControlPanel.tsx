@@ -1,9 +1,11 @@
 import React, { useRef, useState, useCallback } from 'react'
 
 import CodeBlock from '../CodeBlock/CodeBlock'
-import ControlItem from './ControlItem'
-import ControlStateItem from './ControlStateItem'
 import { ChevronDownIcon } from '../Icons/icons'
+import BooleanInput from './BooleanInput'
+import StringInput from './StringInput'
+import NumberInput from './NumberInput'
+import SelectInput from './SelectInput'
 import type { ControlEntry } from './useControls'
 
 
@@ -13,6 +15,37 @@ type ControlPanelProps = {
   code?: string
   isDefault?: boolean
   onReset: () => void
+}
+
+const renderItem = (entry: ControlEntry, dimmed: boolean) => {
+  const description = 'description' in entry.def ? entry.def.description : undefined
+  const numberDef = entry.def.type === 'number'
+    ? entry.def as { type: 'number'; min?: number; max?: number; step?: number }
+    : undefined
+  const showNumberValue = numberDef && numberDef.min !== undefined && numberDef.max !== undefined
+
+  return (
+    <div
+      key={entry.key}
+      className="control-item"
+      data-dimmed={dimmed ? '' : undefined}
+      title={dimmed ? 'Inactive in current state' : undefined}
+    >
+      <div className="control-item-header">
+        <label className="control-label">{entry.key}</label>
+        {showNumberValue && (
+          <span className="control-number-value">{String(entry.value)}</span>
+        )}
+      </div>
+      {description && <p className="control-description">{description}</p>}
+      <div className="control-value">
+        {entry.def.type === 'boolean' && <BooleanInput entry={entry} />}
+        {entry.def.type === 'string' && <StringInput entry={entry} />}
+        {entry.def.type === 'number' && <NumberInput entry={entry} />}
+        {entry.def.type === 'select' && <SelectInput entry={entry} />}
+      </div>
+    </div>
+  )
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ entries, dimmedKeys, code, isDefault = false, onReset }) => {
@@ -30,21 +63,13 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ entries, dimmedKeys, code, 
     copiedTimer.current = setTimeout(() => setCopied(false), 2000)
   }, [ code ])
 
-  if (entries.length === 0) {
+  const dimmedSet = new Set(dimmedKeys ?? [])
+  const fields = entries.filter((e) => e.def.type !== 'boolean' && e.def.type !== 'state')
+  const toggles = entries.filter((e) => e.def.type === 'boolean')
+
+  if (fields.length === 0 && toggles.length === 0) {
     return null
   }
-
-  const dimmedKeysSet: Record<string, true> = {}
-  for (const key of dimmedKeys ?? []) {
-    dimmedKeysSet[key] = true
-  }
-  const stateMachine = entries.find((entry) => entry.def.type === 'state')
-  const fields = entries.filter((entry) => entry.def.type !== 'boolean' && entry.def.type !== 'state')
-  const toggles = entries.filter((entry) => entry.def.type === 'boolean')
-  const dividers: boolean[] = [
-    Boolean(stateMachine) && (fields.length > 0 || toggles.length > 0),
-    fields.length > 0 && toggles.length > 0,
-  ]
 
   return (
     <div className="control-panel">
@@ -64,24 +89,18 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ entries, dimmedKeys, code, 
         </button>
       </div>
       <div className="control-panel-body">
-        {stateMachine && <ControlStateItem key={stateMachine.key} entry={stateMachine} />}
-        {dividers[0] && <div className="control-divider" />}
         {
           fields.length > 0 && (
             <div className="control-group">
-              {fields.map((entry) => (
-                <ControlItem key={entry.key} entry={entry} dimmed={Boolean(dimmedKeysSet[entry.key])} />
-              ))}
+              {fields.map((entry) => renderItem(entry, dimmedSet.has(entry.key)))}
             </div>
           )
         }
-        {dividers[1] && <div className="control-divider" />}
+        {fields.length > 0 && toggles.length > 0 && <div className="control-divider" />}
         {
           toggles.length > 0 && (
             <div className="control-group control-group--toggles">
-              {toggles.map((entry) => (
-                <ControlItem key={entry.key} entry={entry} dimmed={Boolean(dimmedKeysSet[entry.key])} />
-              ))}
+              {toggles.map((entry) => renderItem(entry, dimmedSet.has(entry.key)))}
             </div>
           )
         }

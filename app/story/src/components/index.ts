@@ -34,5 +34,6 @@ export { PlaygroundProvider, usePlayground } from './PlaygroundContext/Playgroun
 
 // --- Controls (dynamic form for story props) ---
 export { default as ControlPanel } from './ControlPanel/ControlPanel'
+export { default as StatePanel } from './ControlPanel/StatePanel'
 export { default as useControls } from './ControlPanel/useControls'
 export type { ControlSchema, ControlDef, ControlEntry } from './ControlPanel/useControls'
