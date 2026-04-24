@@ -5,9 +5,9 @@ import { formatDecodedCalldata } from '@txkit/core'
 import ExternalLinkIcon from './ExternalLinkIcon'
 import type { TransactionButtonLabels } from './labels'
 
-import arrowRightIcon from '../../assets/icons/arrow-right.svg'
-import loaderIcon from '../../assets/icons/loader.svg'
-import checkIcon from '../../assets/icons/check.svg'
+import arrowRightIcon from '../../assets/icons/txb/arrow-right.svg'
+import loaderIcon from '../../assets/icons/txb/loader.svg'
+import checkIcon from '../../assets/icons/txb/check.svg'
 
 
 const idleStates: readonly StepStatus[] = [ 'pending', 'error', 'simulation-failed', 'rejected' ]
@@ -37,27 +37,25 @@ export type TransactionButtonDefaultProps = {
 
 const explorerStates: readonly StepStatus[] = [ 'tx-pending', 'completed', 'error' ]
 
-const TransactionButtonDefault: React.FC<TransactionButtonDefaultProps> = (props) => {
-  const {
-    state,
-    buttonLabel,
-    explorerUrl,
-    statusMessage,
-    error,
-    riskResult,
-    mergedLabels,
-    decodedCalldata,
-    confirmCountdown,
-    isProcessing,
-    showExplorerLink,
-    isButtonDisabled,
-    currentStepIndex,
-    totalSteps,
-    onClick,
-    onCancel,
-    onForceSubmit,
-  } = props
-
+const TransactionButtonDefault: React.FC<TransactionButtonDefaultProps> = ({
+  state,
+  buttonLabel,
+  explorerUrl,
+  statusMessage,
+  error,
+  riskResult,
+  mergedLabels,
+  decodedCalldata,
+  confirmCountdown,
+  isProcessing,
+  showExplorerLink,
+  isButtonDisabled,
+  currentStepIndex,
+  totalSteps,
+  onClick,
+  onCancel,
+  onForceSubmit,
+}) => {
   const showDetails = state === 'confirming-risk' && Boolean(decodedCalldata || riskResult)
   const showExplorer = showExplorerLink && explorerUrl && explorerStates.includes(state)
   const showProgressDots = totalSteps > 1
@@ -75,19 +73,19 @@ const TransactionButtonDefault: React.FC<TransactionButtonDefaultProps> = (props
             aria-label={`Step ${currentStepIndex + 1} of ${totalSteps}`}
           >
             {
-              Array.from({ length: totalSteps }).map((_, index) => {
-                const dotState = index < currentStepIndex
-                  ? 'completed'
-                  : index === currentStepIndex ? 'current' : 'pending'
-
-                return (
-                  <span
-                    key={index}
-                    className="txkit-txb-progress-dot"
-                    data-state={dotState}
-                  />
-                )
-              })
+              Array.from({ length: totalSteps }).map((_, index) => (
+                <span
+                  key={index}
+                  className="txkit-txb-progress-dot"
+                  data-state={
+                    index < currentStepIndex
+                      ? 'completed'
+                      : index === currentStepIndex
+                        ? 'current'
+                        : 'pending'
+                  }
+                />
+              ))
             }
             <span className="txkit-txb-progress-label">
               {currentStepIndex + 1} of {totalSteps}
@@ -127,7 +125,7 @@ const TransactionButtonDefault: React.FC<TransactionButtonDefaultProps> = (props
         <span>{buttonLabel}</span>
         {
           state === 'confirming-risk' && confirmCountdown > 0 && (
-            <span className="txkit-txb-countdown">{confirmCountdown}</span>
+            <span className="txkit-txb-countdown" aria-hidden="true">{confirmCountdown}</span>
           )
         }
       </button>

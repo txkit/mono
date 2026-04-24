@@ -45,11 +45,20 @@ const FlowSteps = forwardRef<HTMLDivElement, FlowStepsProps>(({
     }
   }, [ flowEntry, showCompleted ])
 
-  // Don't render if no flow or single step
-  if (!renderData || renderData.totalSteps <= 1) {
-    return null
+  const hasVisibleFlow = Boolean(renderData) && (renderData?.totalSteps ?? 0) > 1
+  const summary = hasVisibleFlow && renderData
+    ? `Step ${renderData.currentStepIndex + 1} of ${renderData.totalSteps}: ${renderData.completedCount} completed`
+    : ''
+
+  let content: React.ReactNode = null
+  if (hasVisibleFlow && renderData) {
+    content = typeof children === 'function'
+      ? children(renderData)
+      : <FlowStepsDefault {...renderData} orientation={orientation} />
   }
 
+  // Root stays mounted so the aria-live summary region pre-exists content — SRs
+  // only announce changes inside a live region that already existed in the DOM.
   return (
     <div
       ref={ref}
@@ -57,11 +66,10 @@ const FlowSteps = forwardRef<HTMLDivElement, FlowStepsProps>(({
       data-testid={testId}
       data-orientation={orientation}
     >
-      {
-        typeof children === 'function'
-          ? children(renderData)
-          : <FlowStepsDefault {...renderData} orientation={orientation} />
-      }
+      <div role="status" aria-live="polite" aria-atomic="true" className="txkit-fs-sr">
+        {summary}
+      </div>
+      {content}
     </div>
   )
 })

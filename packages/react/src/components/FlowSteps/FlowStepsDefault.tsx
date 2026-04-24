@@ -3,12 +3,12 @@ import type { StepStatus } from '@txkit/core'
 
 import type { FlowStepsRenderData } from '../../types/transaction'
 
-import loaderIcon from '../../assets/icons/loader.svg'
-import checkIcon from '../../assets/icons/check.svg'
-import alertCircleIcon from '../../assets/icons/alert-circle.svg'
-import xCircleIcon from '../../assets/icons/x-circle.svg'
-import banIcon from '../../assets/icons/ban.svg'
-import skipForwardIcon from '../../assets/icons/skip-forward.svg'
+import loaderIcon from '../../assets/icons/flow-steps/loader.svg'
+import checkIcon from '../../assets/icons/flow-steps/check.svg'
+import alertCircleIcon from '../../assets/icons/flow-steps/alert-circle.svg'
+import xCircleIcon from '../../assets/icons/flow-steps/x-circle.svg'
+import banIcon from '../../assets/icons/flow-steps/ban.svg'
+import skipForwardIcon from '../../assets/icons/flow-steps/skip-forward.svg'
 
 
 type FlowStepsDefaultProps = FlowStepsRenderData & {
@@ -65,72 +65,63 @@ const stepStatusLabel = (status: StepStatus): string => {
 
 const FlowStepsDefault: React.FC<FlowStepsDefaultProps> = ({
   steps,
-  currentStepIndex,
-  totalSteps,
-  completedCount,
   orientation,
 }) => (
-  <>
-    <ol
-      className="txkit-fs-list"
-      aria-label="Transaction steps"
-      data-orientation={orientation}
-    >
-      {
-        steps.map((step, index) => {
-          const iconSrc = iconByStatus[step.status]
-          const spinning = isActiveStatus(step.status)
-          const showPill = step.isCurrent && spinning
+  <ol
+    className="txkit-fs-list"
+    aria-label="Transaction steps"
+    data-orientation={orientation}
+  >
+    {
+      steps.map((step, index) => {
+        const iconSrc = iconByStatus[step.status]
+        const spinning = isActiveStatus(step.status)
+        const showPill = step.isCurrent && spinning
 
-          return (
-            <li
-              key={step.id}
-              className="txkit-fs-item"
-              data-status={step.status}
-              aria-current={step.isCurrent ? 'step' : undefined}
-            >
-              <span className="txkit-fs-indicator" aria-hidden="true">
-                {
-                  iconSrc
-                    ? (
-                      <img
-                        src={iconSrc}
-                        alt=""
-                        className={
-                          `txkit-fs-indicator-icon${
-                            spinning ? ' txkit-fs-indicator-icon--spinning' : ''
-                          }`
-                        }
-                      />
-                    )
-                    : <span className="txkit-fs-indicator-number">{index + 1}</span>
-                }
-              </span>
+        return (
+          <li
+            key={step.id}
+            className="txkit-fs-item"
+            data-status={step.status}
+            aria-current={step.isCurrent ? 'step' : undefined}
+          >
+            <span className="txkit-fs-indicator" aria-hidden="true">
+              {
+                iconSrc
+                  ? (
+                    <img
+                      src={iconSrc}
+                      alt=""
+                      className={
+                        `txkit-fs-indicator-icon${
+                          spinning ? ' txkit-fs-indicator-icon--spinning' : ''
+                        }`
+                      }
+                    />
+                  )
+                  : <span className="txkit-fs-indicator-number">{index + 1}</span>
+              }
+            </span>
 
-              <div className="txkit-fs-text">
-                <span className="txkit-fs-label">{step.label}</span>
-                {step.description && (
-                  <span className="txkit-fs-description">{step.description}</span>
-                )}
-              </div>
-
-              {showPill && (
-                <span className="txkit-fs-pill">In Progress</span>
+            <div className="txkit-fs-text">
+              <span className="txkit-fs-label">{step.label}</span>
+              {step.description && (
+                <span className="txkit-fs-description">{step.description}</span>
               )}
+            </div>
 
-              <span className="txkit-fs-sr">
-                {`Status: ${stepStatusLabel(step.status)}`}
-              </span>
-            </li>
-          )
-        })
-      }
-    </ol>
+            {showPill && (
+              <span className="txkit-fs-pill">In Progress</span>
+            )}
 
-    <div role="status" aria-live="polite" className="txkit-fs-sr">
-      {`Step ${currentStepIndex + 1} of ${totalSteps}: ${completedCount} completed`}
-    </div>
-  </>
+            <span className="txkit-fs-sr">
+              {`Status: ${stepStatusLabel(step.status)}`}
+            </span>
+          </li>
+        )
+      })
+    }
+  </ol>
 )
 
 

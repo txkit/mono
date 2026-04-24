@@ -454,8 +454,10 @@
   transition: border-color var(--txkit-duration-fast) var(--txkit-ease-default);
 }
 
-.txkit-cw-search:focus {
+.txkit-cw-search:focus-visible {
   border-color: var(--txkit-color-primary);
+  outline: 2px solid var(--txkit-color-primary);
+  outline-offset: 2px;
 }
 
 .txkit-cw-search::placeholder {
@@ -793,7 +795,7 @@
   min-width: 280px;
   background: var(--txkit-color-bg);
   border: 1px solid var(--txkit-color-border);
-  border-radius: var(--txkit-radius-xl);
+  border-radius: var(--txkit-radius-lg);
   box-shadow: var(--txkit-shadow-lg);
   z-index: var(--txkit-z-dropdown, 1000);
   overflow: hidden;

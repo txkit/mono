@@ -37,28 +37,31 @@ const FlowProgress = forwardRef<HTMLDivElement, FlowProgressProps>(({
     }
   }, [ flowEntry ])
 
-  // Don't render if no flow or idle
-  if (!renderData || renderData.status === 'idle') {
-    return null
+  const hasActiveFlow = Boolean(renderData) && renderData?.status !== 'idle'
+
+  let content: React.ReactNode = null
+  if (hasActiveFlow && renderData) {
+    content = typeof children === 'function'
+      ? children(renderData)
+      : (
+        <FlowProgressDefault
+          {...renderData}
+          showSummary={showSummary}
+          summaryLabel={summaryLabel}
+        />
+      )
   }
 
+  // Root stays mounted so the progressbar appears INTO a stable container —
+  // avoids remount churn and keeps ref identity stable across flow lifecycles.
   return (
     <div
       ref={ref}
       className={cx('txkit-fp', className)}
       data-testid={testId}
+      data-active={hasActiveFlow ? 'true' : undefined}
     >
-      {
-        typeof children === 'function'
-          ? children(renderData)
-          : (
-            <FlowProgressDefault
-              {...renderData}
-              showSummary={showSummary}
-              summaryLabel={summaryLabel}
-            />
-          )
-      }
+      {content}
     </div>
   )
 })

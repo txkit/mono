@@ -215,15 +215,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .txkit-ft-content {
-    animation: txkit-ft-fade-in var(--txkit-duration-normal) var(--txkit-ease-default);
+    animation: none;
   }
 
   .txkit-ft-dismiss {
     transition: none;
-  }
-
-  @keyframes txkit-ft-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
   }
 }

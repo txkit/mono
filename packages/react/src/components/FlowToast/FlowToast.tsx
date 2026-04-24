@@ -28,6 +28,8 @@ const FlowToast = forwardRef<HTMLDivElement, FlowToastProps>(({
   const [ toastDescription, setToastDescription ] = useState<string | undefined>()
   const [ toastType, setToastType ] = useState<'success' | 'error' | 'info' | 'warning'>('info')
   const [ toastStepId, setToastStepId ] = useState<string | undefined>()
+  const [ hovered, setHovered ] = useState(false)
+  const [ focused, setFocused ] = useState(false)
 
   const flowStatus = flowEntry?.flow.status
 
@@ -56,16 +58,19 @@ const FlowToast = forwardRef<HTMLDivElement, FlowToastProps>(({
     setVisible(true)
   }, [ flowStatus, flowEntry ])
 
-  // Auto-dismiss
+  const isErrorToast = toastType === 'error'
+  const isPaused = hovered || focused
+  // Errors never auto-dismiss: user must acknowledge. WCAG 2.2.1 Timing Adjustable.
+  const shouldAutoDismiss = visible && autoDismiss > 0 && !isErrorToast && !isPaused
+
   useEffect(() => {
-    if (!visible || autoDismiss <= 0) {
+    if (!shouldAutoDismiss) {
       return
     }
     const timer = setTimeout(() => setVisible(false), autoDismiss)
     return () => clearTimeout(timer)
-  }, [ visible, autoDismiss ])
+  }, [ shouldAutoDismiss, autoDismiss, toastMessage ])
 
-  // ESC to dismiss active toast
   useEffect(() => {
     if (!visible) {
       return
@@ -81,6 +86,16 @@ const FlowToast = forwardRef<HTMLDivElement, FlowToastProps>(({
 
   const dismiss = useCallback(() => setVisible(false), [])
 
+  const handleMouseEnter = useCallback(() => setHovered(true), [])
+  const handleMouseLeave = useCallback(() => setHovered(false), [])
+  const handleFocus = useCallback(() => setFocused(true), [])
+  const handleBlur = useCallback((event: React.FocusEvent<HTMLDivElement>) => {
+    const nextTarget = event.relatedTarget
+    if (!nextTarget || !event.currentTarget.contains(nextTarget)) {
+      setFocused(false)
+    }
+  }, [])
+
   const renderData: FlowToastRenderData = useMemo(() => ({
     visible,
     message: toastMessage,
@@ -90,33 +105,39 @@ const FlowToast = forwardRef<HTMLDivElement, FlowToastProps>(({
     dismiss,
   }), [ visible, toastMessage, toastDescription, toastType, toastStepId, dismiss ])
 
-  if (!visible) {
-    return null
+  let content: React.ReactNode = null
+  if (visible) {
+    content = typeof children === 'function'
+      ? children(renderData)
+      : <FlowToastDefault {...renderData} />
   }
 
-  const isErrorToast = toastType === 'error'
-  const toastElement = (
+  // Keep the live region always mounted so screen readers observe content changes.
+  // A live region populated at mount time is not always announced; content must
+  // appear INTO an existing region for reliable SR announcement.
+  const viewport = (
     <div
       ref={ref}
       className={cx('txkit-root', themeClass, 'txkit-ft', `txkit-ft-${position}`, className)}
       data-testid={testId}
+      data-visible={visible ? 'true' : undefined}
       role={isErrorToast ? 'alert' : 'status'}
       aria-live={isErrorToast ? 'assertive' : 'polite'}
+      aria-atomic="true"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
     >
-      {
-        typeof children === 'function'
-          ? children(renderData)
-          : <FlowToastDefault {...renderData} />
-      }
+      {content}
     </div>
   )
 
-  // Portal to body for proper positioning
   if (typeof document !== 'undefined') {
-    return createPortal(toastElement, document.body)
+    return createPortal(viewport, document.body)
   }
 
-  return toastElement
+  return viewport
 })
 
 FlowToast.displayName = 'FlowToast'

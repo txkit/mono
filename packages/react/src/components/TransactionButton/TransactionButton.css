@@ -373,7 +373,8 @@
   .txkit-txb-details,
   .txkit-txb-force,
   .txkit-txb-cancel,
-  .txkit-txb-explorer {
+  .txkit-txb-explorer,
+  .txkit-txb-progress-dot {
     transition: none;
   }
 
@@ -386,6 +387,10 @@
 
   .txkit-txb-button:hover:not(:disabled),
   .txkit-txb-button:active:not(:disabled) {
+    transform: none;
+  }
+
+  .txkit-txb-progress-dot[data-state="current"] {
     transform: none;
   }
 
