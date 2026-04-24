@@ -2,7 +2,8 @@ import { useRef, useMemo, useState, useEffect } from 'react'
 
 import CwMockButton from './CwMockButton'
 import CwMockDropdown from './CwMockDropdown'
-import { useControls, ControlPanel, StatePanel, useTxkitThemeClass } from '../../components'
+import generateCode from '../../helpers/generateCode'
+import { useControls, ControlPanel, StatePanel, CodeBlock, useTxkitThemeClass } from '../../components'
 
 
 const CW_STATES = [
@@ -54,6 +55,10 @@ const MockPreview = () => {
   const activeKeys = activePropsByState[currentState] ?? []
   const dimmedKeys = allPropKeys.filter((key) => !activeKeys.includes(key))
   const stateEntry = entries.find((e) => e.def.type === 'state')
+  const propEntries = entries.filter((e) => e.def.type !== 'state')
+  const code = useMemo(() => generateCode('ConnectWallet', propEntries, {
+    importLine: "import { ConnectWallet } from '@txkit/react'",
+  }), [ propEntries ])
 
   // Close dropdown when leaving a dropdown-capable state
   useEffect(() => {
@@ -89,7 +94,7 @@ const MockPreview = () => {
         <div className="story-live-left">
           <StatePanel entry={stateEntry} />
           <div className="story-live-preview-card">
-            <div ref={wrapperRef} className={`txkit-root ${txkitThemeClass} story-live-preview-inner`} style={{ alignItems: 'center' }}>
+            <div ref={wrapperRef} className={`txkit-root ${txkitThemeClass} story-live-preview-inner`}>
               <CwMockButton
                 state={currentState}
                 label={String(values.label ?? 'Connect Wallet')}
@@ -107,6 +112,7 @@ const MockPreview = () => {
               </CwMockButton>
             </div>
           </div>
+          <CodeBlock code={code} />
         </div>
         <div className="story-live-right">
           <ControlPanel entries={entries} dimmedKeys={dimmedKeys} isDefault={isDefault} onReset={reset} />

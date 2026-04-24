@@ -26,14 +26,6 @@ const activePropsByState: Record<string, readonly string[]> = {
   error: [ 'size', 'variant' ],
 }
 
-const stateHints: Record<string, string> = {
-  disconnected: 'label, size, variant',
-  connecting: 'size, variant',
-  connected: 'size, variant, avatarStyle, chainId, showBalance, showFiat, showAvatar, showEns',
-  'wrong-chain': 'chainId (set to sepolia to trigger), plus all connected-state props',
-  error: 'size, variant',
-}
-
 const InteractiveConnectWallet = () => {
   const walletState = useWalletState()
 
@@ -51,7 +43,6 @@ const InteractiveConnectWallet = () => {
 
   const activeKeys = activePropsByState[walletState.state] ?? []
   const dimmedKeys = allPropKeys.filter((key) => !activeKeys.includes(key))
-  const activeHint = stateHints[walletState.state] ?? ''
 
   const code = useMemo(() => generateCode('ConnectWallet', entries, {
     importLine: "import { ConnectWallet } from '@txkit/react'",
@@ -64,7 +55,7 @@ const InteractiveConnectWallet = () => {
     <div className="story-live-layout">
       <div className="story-live-left">
         <div className="story-live-preview-card">
-          <div className="story-live-preview-inner" style={{ alignItems: 'center' }}>
+          <div className="story-live-preview-inner">
             <ConnectWallet
               label={values.label}
               size={values.size as 'default' | 'compact'}
@@ -87,7 +78,6 @@ const InteractiveConnectWallet = () => {
           }}
         >
           State: <strong style={{ color: '#818cf8' }}>{walletState.state}</strong>
-          {activeHint && <span> - active props: {activeHint}</span>}
         </div>
       </div>
       <div className="story-live-right">
