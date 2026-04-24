@@ -48,6 +48,18 @@
   cursor: not-allowed;
 }
 
+/* Explicit user-disabled (idle state) - dimmed + desaturated + cursor cue */
+.txkit-txb-button[data-state="pending"]:disabled {
+  opacity: 0.5;
+  filter: grayscale(0.3);
+}
+
+/* Suppress entrance animations on first render (mount into terminal state) */
+.txkit-txb[data-mount="true"] .txkit-txb-button {
+  animation: none;
+  transition: none;
+}
+
 /* State: pending (not started yet) */
 
 .txkit-txb-button[data-state="pending"] {

@@ -1,5 +1,5 @@
 'use client'
-import React, { useMemo, useCallback, forwardRef } from 'react'
+import React, { useMemo, useCallback, useEffect, useRef, useState, forwardRef } from 'react'
 import type { StepStatus } from '@txkit/core'
 import { cx, getExplorerUrl } from '@txkit/core'
 
@@ -215,11 +215,24 @@ const TransactionButton = forwardRef<HTMLDivElement, TransactionButtonProps>(({
 
   const isCustomRender = typeof children === 'function'
 
+  // First-render guard: suppress entrance animations so the button does not
+  // flash a success-glow / shake when it mounts directly into a terminal state
+  // (e.g. completed on rehydrate). Flips to "false" after the first paint.
+  const [ isMounting, setIsMounting ] = useState(true)
+  const mountedRef = useRef(false)
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true
+      setIsMounting(false)
+    }
+  }, [])
+
   return (
     <div
       ref={ref}
       className={cx('txkit-txb', className)}
       data-testid={testId}
+      data-mount={isMounting ? 'true' : undefined}
       role="group"
       aria-label="Transaction"
       onKeyDown={isCustomRender ? undefined : handleKeyDown}
