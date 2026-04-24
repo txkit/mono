@@ -178,7 +178,7 @@ const AppContent = () => {
         <div className="playground-content">
         {
           active === null
-            ? <Home onStart={() => navigate(storyNames[0])} startLabel={storyNames[0]} />
+            ? <Home onStart={() => navigate(storyNames[0])} />
             : (
               <>
                 <nav className="playground-breadcrumb" aria-label="Breadcrumb">
