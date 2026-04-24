@@ -793,7 +793,7 @@
   min-width: 280px;
   background: var(--txkit-color-bg);
   border: 1px solid var(--txkit-color-border);
-  border-radius: var(--txkit-radius-lg);
+  border-radius: var(--txkit-radius-xl);
   box-shadow: var(--txkit-shadow-lg);
   z-index: var(--txkit-z-dropdown, 1000);
   overflow: hidden;

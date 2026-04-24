@@ -40,6 +40,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
   onError,
   onConnect,
   onDisconnect,
+  onRequestConnect,
   formatAddress,
 }, ref) => {
   const [ panel, setPanel ] = useState<'closed' | 'modal' | 'dropdown'>('closed')
@@ -48,10 +49,12 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
   const onErrorRef = useRef(onError)
   const onConnectRef = useRef(onConnect)
   const onDisconnectRef = useRef(onDisconnect)
+  const onRequestConnectRef = useRef(onRequestConnect)
 
   onErrorRef.current = onError
   onConnectRef.current = onConnect
   onDisconnectRef.current = onDisconnect
+  onRequestConnectRef.current = onRequestConnect
 
   // Track which connector the user selected (useConnection().connector is undefined during pending)
   const [ selectedConnector, setSelectedConnector ] = useState<Connector | undefined>(undefined)
@@ -121,6 +124,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
   }, [ state ])
 
   const connectingWallet = state === 'connecting' ? selectedConnector?.name : undefined
+  const connectingConnector = state === 'connecting' ? selectedConnector : undefined
 
   // onConnect / onDisconnect callbacks
   useEffect(() => {
@@ -157,14 +161,15 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
   const handleButtonClick = useCallback(() => {
     switch (state) {
       case 'disconnected':
+      case 'error':
+        if (onRequestConnectRef.current?.() === true) {
+          return
+        }
         setPanel('modal')
         break
       case 'connected':
       case 'wrong-chain':
         setPanel((prev) => prev === 'dropdown' ? 'closed' : 'dropdown')
-        break
-      case 'error':
-        setPanel('modal')
         break
     }
   }, [ state ])

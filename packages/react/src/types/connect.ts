@@ -115,6 +115,10 @@ export type ConnectWalletProps = {
   onConnect?: (data: { address: string; connector: string }) => void
   /** Called after wallet disconnection */
   onDisconnect?: () => void
+  /** Intercept the connect request. Return `true` to skip the built-in wallet
+   *  selector modal - useful when delegating to RainbowKit's `useConnectModal`,
+   *  Reown AppKit, or any custom wallet picker. */
+  onRequestConnect?: () => boolean | void
   /** Custom address display formatter */
   formatAddress?: (address: string, ensName?: string) => string
   /** Button size variant. @default 'default' */
