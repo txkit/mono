@@ -17,8 +17,6 @@ type RainbowKitDemoProps = {
   showEns: boolean
 }
 
-// Delegate the connect flow to RainbowKit via `onRequestConnect`. Connected-
-// state dropdown (balance, chain switch, disconnect) remains txKit's native UI.
 const RainbowKitBridge = ({
   connectLabel,
   size,
@@ -56,9 +54,6 @@ const RainbowKitBridge = ({
   )
 }
 
-// Shared wagmi config: RainbowKitProvider consumes the WagmiProvider/QueryClient
-// already provided by the outer <TxKitProvider>. No nested WagmiProvider -> no
-// duplicate useSyncExternalStore subscribers -> no "Maximum update depth" loop.
 const RainbowKitDemo = (props: RainbowKitDemoProps) => (
   <RainbowKitProvider modalSize="compact" locale="en">
     <RainbowKitBridge {...props} />
