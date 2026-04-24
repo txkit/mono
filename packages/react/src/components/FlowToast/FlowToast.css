@@ -40,12 +40,13 @@
   align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: 10px;
+  border: 1px solid var(--txkit-color-border);
+  border-radius: var(--txkit-radius-lg);
+  background: var(--txkit-color-bg);
   font-family: var(--txkit-font-family);
   box-shadow:
     0 4px 6px -1px oklch(0 0 0 / 0.08),
-    0 2px 4px -1px oklch(0 0 0 / 0.04),
-    0 0 0 1px oklch(0 0 0 / 0.03);
+    0 2px 4px -1px oklch(0 0 0 / 0.04);
   animation: txkit-ft-slide-in-right var(--txkit-duration-normal) var(--txkit-ease-enter);
 }
 
@@ -58,24 +59,7 @@
 .txkit-dark .txkit-ft-content {
   box-shadow:
     0 4px 6px -1px oklch(0 0 0 / 0.3),
-    0 2px 4px -1px oklch(0 0 0 / 0.2),
-    0 0 0 1px oklch(1 0 0 / 0.05);
-}
-
-.txkit-ft-content[data-type="success"] {
-  background: var(--txkit-color-success-bg);
-}
-
-.txkit-ft-content[data-type="error"] {
-  background: var(--txkit-color-error-bg);
-}
-
-.txkit-ft-content[data-type="info"] {
-  background: var(--txkit-color-info-bg);
-}
-
-.txkit-ft-content[data-type="warning"] {
-  background: var(--txkit-color-warning-bg);
+    0 2px 4px -1px oklch(0 0 0 / 0.2);
 }
 
 /* --- Icon (tinted by type via CSS mask so SVG adopts theme color) --- */
@@ -162,11 +146,7 @@
 }
 
 .txkit-ft-dismiss:hover {
-  background-color: oklch(0 0 0 / 0.05);
-}
-
-.txkit-dark .txkit-ft-dismiss:hover {
-  background-color: oklch(1 0 0 / 0.08);
+  color: var(--txkit-color-text);
 }
 
 .txkit-ft-dismiss:focus-visible {
