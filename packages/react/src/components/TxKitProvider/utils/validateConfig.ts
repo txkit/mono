@@ -1,6 +1,6 @@
 import { InvalidConfigError } from '@txkit/core'
 
-import '../types/global'
+import '../../../types/global'
 
 
 const validateConfig = (config: TxKit.Config) => {

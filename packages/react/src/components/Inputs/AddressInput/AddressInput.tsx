@@ -3,10 +3,10 @@ import type { InputHTMLAttributes } from 'react'
 
 import { cx } from '@txkit/core'
 
-import xIcon from '../../assets/icons/x-small.svg'
-import checkIcon from '../../assets/icons/check-small.svg'
-import warningIcon from '../../assets/icons/warning-small.svg'
-import spinnerIcon from '../../assets/icons/spinner.svg'
+import xIcon from '../../../assets/icons/x-small.svg'
+import checkIcon from '../../../assets/icons/check-small.svg'
+import warningIcon from '../../../assets/icons/warning-small.svg'
+import spinnerIcon from '../../../assets/icons/spinner.svg'
 
 import '../Inputs.css'
 
