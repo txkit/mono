@@ -4,6 +4,7 @@ import { ConnectWallet, useWalletState } from '@txkit/react'
 
 import generateCode from '../../helpers/generateCode'
 import { useControls, ControlPanel, CodeBlock } from '../../components'
+import RainbowKitDemo from './RainbowKitDemo'
 
 
 
@@ -34,6 +35,34 @@ const stateHints: Record<string, string> = {
   error: 'size, variant',
 }
 
+const rainbowKitSnippet = `import { RainbowKitProvider, useConnectModal } from '@rainbow-me/rainbowkit'
+import '@rainbow-me/rainbowkit/styles.css'
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+
+// Delegate the connect flow via onRequestConnect. Connected-state dropdown
+// (balance, chain switch, disconnect) remains txKit's native UI.
+const TxKitWithRainbowKit = () => {
+  const { openConnectModal } = useConnectModal()
+
+  return (
+    <ConnectWallet
+      onRequestConnect={() => {
+        if (!openConnectModal) return false
+        openConnectModal()
+        return true
+      }}
+    />
+  )
+}
+
+const App = () => (
+  <TxKitProvider config={txKitConfig}>
+    <RainbowKitProvider modalSize="compact" locale="en">
+      <TxKitWithRainbowKit />
+    </RainbowKitProvider>
+  </TxKitProvider>
+)`
+
 const InteractiveConnectWallet = () => {
   const walletState = useWalletState()
 
@@ -47,35 +76,66 @@ const InteractiveConnectWallet = () => {
     showFiat: { type: 'boolean', default: false },
     showAvatar: { type: 'boolean', default: true },
     showEns: { type: 'boolean', default: true },
+    withRainbowKit: {
+      type: 'boolean',
+      default: false,
+      description: 'Render inside an existing RainbowKitProvider (shared wagmi)',
+    },
   })
 
   const activeKeys = activePropsByState[walletState.state] ?? []
   const dimmedKeys = allPropKeys.filter((key) => !activeKeys.includes(key))
   const activeHint = stateHints[walletState.state] ?? ''
 
-  const code = useMemo(() => generateCode('ConnectWallet', entries, {
+  const generatedCode = useMemo(() => generateCode('ConnectWallet', entries, {
+    exclude: [ 'withRainbowKit' ],
     importLine: "import { ConnectWallet } from '@txkit/react'",
     formatProp: {
       chainId: (value) => `{${value}.id}`,
     },
   }), [ entries ])
 
+  const code = values.withRainbowKit ? rainbowKitSnippet : generatedCode
+
+  const size = values.size as 'default' | 'compact'
+  const variant = values.variant as 'default' | 'outline' | 'ghost' | 'soft'
+  const avatarStyle = values.avatarStyle as 'gradient' | 'pixel'
+  const chainId = chainIdMap[values.chainId]
+
   return (
     <div className="story-live-layout">
       <div className="story-live-left">
         <div className="story-live-preview-card">
           <div className="story-live-preview-inner" style={{ display: 'flex', justifyContent: 'center' }}>
-            <ConnectWallet
-              label={values.label}
-              size={values.size as 'default' | 'compact'}
-              variant={values.variant as 'default' | 'outline' | 'ghost' | 'soft'}
-              avatarStyle={values.avatarStyle as 'gradient' | 'pixel'}
-              chainId={chainIdMap[values.chainId]}
-              showBalance={values.showBalance}
-              showFiat={values.showFiat}
-              showAvatar={values.showAvatar}
-              showEns={values.showEns}
-            />
+            {
+              values.withRainbowKit
+                ? (
+                  <RainbowKitDemo
+                    connectLabel={values.label}
+                    size={size}
+                    variant={variant}
+                    avatarStyle={avatarStyle}
+                    chainId={chainId}
+                    showBalance={values.showBalance}
+                    showFiat={values.showFiat}
+                    showAvatar={values.showAvatar}
+                    showEns={values.showEns}
+                  />
+                )
+                : (
+                  <ConnectWallet
+                    label={values.label}
+                    size={size}
+                    variant={variant}
+                    avatarStyle={avatarStyle}
+                    chainId={chainId}
+                    showBalance={values.showBalance}
+                    showFiat={values.showFiat}
+                    showAvatar={values.showAvatar}
+                    showEns={values.showEns}
+                  />
+                )
+            }
           </div>
         </div>
         <CodeBlock code={code} />

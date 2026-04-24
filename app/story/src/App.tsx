@@ -43,7 +43,8 @@ const unslugify = (slug: string): StoryName | null =>
 const getInitialStory = (): StoryName | null => {
   const hash = window.location.hash.slice(1)
   if (hash) {
-    const found = unslugify(hash)
+    const [ storySlug ] = hash.split('/')
+    const found = unslugify(storySlug)
     if (found) {
       return found
     }
@@ -82,8 +83,17 @@ const AppContent = () => {
         setActive(null)
         return
       }
-      const found = unslugify(hash)
-      setActive(found)
+      const [ storySlug, sectionSlug ] = hash.split('/')
+      const found = unslugify(storySlug)
+      if (found) {
+        setActive(found)
+        if (sectionSlug) {
+          requestAnimationFrame(() => {
+            document.getElementById(sectionSlug)?.scrollIntoView({ block: 'start' })
+          })
+        }
+      }
+      // else: unknown hash - preserve current state (don't fall back to Home)
     }
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
@@ -155,8 +165,9 @@ const AppContent = () => {
             rel="noopener noreferrer"
             aria-label="View on GitHub"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.06-3.34.72-4.04-1.6-4.04-1.6-.55-1.4-1.34-1.77-1.34-1.77-1.09-.75.08-.73.08-.73 1.2.09 1.83 1.24 1.83 1.24 1.07 1.83 2.81 1.3 3.5.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.82 1.1.82 2.22 0 1.6-.01 2.89-.01 3.28 0 .32.22.7.83.58A12 12 0 0 0 24 12.5C24 5.87 18.63.5 12 .5z" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+              <path d="M9 18c-4.51 2-5-2-7-2" />
             </svg>
             View on GitHub
           </a>
@@ -178,7 +189,7 @@ const AppContent = () => {
         <div className="playground-content">
         {
           active === null
-            ? <Home onStart={() => navigate(storyNames[0])} />
+            ? <Home onStart={() => navigate(storyNames[0])} startLabel="Get started" />
             : (
               <>
                 <nav className="playground-breadcrumb" aria-label="Breadcrumb">

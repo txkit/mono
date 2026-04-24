@@ -55,24 +55,34 @@ const generateCode = (
     }
   }
 
+  const jsxLines: string[] = []
+
+  if (props.length === 0) {
+    jsxLines.push(`<${componentName} />`)
+  }
+  else if (props.length <= 2) {
+    jsxLines.push(`<${componentName} ${props.join(' ')} />`)
+  }
+  else {
+    jsxLines.push(`<${componentName}`)
+    for (const prop of props) {
+      jsxLines.push(`  ${prop}`)
+    }
+    jsxLines.push('/>')
+  }
+
   const lines: string[] = []
 
   if (importLine) {
     lines.push(importLine, '')
-  }
-
-  if (props.length === 0) {
-    lines.push(`<${componentName} />`)
-  }
-  else if (props.length <= 2) {
-    lines.push(`<${componentName} ${props.join(' ')} />`)
+    lines.push('const MyComponent: React.FC = () => (')
+    for (const line of jsxLines) {
+      lines.push(`  ${line}`)
+    }
+    lines.push(')')
   }
   else {
-    lines.push(`<${componentName}`)
-    for (const prop of props) {
-      lines.push(`  ${prop}`)
-    }
-    lines.push('/>')
+    lines.push(...jsxLines)
   }
 
   return lines.join('\n')

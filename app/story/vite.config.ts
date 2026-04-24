@@ -13,6 +13,12 @@ export default defineConfig({
       // Since story reads from @txkit/react source via alias, we need to resolve it.
       '@paulmillr/qr': path.resolve(__dirname, '../../packages/react/node_modules/@paulmillr/qr'),
     },
+    // Dedupe peer deps so @txkit/react and @rainbow-me/rainbowkit share a
+    // single WagmiContext / QueryClientContext / React tree. Without this,
+    // pnpm resolves wagmi twice (one per consumer) -> two providers -> hooks
+    // in one subtree can't see providers from the other -> "must be used
+    // within WagmiProvider" or update-depth loops.
+    dedupe: [ 'wagmi', 'viem', 'react', 'react-dom', '@tanstack/react-query' ],
   },
   build: {
     rollupOptions: {
