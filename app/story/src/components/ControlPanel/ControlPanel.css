@@ -7,7 +7,7 @@
   padding: 24px;
   border-radius: var(--pg-radius-lg);
   border: 1px solid var(--pg-border);
-  background: var(--pg-muted);
+  background: var(--pg-card);
   position: sticky;
   top: 16px;
   z-index: 1;
@@ -81,7 +81,15 @@
 }
 
 .control-group--toggles {
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 12px;
+}
+
+@media (max-width: 640px) {
+  .control-group--toggles {
+    grid-template-columns: 1fr;
+  }
 }
 
 .control-divider {
@@ -281,15 +289,20 @@
 
 .control-select {
   width: 100%;
-  padding: 8px 12px;
+  padding: 8px 32px 8px 12px;
   border: 1px solid var(--pg-border);
   border-radius: var(--pg-radius);
-  background: var(--pg-card);
+  background-color: var(--pg-card);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
   color: var(--pg-fg);
   font-size: 13px;
   font-family: 'IBM Plex Mono', monospace;
   outline: none;
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
   transition: all 150ms ease;
 }
 
