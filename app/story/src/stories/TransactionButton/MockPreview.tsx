@@ -42,6 +42,9 @@ const MockPreview = () => {
   const txkitThemeClass = useTxkitThemeClass()
   const schema = useMemo(() => ({
     state: { type: 'state' as const, default: 'pending', states: TXB_STATES },
+    showSteps: { type: 'boolean' as const, default: true },
+    showProgress: { type: 'boolean' as const, default: true },
+    showToast: { type: 'boolean' as const, default: true },
   }), [])
 
   const { values, entries, isDefault, reset } = useControls(schema)
@@ -70,9 +73,9 @@ const MockPreview = () => {
                   {stateLabels[activeState] ?? 'Send 0.001 ETH'}
                 </button>
               </div>
-              <FlowSteps />
-              <FlowProgress />
-              <FlowToast />
+              {values.showSteps && <FlowSteps />}
+              {values.showProgress && <FlowProgress />}
+              {values.showToast && <FlowToast />}
             </div>
           </div>
         </div>
