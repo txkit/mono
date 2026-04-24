@@ -5,12 +5,29 @@ import { formatDecodedCalldata } from '@txkit/core'
 import ExternalLinkIcon from './ExternalLinkIcon'
 import type { TransactionButtonLabels } from './labels'
 
-import arrowRightIcon from '../../assets/icons/arrow-right.svg'
 import loaderIcon from '../../assets/icons/loader.svg'
 import checkIcon from '../../assets/icons/check.svg'
 
 
 const idleStates: readonly StepStatus[] = [ 'pending', 'error', 'simulation-failed', 'rejected' ]
+
+const ArrowRightIcon = () => (
+  <svg
+    className="txkit-txb-icon"
+    viewBox="0 0 24 24"
+    width="20"
+    height="20"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M5 12h14" />
+    <path d="m12 5 7 7-7 7" />
+  </svg>
+)
 
 
 export type TransactionButtonDefaultProps = {
@@ -102,27 +119,24 @@ const TransactionButtonDefault: React.FC<TransactionButtonDefaultProps> = ({
         aria-busy={isProcessing}
       >
         {
-          (() => {
-            if (state === 'completed') {
-              return <img src={checkIcon} alt="" className="txkit-txb-icon" aria-hidden="true" />
-            }
-            if (isProcessing) {
-              return (
-                <img
-                  src={loaderIcon}
-                  alt=""
-                  className="txkit-txb-icon txkit-txb-icon--spinning"
-                  aria-hidden="true"
-                />
-              )
-            }
-            if (idleStates.includes(state)) {
-              return <img src={arrowRightIcon} alt="" className="txkit-txb-icon" aria-hidden="true" />
-            }
-            return null
-          })()
+          state === 'completed' && (
+            <img src={checkIcon} alt="" className="txkit-txb-icon" aria-hidden="true" />
+          )
+        }
+        {
+          isProcessing && (
+            <img
+              src={loaderIcon}
+              alt=""
+              className="txkit-txb-icon txkit-txb-icon--spinning"
+              aria-hidden="true"
+            />
+          )
         }
         <span>{buttonLabel}</span>
+        {
+          idleStates.includes(state) && <ArrowRightIcon />
+        }
         {
           state === 'confirming-risk' && confirmCountdown > 0 && (
             <span className="txkit-txb-countdown" aria-hidden="true">{confirmCountdown}</span>
