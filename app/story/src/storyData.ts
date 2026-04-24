@@ -71,6 +71,7 @@ export const componentProps = {
       { name: 'onConnect', type: '(data) => void', description: 'Called after successful connection' },
       { name: 'onDisconnect', type: '() => void', description: 'Called after disconnect' },
       { name: 'onError', type: '(error) => void', description: 'Called on connection error' },
+      { name: 'onRequestConnect', type: '() => boolean | void', description: 'Called when the disconnected button is clicked. Return true to suppress the built-in modal (e.g. to delegate the connect flow to RainbowKit)' },
       { name: 'formatAddress', type: '(address, ensName?) => string', description: 'Custom address display format' },
       { name: 'children', type: '(data) => ReactNode', description: 'Render function for full control' },
     ],
