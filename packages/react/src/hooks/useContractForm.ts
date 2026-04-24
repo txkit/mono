@@ -29,6 +29,7 @@ const useContractForm = (options: UseContractFormOptions): UseContractFormReturn
     computedParams,
     defaultParams,
     hiddenParams,
+    balance = 0n,
     onSuccess,
     onError,
   } = options
@@ -136,8 +137,8 @@ const useContractForm = (options: UseContractFormOptions): UseContractFormReturn
   const isPayable = Boolean(abiFunction?.stateMutability === 'payable')
 
   const warnings = useMemo<SecurityWarning[]>(() => {
-    return getSecurityWarnings(functionName, values, allFields)
-  }, [ functionName, values, allFields ])
+    return getSecurityWarnings(functionName, values, allFields, balance)
+  }, [ functionName, values, allFields, balance ])
 
   const isValid = useMemo(() => {
     if (abiError) {

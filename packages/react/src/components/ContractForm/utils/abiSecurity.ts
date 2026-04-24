@@ -7,6 +7,39 @@ import type { DecodedCalldata } from '@txkit/core'
 import type { FieldDescriptor, SecurityWarning } from '../../../types/contract'
 
 
+// --- Approval risk tiers ---
+
+export type ApprovalRisk = 'safe' | 'large' | 'unlimited'
+
+const LARGE_APPROVAL_FACTOR = 10n
+const UNLIMITED_APPROVAL_FACTOR = 100n
+
+/**
+ * Classify an approval amount by its risk relative to the wallet balance.
+ *
+ * - unlimited: MAX_UINT256, or amount > balance * 100 (effectively infinite)
+ * - large: amount > balance * 10 (only approve if you trust the contract)
+ * - safe: within 10× balance
+ *
+ * When balance is unknown (0n), fall back to the binary MAX-only check.
+ */
+export const classifyApproval = (amount: bigint, balance: bigint): ApprovalRisk => {
+  if (isMaxApproval(amount)) {
+    return 'unlimited'
+  }
+  if (balance <= 0n) {
+    return 'safe'
+  }
+  if (amount > balance * UNLIMITED_APPROVAL_FACTOR) {
+    return 'unlimited'
+  }
+  if (amount > balance * LARGE_APPROVAL_FACTOR) {
+    return 'large'
+  }
+  return 'safe'
+}
+
+
 // --- Security ---
 
 const DANGEROUS_FUNCTIONS: Record<string, { level: 'warning' | 'danger'; message: string }> = {
@@ -38,7 +71,8 @@ export const isDangerousFunction = (functionName: string): boolean => {
 export const getSecurityWarnings = (
   functionName: string,
   values: Record<string, string>,
-  fields: FieldDescriptor[]
+  fields: FieldDescriptor[],
+  balance: bigint = 0n,
 ): SecurityWarning[] => {
   const warnings: SecurityWarning[] = []
 
@@ -47,7 +81,6 @@ export const getSecurityWarnings = (
     warnings.push({ level: dangerInfo.level, message: dangerInfo.message })
   }
 
-  // MAX_UINT256 detection for approve
   if (functionName === 'approve') {
     const amountField = fields.find((field) =>
       !field.isPayableValue && (field.fieldType === 'uint' || field.fieldType === 'int'),
@@ -57,10 +90,16 @@ export const getSecurityWarnings = (
       if (amountValue) {
         try {
           const amount = BigInt(amountValue)
-          if (isMaxApproval(amount)) {
+          const risk = classifyApproval(amount, balance)
+          if (risk === 'unlimited') {
             warnings.push({
               level: 'danger',
               message: 'Unlimited approval - grants permanent access to all your tokens of this type',
+            })
+          } else if (risk === 'large') {
+            warnings.push({
+              level: 'warning',
+              message: 'Approval is more than 10× your balance - only proceed if you trust this contract',
             })
           }
         } catch {

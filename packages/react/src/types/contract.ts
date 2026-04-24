@@ -135,6 +135,8 @@ export type UseContractFormOptions = Omit<ContractFormProps, 'className' | 'chil
   defaultParams?: Record<string, unknown>
   /** Param names managed by widget, hidden from form UI. Phase 3: widget integration */
   hiddenParams?: string[]
+  /** Current wallet token balance (wei). Enables multi-tier approval risk: > 10× = warning, > 100× = danger. Defaults to 0n (MAX-only check). */
+  balance?: bigint
 }
 
 /** Return value of useContractForm hook */
