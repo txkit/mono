@@ -3,7 +3,7 @@ import type { InputHTMLAttributes } from 'react'
 
 import { cx } from '@txkit/core'
 
-import './Inputs.css'
+import '../Inputs.css'
 
 
 export type CheckboxProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'> & {

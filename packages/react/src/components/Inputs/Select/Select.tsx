@@ -3,7 +3,7 @@ import type { SelectHTMLAttributes } from 'react'
 
 import { cx } from '@txkit/core'
 
-import './Inputs.css'
+import '../Inputs.css'
 
 
 export type SelectOption = {

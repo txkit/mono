@@ -3,23 +3,26 @@ import type { InputHTMLAttributes } from 'react'
 
 import { cx } from '@txkit/core'
 
-import './Inputs.css'
+import '../Inputs.css'
 
 
-export type TextInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> & {
+export type NumberInputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> & {
   /** Visible label above the input */
   label?: string
   /** Helper text shown below when there's no error */
   helperText?: string
   /** Error message replaces helper text and tints the field */
   error?: string
+  /** Currency or token symbol shown as right-aligned suffix (e.g. "ETH", "USDC") */
+  unit?: string
 }
 
-const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
+const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>((props, ref) => {
   const {
     label,
     helperText,
     error,
+    unit,
     id: idProp,
     className,
     disabled,
@@ -49,11 +52,18 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
           ref={ref}
           id={id}
           type="text"
+          inputMode="decimal"
+          data-type="number"
           className="txkit-input-field"
           disabled={disabled}
           aria-invalid={error ? true : undefined}
           aria-describedby={helperId}
         />
+        {
+          unit && (
+            <span className="txkit-input-unit" aria-hidden="true">{unit}</span>
+          )
+        }
       </div>
       {
         error
@@ -71,7 +81,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
     </div>
   )
 })
-TextInput.displayName = 'TextInput'
+NumberInput.displayName = 'NumberInput'
 
 
-export default TextInput
+export default NumberInput

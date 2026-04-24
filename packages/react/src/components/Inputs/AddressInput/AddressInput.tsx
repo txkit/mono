@@ -8,7 +8,7 @@ import checkIcon from '../../assets/icons/check-small.svg'
 import warningIcon from '../../assets/icons/warning-small.svg'
 import spinnerIcon from '../../assets/icons/spinner.svg'
 
-import './Inputs.css'
+import '../Inputs.css'
 
 
 export type AddressValidity = 'idle' | 'checking' | 'valid' | 'invalid' | 'warning'
