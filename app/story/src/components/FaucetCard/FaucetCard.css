@@ -1,0 +1,118 @@
+.faucet-card {
+  width: 100%;
+  padding: 24px;
+  border: 1px solid var(--pg-border, var(--tx-color-border));
+  border-radius: var(--pg-radius, var(--tx-radius-lg, 12px));
+  background: var(--pg-card, var(--tx-color-surface));
+  color: var(--pg-fg, var(--tx-color-text));
+  font-family: var(--tx-font-family);
+}
+
+.faucet-card-alert {
+  border-left-width: 3px;
+  border-left-color: var(--tx-color-warning);
+  background: var(--tx-color-warning-alpha);
+}
+
+.faucet-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.faucet-card-header-icon {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  color: var(--pg-muted-fg, var(--tx-color-text-secondary));
+}
+
+.faucet-card-alert .faucet-card-header-icon {
+  color: var(--tx-color-warning);
+}
+
+.faucet-card-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.faucet-card-title {
+  display: block;
+  margin: 0;
+  color: var(--pg-fg, var(--tx-color-text));
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.faucet-card-alert .faucet-card-title {
+  color: var(--tx-color-warning);
+}
+
+.faucet-card-subtitle {
+  margin: 4px 0 0;
+  color: var(--pg-muted-fg, var(--tx-color-text-secondary));
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.faucet-card-extra {
+  margin: 6px 0 0;
+  color: var(--pg-muted-fg, var(--tx-color-text-secondary));
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.faucet-card-extra code {
+  padding: 1px 5px;
+  border-radius: var(--tx-radius-sm);
+  background: var(--pg-bg, var(--tx-color-bg-secondary));
+  font-family: var(--tx-font-mono, 'IBM Plex Mono', monospace);
+  font-size: 11px;
+}
+
+.faucet-card-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.faucet-card-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.faucet-card-row-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--pg-primary, var(--tx-color-primary));
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--tx-radius-sm);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.faucet-card-row-link:hover {
+  text-decoration: underline;
+}
+
+.faucet-card-row-link:focus-visible {
+  outline: 2px solid var(--pg-primary, var(--tx-color-primary));
+  outline-offset: 2px;
+}
+
+.faucet-card-row-sep {
+  color: var(--pg-muted-fg, var(--tx-color-text-secondary));
+  font-size: 13px;
+}
+
+.faucet-card-row-note {
+  color: var(--pg-muted-fg, var(--tx-color-text-secondary));
+  font-size: 12px;
+}

@@ -1,0 +1,105 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--tx-color-background);
+}
+
+.testnet-demo {
+  max-width: 720px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 48px 24px;
+  color: var(--tx-color-text);
+  font-family: var(--tx-font-family);
+  line-height: 1.5;
+}
+
+.testnet-demo__header {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--tx-color-border);
+  margin-bottom: 32px;
+}
+
+.testnet-demo__header h1 {
+  margin: 0 0 12px;
+  color: var(--tx-color-primary);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.testnet-demo__header p {
+  margin: 0;
+  color: var(--tx-color-text-secondary);
+  font-size: 14px;
+}
+
+.testnet-demo__header code {
+  padding: 2px 6px;
+  border-radius: var(--tx-radius-sm);
+  background: var(--tx-color-surface-raised);
+  color: var(--tx-color-text);
+  font-family: var(--tx-font-family-mono, monospace);
+  font-size: 13px;
+}
+
+.testnet-demo__section,
+.faucet-card {
+  margin-bottom: 24px;
+}
+
+.testnet-demo__section {
+  padding: 24px;
+  border: 1px solid var(--tx-color-border);
+  border-radius: var(--tx-radius-lg);
+  background: var(--tx-color-surface);
+}
+
+.testnet-demo__section h2 {
+  margin: 0 0 16px;
+  color: var(--tx-color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.testnet-demo__hint {
+  margin: 0 0 12px;
+  color: var(--tx-color-text-secondary);
+  font-size: 13px;
+}
+
+.testnet-demo__code {
+  overflow-x: auto;
+  padding: 16px;
+  border-radius: var(--tx-radius-md);
+  background: var(--tx-color-surface-raised);
+  color: var(--tx-color-text);
+  font-family: var(--tx-font-family-mono, monospace);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.testnet-demo__footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 24px;
+  border-top: 1px solid var(--tx-color-border);
+  margin-top: 32px;
+  color: var(--tx-color-text-secondary);
+  font-size: 13px;
+}
+
+.testnet-demo__footer a {
+  color: var(--tx-color-primary);
+  text-decoration: none;
+}
+
+.testnet-demo__footer a:hover {
+  text-decoration: underline;
+}

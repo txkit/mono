@@ -1,0 +1,172 @@
+/*
+ * txKit Design Tokens - Base / Light theme
+ * All colors in OKLCH for perceptual uniformity and easy theming.
+ *
+ * Token categories:
+ *   - color.primary (triad: base/hover/active + alpha)
+ *   - color.bg     (4 levels: bg, elevated, sunken, muted)
+ *   - color.text   (3 levels: primary, secondary, tertiary)
+ *   - color.border (base/hover)
+ *   - color.semantic (success/warning/error/info) + foreground
+ *   - radius (sm/md/lg/xl/full) + button radius (variant-controlled)
+ *   - shadow (sm/md/lg)
+ *   - spacing, typography, motion
+ */
+/* Primary tokens live on :root only - color scheme classes
+ * (.tx-color-*) override these. Re-declaring primary inside
+ * .tx-light would shadow scheme classes set on outer ancestors,
+ * since custom-property cascade picks the closest declaring ancestor. */
+:root {
+  /* --- Primary (txKit indigo, hue 276°, matches brand hex #4338CA) --- */
+  --tx-color-primary: oklch(0.511 0.262 276);
+  --tx-color-primary-hover: oklch(0.465 0.275 276);
+  --tx-color-primary-active: oklch(0.42 0.28 276);
+  --tx-color-primary-text: oklch(1 0 0);
+  --tx-color-primary-alpha: oklch(0.511 0.262 276 / 0.1);
+  --tx-color-ring: oklch(0.511 0.262 276 / 0.4);
+}
+
+:root,
+.tx-light {
+  /* --- Backgrounds (4 levels) --- */
+  --tx-color-bg: oklch(1 0 0);
+  --tx-color-bg-elevated: oklch(1 0 0);
+  --tx-color-bg-secondary: oklch(0.98 0 0);
+  --tx-color-bg-tertiary: oklch(0.96 0 0);
+  --tx-color-bg-muted: oklch(0.95 0.005 285);
+
+  /* --- Text hierarchy (3 levels) --- */
+  --tx-color-text: oklch(0.145 0 0);
+  --tx-color-text-secondary: oklch(0.42 0 0);
+  --tx-color-text-tertiary: oklch(0.58 0 0);
+
+  /* --- Borders --- */
+  --tx-color-border: oklch(0.9 0 0);
+  --tx-color-border-hover: oklch(0.82 0 0);
+  --tx-color-border-subtle: oklch(0.94 0 0);
+
+  /* --- Semantic colors --- */
+  --tx-color-success: oklch(0.6 0.18 145);
+  --tx-color-success-text: oklch(1 0 0);
+  --tx-color-success-alpha: oklch(0.6 0.18 145 / 0.1);
+  --tx-color-success-bg: oklch(0.95 0.05 145);
+
+  --tx-color-warning: oklch(0.75 0.17 65);
+  --tx-color-warning-text: oklch(0.28 0.08 65);
+  --tx-color-warning-alpha: oklch(0.75 0.17 65 / 0.1);
+  --tx-color-warning-bg: oklch(0.96 0.06 70);
+
+  --tx-color-error: oklch(0.58 0.22 25);
+  --tx-color-error-text: oklch(1 0 0);
+  --tx-color-error-alpha: oklch(0.58 0.22 25 / 0.1);
+  --tx-color-error-bg: oklch(0.95 0.08 25);
+
+  --tx-color-info: oklch(0.62 0.2 245);
+  --tx-color-info-bg: oklch(0.95 0.05 240);
+
+  /* --- Surface overlays (modals / drawers) --- */
+  --tx-color-overlay: oklch(0 0 0 / 0.5);
+  --tx-color-shimmer: oklch(1 0 0 / 0.3);
+
+  /* --- Typography --- */
+  --tx-font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --tx-font-mono: 'IBM Plex Mono', ui-monospace, 'Menlo', monospace;
+  --tx-font-size-xs: 0.75rem;
+  --tx-font-size-sm: 0.875rem;
+  --tx-font-size-md: 1rem;
+  --tx-font-size-base: 1rem;
+  --tx-font-size-lg: 1.125rem;
+  --tx-font-size-xl: 1.25rem;
+
+  /* --- Spacing scale --- */
+  --tx-space-xs: 0.25rem;
+  --tx-space-sm: 0.5rem;
+  --tx-space-md: 0.75rem;
+  --tx-space-lg: 1rem;
+  --tx-space-xl: 1.5rem;
+  --tx-space-2xl: 2rem;
+
+  /* --- Radii (default variant) --- */
+  --tx-radius-sm: 4px;
+  --tx-radius-md: 6px;
+  --tx-radius-lg: 8px;
+  --tx-radius-xl: 12px;
+  --tx-radius-full: 9999px;
+  --tx-radius-button: var(--tx-radius-md);
+
+  /* --- Shadows --- */
+  --tx-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.04), 0 1px 1px oklch(0 0 0 / 0.03);
+  --tx-shadow-md: 0 4px 12px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);
+  --tx-shadow-lg: 0 8px 24px oklch(0 0 0 / 0.12), 0 2px 4px oklch(0 0 0 / 0.04);
+
+  /* --- Motion --- */
+  --tx-transition: 150ms ease;
+  --tx-ease-default: cubic-bezier(0.2, 0, 0, 1);
+  --tx-ease-enter: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --tx-ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --tx-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --tx-ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --tx-duration-fast: 100ms;
+  --tx-duration-normal: 200ms;
+  --tx-duration-moderate: 300ms;
+  --tx-duration-slow: 400ms;
+  --tx-duration-slower: 600ms;
+  --tx-duration-spin: 1000ms;
+  --tx-duration-breathe: 1500ms;
+  --tx-duration-loop: 2000ms;
+
+  /* --- Skeleton shimmer --- */
+  --tx-skeleton-from: var(--tx-color-bg-secondary);
+  --tx-skeleton-to: var(--tx-color-bg-tertiary);
+
+  /* --- Z-index --- */
+  --tx-z-dropdown: 1000;
+  --tx-z-modal: 1001;
+  --tx-z-toast: 1002;
+
+  /* --- Layout primitives --- */
+  --tx-tap-target: 44px;
+  --tx-row-min-height: 56px;
+}
+
+.tx-root {
+  font-family: var(--tx-font-family);
+  color: var(--tx-color-text);
+  background: var(--tx-color-bg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Shared motion keyframes ---
+ * Component-level CSS used to redefine `tx-cw-spin`, `tx-fs-spin`,
+ * `tx-txb-spin` etc. independently. They are consolidated here so the
+ * `prefers-reduced-motion` block below has a single override surface.
+ *
+ * The `Inputs` and `FlowProgress` modules keep their own keyframes - the
+ * input loader composes rotate with translateY(-50%) for vertical centering,
+ * and FlowProgress slides a span via translateX rather than animating
+ * background-position.
+ */
+@keyframes tx-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes tx-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --tx-transition: 0ms;
+    --tx-duration-fast: 0ms;
+    --tx-duration-normal: 0ms;
+    --tx-duration-moderate: 0ms;
+    --tx-duration-slow: 0ms;
+    --tx-duration-slower: 0ms;
+    --tx-duration-spin: 0ms;
+    --tx-duration-breathe: 0ms;
+    --tx-duration-loop: 0ms;
+  }
+}

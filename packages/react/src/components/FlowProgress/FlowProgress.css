@@ -1,0 +1,119 @@
+.tx-fp {
+  display: none;
+}
+
+.tx-fp[data-active="true"] {
+  display: block;
+}
+
+.tx-fp-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tx-space-xs);
+}
+
+.tx-fp-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--tx-font-family);
+  font-size: var(--tx-font-size-sm);
+}
+
+.tx-fp-summary-label {
+  color: var(--tx-color-text-secondary);
+}
+
+.tx-fp-summary-percent {
+  color: var(--tx-color-text);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-fp-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--tx-color-bg-secondary);
+  border-radius: var(--tx-radius-full);
+  overflow: hidden;
+  animation: tx-fp-appear var(--tx-duration-moderate) var(--tx-ease-enter) backwards;
+}
+
+@keyframes tx-fp-appear {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tx-fp-fill {
+  height: 100%;
+  background: var(--tx-color-primary);
+  border-radius: var(--tx-radius-full);
+  transition:
+    width var(--tx-duration-slow) var(--tx-ease-exit),
+    background-color var(--tx-duration-normal) var(--tx-ease-default);
+}
+
+/* No width animation when going backward (e.g. retry resets progress) */
+.tx-fp-fill[data-direction="backward"] {
+  transition:
+    width 0s,
+    background-color var(--tx-duration-normal) var(--tx-ease-default);
+}
+
+.tx-fp-fill[data-status="running"] {
+  position: relative;
+  overflow: hidden;
+}
+
+.tx-fp-fill[data-status="running"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--tx-color-shimmer) 50%,
+    transparent 100%
+  );
+  animation: tx-fp-shimmer var(--tx-duration-breathe) var(--tx-ease-smooth) infinite;
+}
+
+@keyframes tx-fp-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.tx-fp-fill[data-status="completed"] {
+  background: var(--tx-color-success);
+}
+
+.tx-fp-fill[data-status="error"] {
+  background: var(--tx-color-error);
+}
+
+.tx-fp-fill[data-status="rejected"] {
+  background: var(--tx-color-warning);
+}
+
+.tx-fp-fill[data-status="canceled"] {
+  background: var(--tx-color-text-tertiary);
+}
+
+.tx-fp-label {
+  font-family: var(--tx-font-family);
+  font-size: var(--tx-font-size-xs);
+  color: var(--tx-color-text-secondary);
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-fp-fill {
+    transition: none;
+  }
+
+  .tx-fp-bar,
+  .tx-fp-fill[data-status="running"]::after {
+    animation: none;
+  }
+}

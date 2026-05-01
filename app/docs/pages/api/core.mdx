@@ -1,0 +1,272 @@
+# @txkit/core
+
+Framework-agnostic types, utilities, errors, and constants. Zero React,
+zero wagmi - the only runtime dependency is `viem`. `@txkit/react` re-uses
+these primitives internally; `@txkit/core` is also exported for consumers
+who need the same helpers in non-React surfaces (Node scripts, server
+routes, custom integrations).
+
+## Install
+
+```bash
+pnpm add @txkit/core viem
+```
+
+## Address utilities
+
+### `shortenAddress(address, chars?)`
+
+```ts
+import { shortenAddress } from '@txkit/core'
+
+shortenAddress('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')        // '0xd8dA...6045'
+shortenAddress('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045', 6)     // '0xd8dA6B...A96045'
+```
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `address` | `string` | required | EVM address (0x-prefixed) |
+| `chars` | `number` | `4` | Characters to show on each side of `...` |
+
+### `getExplorerUrl(chainId, hash, type?)`
+
+Returns a block-explorer URL for a transaction or address.
+
+```ts
+getExplorerUrl(1, '0xabc...', 'tx')          // https://etherscan.io/tx/0xabc...
+getExplorerUrl(8453, '0xd8dA...', 'address') // https://basescan.org/address/0xd8dA...
+```
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `chainId` | `number` | required | EVM chain ID |
+| `hash` | `string` | required | Transaction hash or address |
+| `type` | `'tx' \| 'address'` | `'tx'` | Path segment |
+
+The chain registry is hardcoded - currently mainnet (1), Optimism (10),
+Arbitrum (42161), Base (8453), Polygon (137). Returns `undefined` for any
+other chain.
+
+## Formatters
+
+### `formatTokenAmount(value, decimals, options?)`
+
+Progressive decimal scaling: more digits for small amounts, k/m/b suffixes
+for large ones. See [TokenBalance - Formatting](/api/token-balance#formatting).
+
+```ts
+import { formatTokenAmount } from '@txkit/core'
+
+formatTokenAmount(1234567890n, 6)                       // '1,234.57' (>=1000 -> 2 frac digits)
+formatTokenAmount(50000000000n, 6)                       // '50k' (>=10_000 -> k suffix)
+formatTokenAmount(123456n, 6, { dustThreshold: 0.001 })  // '0.12346' (<10 -> 5 frac digits)
+formatTokenAmount(100n, 18, { dustThreshold: 0.001 })    // '< 0.001'
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `dustThreshold` | `number` | `0.0001` | Amounts below this render as `< {threshold}` |
+| `locale` | `string` | browser | BCP 47 locale for thousands/decimal separators |
+
+### `formatTokenAmountSplit(value, decimals, options?)`
+
+Same scaling as `formatTokenAmount` but returns `{ integer, fraction, full }`
+so custom renderers can typeset the fraction at a smaller size or muted color.
+
+```ts
+formatTokenAmountSplit(1234567890n, 6)
+// { integer: '1,234', fraction: '.57', full: '1,234.57' }
+```
+
+### `formatFiatAmount(value, currency?, locale?)`
+
+```ts
+formatFiatAmount(1234.567)              // '$1,234.57'
+formatFiatAmount(1234.567, 'EUR')       // '€1,234.57'
+formatFiatAmount(1234.567, 'JPY', 'ja-JP') // '￥1,235'
+```
+
+### `formatDecodedCalldata(data)`
+
+Formats decoded calldata (function name + args) for display in transaction
+preview UIs. Used internally by the simulation/risk-confirm step.
+
+## Classification
+
+### `classifyError(error)`
+
+Maps errors thrown by `viem`/`wagmi`/RPC providers to a stable txKit code.
+Traverses the `cause` chain for wrapped viem errors.
+
+```ts
+import { classifyError } from '@txkit/core'
+
+const code = classifyError(error)
+// 'USER_REJECTED' | 'INSUFFICIENT_FUNDS' | 'EXECUTION_REVERTED' |
+// 'GAS_ESTIMATION_FAILED' | 'TIMEOUT' | 'CHAIN_MISMATCH' |
+// 'NETWORK_ERROR' | 'UNKNOWN'
+```
+
+The `TransactionErrorCode` type also defines `SIMULATION_FAILED`,
+`APPROVAL_FAILED`, and `RISK_BLOCKED` - these are produced by
+`useTransactionFlow` when the relevant safety gate trips, not by
+`classifyError` itself.
+
+### Transaction Error Codes
+
+`classifyError(error: unknown): TransactionErrorCode` maps any thrown error to one of:
+
+| Code | When fires |
+|---|---|
+| `USER_REJECTED` | User cancelled the wallet popup |
+| `INSUFFICIENT_FUNDS` | Sender doesn't have enough native balance |
+| `SIMULATION_FAILED` | Pre-flight `eth_call` reverted |
+| `EXECUTION_REVERTED` | Tx reverted on-chain |
+| `GAS_ESTIMATION_FAILED` | `eth_estimateGas` returned an error |
+| `NETWORK_ERROR` | RPC node unreachable or returned malformed response |
+| `TIMEOUT` | Receipt not received within timeout (10min mainnet, 60s L2) |
+| `CHAIN_MISMATCH` | Wallet on wrong chain |
+| `APPROVAL_FAILED` | ERC-20 approve step failed |
+| `RISK_BLOCKED` | RiskProvider blocked the operation |
+| `UNKNOWN` | Fallback when classification fails |
+
+Use `getErrorMessage(code)` to get a human-readable string for each code.
+
+### `getErrorMessage(code)`
+
+Human-readable, locale-neutral message string for a given `TransactionErrorCode`.
+
+```ts
+getErrorMessage('USER_REJECTED') // 'You rejected the transaction in your wallet.'
+```
+
+### `isMaxApproval(amount)`
+
+```ts
+import { isMaxApproval } from '@txkit/core'
+import { maxUint256 } from 'viem'
+
+isMaxApproval(maxUint256)            // true
+isMaxApproval(parseUnits('100', 6))  // false
+```
+
+Strict equality against `2n ** 256n - 1n`. Used internally by
+`safety.warnMaxApproval`.
+
+## Polling
+
+### `pollUntil(check, options)`
+
+Polls a predicate until it resolves truthy or the abort signal fires.
+Used internally by `useTransactionFlow.waitForCondition` to remove
+polling boilerplate from step factories.
+
+```ts
+import { pollUntil } from '@txkit/core'
+
+await pollUntil(
+  async () => (await fetchOrderStatus(orderId)) === 'filled',
+  { interval: 2_000, timeout: 60_000, signal: abortController.signal }
+)
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `interval` | `number` | `2000` | Time between polls in ms |
+| `timeout` | `number` | `120000` | Throws after this elapses (ms). `0` = no timeout |
+| `signal` | `AbortSignal` | none | Cancels the polling loop |
+
+`pollUntil` resolves when `fn()` returns a non-null value. Aborts throw
+`DOMException('Aborted', 'AbortError')`; timeouts throw `Error('pollUntil timeout')`.
+
+## Class utilities
+
+### `cx(...args)`
+
+Tiny class joiner. Accepts strings, falsy values, and `Record<string, boolean>`.
+Arrays are not supported (unlike `clsx`). Zero dependencies.
+
+```ts
+import { cx } from '@txkit/core'
+
+cx('btn', isActive && 'btn-active', { 'btn-disabled': isDisabled })
+// 'btn btn-active' or 'btn btn-disabled' depending on flags
+```
+
+### `deepEqual(a, b)`
+
+Structural equality used by `useDeepMemo` for label overrides. Reference
+equality fast-path; otherwise compares plain objects and arrays
+recursively. Primitives (including `bigint`) compare via `===`. Date and
+RegExp objects are compared as records, not by their semantic value.
+
+## Errors
+
+All errors extend `TxKitError` (re-exported from `@txkit/core/errors`):
+
+```ts
+import { TxKitError, InvalidConfigError, ProviderNotFoundError } from '@txkit/core'
+
+try {
+  // ...
+} catch (error) {
+  if (error instanceof TxKitError) {
+    console.log(error.shortMessage)
+    console.log(error.docsPath)  // e.g. '/errors/invalid-config'
+    console.log(error.details)
+  }
+}
+```
+
+See [Errors overview](/errors) for the full list.
+
+## Constants
+
+### Reference
+
+| Constant | Type | Purpose |
+|---|---|---|
+| `DEFILLAMA_PRICE_URL` | `string` | Base URL for the DeFiLlama coins price API |
+| `FRANKFURTER_API_URL` | `string` | Base URL for the Frankfurter forex API |
+| `CHAIN_TO_DEFILLAMA` | `Record<number, string>` | chainId -> DeFiLlama platform key |
+| `NATIVE_PRICE_IDS` | `Record<number, string>` | chainId -> CoinGecko-style native token id |
+
+### `DEFILLAMA_PRICE_URL`, `FRANKFURTER_API_URL`
+
+Default endpoints used by `useTokenPrice` for token prices and forex rates.
+Override these by passing `price` directly to `<TokenBalance>` when you have
+your own price source.
+
+### `CHAIN_TO_DEFILLAMA`
+
+Maps EVM chain IDs to DeFiLlama platform identifiers. Used for ERC-20
+price lookups.
+
+```ts
+const platform = CHAIN_TO_DEFILLAMA[chainId]
+// e.g. 'ethereum' (1), 'optimism' (10), 'polygon' (137), 'base' (8453), 'arbitrum' (42161)
+```
+
+### `NATIVE_PRICE_IDS`
+
+Maps EVM chain IDs to CoinGecko native-token IDs. Used for ETH/MATIC/etc
+price lookups.
+
+## copyToClipboard
+
+```ts
+import { copyToClipboard } from '@txkit/core'
+
+const ok = await copyToClipboard('0xd8dA...6045')
+```
+
+Returns `Promise<boolean>` - `true` on success, `false` if neither the
+async clipboard API nor the `document.execCommand('copy')` fallback worked.
+Used by the "Copy Address" affordance in `ConnectWallet`'s account
+dropdown.
+
+## See also
+
+- [Hooks](/api/hooks) - React-bound counterparts for these utilities
+- [Errors](/errors) - error class catalogue with docsPath links
+- [TokenBalance - Formatting](/api/token-balance#formatting) - applied formatter behavior

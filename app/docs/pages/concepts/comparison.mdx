@@ -1,0 +1,91 @@
+# Compared to other libraries
+
+txKit is positioned next to existing wallet kits, not against them. The
+table below sketches the landscape so you can decide whether to use txKit
+standalone, embedded with another kit, or skip txKit entirely if your
+needs are already covered.
+
+## At a glance
+
+| Library | Wallet picker | Multi-step tx flow | Pre-sign simulation | Anti-phishing UI | Open envelope spec |
+|---------|---------------|--------------------|--------------------:|------------------|--------------------|
+| **txKit** | ✅ | ✅ (`TransactionButton` with simulate / delay / risk) | ✅ | ✅ | ✅ `@txkit/tx-protocol` |
+| RainbowKit | ✅ (best-in-class) | ❌ | ❌ | ❌ | ❌ |
+| Reown AppKit (Web3Modal) | ✅ | ❌ | ❌ | ❌ | ❌ |
+| ConnectKit | ✅ | ❌ | ❌ | ❌ | ❌ |
+| thirdweb React | ✅ | ✅ (own SDK, vendor-locked RPC) | partial | partial | ❌ |
+| Privy / Dynamic | ✅ (embedded wallets) | partial | ❌ | ❌ | ❌ |
+
+This is a "what does each kit ship out of the box" view, not a value
+judgment. RainbowKit's `<ConnectButton />` is mature and widely adopted
+for the connect step alone - txKit's `ConnectWallet` exists for greenfield
+projects that want a single visual language across connect + transaction
+flows. RainbowKit is a distribution channel, not a competitor.
+
+## When to use what
+
+### Greenfield project
+
+Start with txKit standalone. You get `ConnectWallet`, `TransactionButton`,
+and the protocol shape in one install with no vendor lock-in (bring your
+own RPC, your own connectors).
+
+### Existing app on RainbowKit / AppKit / ConnectKit
+
+Keep the wallet kit. Add txKit in [embedded mode](/api/tx-provider#embedded-mode)
+to get `TransactionButton`, `TokenBalance`, and the multi-step flow on top
+of the connect UX you already shipped. Both share the same wagmi store -
+no duplicate connectors, no duplicate balance fetches.
+
+The [Wallet Kit Integration section](/api/connect-wallet#wallet-kit-integration-rainbowkit-appkit-connectkit)
+on ConnectWallet has full snippets for all three wallet kits.
+
+### App that wants embedded wallets (Privy / Dynamic)
+
+Privy and Dynamic ship social-login + MPC wallet flows that RainbowKit and
+txKit do not own. Keep them as the wallet layer; embed txKit for the
+transaction surface (simulate, decode, delay, risk-score, multi-step).
+The composition pattern is the same as for RainbowKit: outer `WagmiProvider`
++ `QueryClientProvider` from Privy, then `<TxKitProvider embedded>` inside.
+
+### App on thirdweb
+
+If you are already on thirdweb's signing primitives (`ContractCallButton`,
+`useSendTransaction`), txKit overlaps with them. The txKit advantage is
+vendor-neutral RPC and the open `PreparedEnvelope` shape; if those don't
+matter for your dApp, thirdweb's own multi-step flow may be sufficient.
+
+## What txKit does NOT do
+
+Honest about scope so you don't reach for the wrong tool.
+
+- **txKit is not a wallet.** It does not generate keys, hold seed phrases,
+  or sign transactions. Pair with a wagmi connector, Privy, Dynamic, or
+  any [OWS](/protocol/ows) signer.
+- **txKit is not a wallet picker UX framework.** `ConnectWallet` exists
+  for greenfield, but if your priority is the polish of RainbowKit's modal,
+  use RainbowKit and embed txKit alongside.
+- **txKit is not an SDK for protocol-specific flows.** Helpers like
+  `approveAndExecute` are generic. If you want a turnkey "stake LST" or
+  "swap on Uniswap" component, use the protocol's own SDK or wait for the
+  Pro components (deferred).
+- **txKit does not own the protocol layer alone.** [MoonPay's Open
+  Wallet Standard](/protocol/ows) owns key custody and raw-tx policy;
+  txKit composes with it via `@txkit/ows-adapter` (roadmap).
+
+## Standalone vs embedded mode summary
+
+| Mode | When | What txKit owns |
+|------|------|-----------------|
+| Standalone | Greenfield, no existing wagmi setup | wagmi config + QueryClient + connectors |
+| Embedded | App already runs RainbowKit / AppKit / ConnectKit / Privy / custom wagmi | Only theme + flow store; reads existing wagmi |
+
+See [TxKitProvider - Embedded Mode](/api/tx-provider#embedded-mode) for
+the full configuration.
+
+## See also
+
+- [Wallet Kit Integration](/api/connect-wallet#wallet-kit-integration-rainbowkit-appkit-connectkit) - composing snippets
+- [TxKitProvider](/api/tx-provider) - standalone vs embedded
+- [Security model](/concepts/security) - what defenses ship today
+- [OWS composition](/protocol/ows) - signer-side complement

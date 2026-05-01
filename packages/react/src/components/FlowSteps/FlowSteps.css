@@ -1,0 +1,336 @@
+.tx-fs {
+  display: none;
+}
+
+.tx-fs[data-active="true"] {
+  display: flex;
+  align-items: stretch;
+}
+
+.tx-fs-inner {
+  width: 100%;
+}
+
+.tx-fs-list {
+  display: flex;
+  gap: var(--tx-space-sm);
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tx-fs-list[data-orientation="vertical"] {
+  flex-direction: column;
+  gap: var(--tx-space-md);
+  align-items: stretch;
+}
+
+/* Horizontal: scroll instead of squeezing items when they overflow the container */
+.tx-fs-list:not([data-orientation="vertical"]) {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tx-fs-item {
+  display: flex;
+  flex: 1;
+  gap: var(--tx-space-sm);
+  align-items: center;
+  font-family: var(--tx-font-family);
+  color: var(--tx-color-text-secondary);
+  transition: color var(--tx-transition);
+  animation: tx-fs-step-appear var(--tx-duration-moderate) var(--tx-ease-enter) backwards;
+}
+
+.tx-fs-list[data-orientation="vertical"] .tx-fs-item {
+  flex: none;
+  width: 100%;
+}
+
+/* Horizontal items use equal flex cells with the indicator stacked above the
+   label; the connector below is repositioned absolutely so the cells stay
+   visually centered regardless of label length (3+ steps no longer drift). */
+.tx-fs-list:not([data-orientation="vertical"]) .tx-fs-item {
+  flex: 1 0 80px;
+  min-width: 80px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.tx-fs-list:not([data-orientation="vertical"]) .tx-fs-text {
+  align-items: center;
+  text-align: center;
+  min-width: 0;
+}
+
+.tx-fs-list:not([data-orientation="vertical"]) .tx-fs-indicator {
+  position: relative;
+  z-index: 1;
+}
+
+.tx-fs-list:not([data-orientation="vertical"]) .tx-fs-pill {
+  margin-left: 0;
+  margin-top: var(--tx-space-xs);
+}
+
+/* Stagger after FlowProgress bar fade-in finishes (base = duration-moderate) */
+.tx-fs-item:nth-child(1) { animation-delay: var(--tx-duration-moderate); }
+.tx-fs-item:nth-child(2) { animation-delay: calc(var(--tx-duration-moderate) + var(--tx-duration-fast)); }
+.tx-fs-item:nth-child(3) { animation-delay: calc(var(--tx-duration-moderate) + var(--tx-duration-normal)); }
+.tx-fs-item:nth-child(4) { animation-delay: calc(var(--tx-duration-moderate) * 2); }
+.tx-fs-item:nth-child(5) { animation-delay: calc(var(--tx-duration-moderate) + var(--tx-duration-slow)); }
+.tx-fs-item:nth-child(n+6) { animation-delay: calc(var(--tx-duration-moderate) + var(--tx-duration-slow) + var(--tx-duration-fast)); }
+
+@keyframes tx-fs-step-appear {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.tx-fs-list[data-orientation="vertical"] .tx-fs-item {
+  animation-name: tx-fs-step-appear-vertical;
+}
+
+@keyframes tx-fs-step-appear-vertical {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Status-based colors (labels) --- */
+
+.tx-fs-item[aria-current="step"] .tx-fs-label {
+  color: var(--tx-color-text);
+}
+
+.tx-fs-item[data-status="completed"] .tx-fs-label {
+  color: var(--tx-color-text-secondary);
+}
+
+.tx-fs-item[data-status="skipped"] .tx-fs-label {
+  color: var(--tx-color-text-tertiary);
+}
+
+.tx-fs-item[data-status="error"] .tx-fs-label,
+.tx-fs-item[data-status="simulation-failed"] .tx-fs-label {
+  color: var(--tx-color-error);
+}
+
+.tx-fs-item[data-status="rejected"] .tx-fs-label {
+  color: var(--tx-color-warning);
+}
+
+.tx-fs-item[data-status="canceled"] .tx-fs-label {
+  color: var(--tx-color-text-tertiary);
+}
+
+/* --- Indicator circles (32px) --- */
+
+.tx-fs-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--tx-color-border);
+  border-radius: 50%;
+  background: var(--tx-color-bg-secondary);
+  color: var(--tx-color-text-tertiary);
+  transition:
+    background var(--tx-duration-normal) var(--tx-ease-default),
+    border-color var(--tx-duration-normal) var(--tx-ease-default),
+    color var(--tx-duration-normal) var(--tx-ease-default);
+}
+
+.tx-fs-indicator-number {
+  font-size: var(--tx-font-size-xs);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.tx-fs-indicator-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-position: 50%;
+  mask-position: 50%;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.tx-fs-indicator-icon--spinning {
+  animation: tx-spin var(--tx-duration-spin) linear infinite;
+}
+
+/* tx-spin keyframe is defined globally in @txkit/themes base.css */
+
+/* Active (any spinning status) */
+.tx-fs-item[data-status="simulating"] .tx-fs-indicator,
+.tx-fs-item[data-status="confirming-risk"] .tx-fs-indicator,
+.tx-fs-item[data-status="signing"] .tx-fs-indicator,
+.tx-fs-item[data-status="tx-pending"] .tx-fs-indicator,
+.tx-fs-item[data-status="waiting"] .tx-fs-indicator {
+  background: var(--tx-color-primary);
+  border-color: var(--tx-color-primary);
+  color: var(--tx-color-primary-text);
+}
+
+.tx-fs-item[data-status="completed"] .tx-fs-indicator {
+  background: var(--tx-color-success);
+  border-color: var(--tx-color-success);
+  color: var(--tx-color-success-text);
+}
+
+.tx-fs-item[data-status="skipped"] .tx-fs-indicator {
+  background: var(--tx-color-bg-secondary);
+  border-color: var(--tx-color-border);
+  color: var(--tx-color-text-tertiary);
+}
+
+.tx-fs-item[data-status="error"] .tx-fs-indicator,
+.tx-fs-item[data-status="simulation-failed"] .tx-fs-indicator {
+  background: var(--tx-color-error);
+  border-color: var(--tx-color-error);
+  color: var(--tx-color-error-text);
+}
+
+.tx-fs-item[data-status="rejected"] .tx-fs-indicator {
+  background: var(--tx-color-warning);
+  border-color: var(--tx-color-warning);
+  color: var(--tx-color-warning-text);
+}
+
+.tx-fs-item[data-status="canceled"] .tx-fs-indicator {
+  background: var(--tx-color-text-tertiary);
+  border-color: var(--tx-color-text-tertiary);
+  color: var(--tx-color-bg);
+}
+
+/* --- Text block (label + description) --- */
+
+.tx-fs-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tx-fs-label {
+  font-size: var(--tx-font-size-sm);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--tx-duration-normal) var(--tx-ease-default);
+}
+
+.tx-fs-description {
+  font-size: var(--tx-font-size-xs);
+  color: var(--tx-color-text-tertiary);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- "In Progress" pill --- */
+
+.tx-fs-pill {
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: var(--tx-radius-full);
+  background: var(--tx-color-primary-alpha);
+  color: var(--tx-color-primary);
+  font-size: var(--tx-font-size-xs);
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  flex-shrink: 0;
+  animation: tx-fs-pill-pop var(--tx-duration-slow) var(--tx-ease-spring) backwards;
+}
+
+@keyframes tx-fs-pill-pop {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* --- Connector lines (horizontal) - absolute, behind indicators --- */
+
+/* Each non-last item draws a 2px line from the right edge of its own indicator
+   (50% + 16px from the item's left) to the left edge of the next indicator
+   (50% - 16px past the item's right edge). gap: 0 so the math is clean. */
+.tx-fs-list:not([data-orientation="vertical"]) {
+  gap: 0;
+}
+
+.tx-fs-list:not([data-orientation="vertical"]) .tx-fs-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 15px; /* circle center: (32 - 2) / 2 */
+  left: calc(50% + 16px);
+  right: calc(-50% + 16px);
+  height: 2px;
+  background: var(--tx-color-border);
+  transition: background var(--tx-transition);
+  z-index: 0;
+}
+
+.tx-fs-list:not([data-orientation="vertical"]) .tx-fs-item[data-status="completed"]:not(:last-child)::after,
+.tx-fs-list:not([data-orientation="vertical"]) .tx-fs-item[data-status="skipped"]:not(:last-child)::after {
+  background: var(--tx-color-success);
+}
+
+/* Hide the "In progress" pill in horizontal orientation: the indicator's
+   spinner already conveys active status, and the pill drops the row's height
+   asymmetrically when only one step is active. */
+.tx-fs-list:not([data-orientation="vertical"]) .tx-fs-pill {
+  display: none;
+}
+
+/* Vertical: no connector (gap-only, like composition) */
+
+/* --- Screen reader only --- */
+
+.tx-fs-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-fs-item {
+    transition: none;
+    animation: none;
+  }
+
+  .tx-fs-indicator {
+    transition: none;
+  }
+
+  .tx-fs-indicator-icon--spinning {
+    animation: none;
+  }
+
+  .tx-fs-pill {
+    animation: none;
+  }
+
+  .tx-fs-list:not([data-orientation="vertical"]) .tx-fs-item:not(:last-child)::after {
+    transition: none;
+  }
+}

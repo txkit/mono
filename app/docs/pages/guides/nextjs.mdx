@@ -1,0 +1,264 @@
+# Next.js setup
+
+txKit components ship with the `'use client'` directive baked in - they
+hold state, subscribe to wagmi stores, and read `localStorage` for
+`autoConnect`. They are client components in every Next.js sense.
+
+This page covers App Router and Pages Router setup, common gotchas, and
+the SSR boundary.
+
+## App Router (Next.js 14+)
+
+### Provider boundary
+
+`TxKitProvider` keeps state and is a client component, but in App Router
+your `app/layout.tsx` is a server component by default. Wrap the provider
+in a thin client component and import it from the server layout:
+
+```tsx
+// app/providers.tsx
+'use client'
+
+import { TxKitProvider } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+
+import type { ReactNode } from 'react'
+
+export const Providers = ({ children }: { children: ReactNode }) => (
+  <TxKitProvider config={{
+    chains: [ mainnet ],
+    transports: { [mainnet.id]: http(process.env.NEXT_PUBLIC_RPC_URL) },
+  }}>
+    {children}
+  </TxKitProvider>
+)
+```
+
+```tsx
+// app/layout.tsx
+import '@txkit/themes'
+
+import { Providers } from './providers'
+
+const RootLayout = ({ children }: { children: React.ReactNode }) => (
+  <html lang="en">
+    <body>
+      <Providers>{children}</Providers>
+    </body>
+  </html>
+)
+
+export default RootLayout
+```
+
+### Using components in server components
+
+Don't. Every txKit component is a client component. Calling
+`<ConnectWallet />` from a server component throws at build time. Move the
+component into a client island:
+
+```tsx
+// app/components/Header.tsx
+'use client'
+
+import { ConnectWallet } from '@txkit/react'
+
+export const Header = () => (
+  <header>
+    <ConnectWallet />
+  </header>
+)
+```
+
+```tsx
+// app/page.tsx (server component)
+import { Header } from './components/Header'
+
+const HomePage = () => (
+  <>
+    <Header />
+    <main>...</main>
+  </>
+)
+
+export default HomePage
+```
+
+### Hydration mismatches and `autoConnect`
+
+`autoConnect: true` (the default) reads the last-used wallet from
+`localStorage` on first mount. The server cannot know what's in the
+client's localStorage, so the initial server-rendered HTML always shows
+the disconnected button - the connected one swaps in after hydration.
+
+The default `<ConnectWallet />` exposes `data-state="initializing"` on the
+root element during this gap (see
+[ConnectWallet - States](/api/connect-wallet#states)) - style a skeleton
+through CSS:
+
+```css
+.tx-cw[data-state="initializing"] {
+  visibility: hidden;
+}
+```
+
+Custom-render consumers can use wagmi's own `useAccount().status` for
+the same gate:
+
+```tsx
+import { useAccount } from 'wagmi'
+
+const { status } = useAccount()
+if (status === 'reconnecting' || status === 'connecting') {
+  return <Skeleton width={140} height={36} />
+}
+```
+
+### Suppress wagmi `cookieStorage` warnings
+
+If you want zero hydration mismatch even on the very first render, swap
+the default storage for `cookieStorage` (wagmi's SSR-friendly option) and
+use embedded mode:
+
+```tsx
+// app/providers.tsx
+'use client'
+
+import { cookieStorage, cookieToInitialState, createConfig, createStorage, WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { TxKitProvider } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+import { injected } from 'wagmi/connectors'
+
+const wagmiConfig = createConfig({
+  chains: [ mainnet ],
+  transports: { [mainnet.id]: http() },
+  connectors: [ injected() ],
+  ssr: true,
+  storage: createStorage({ storage: cookieStorage }),
+})
+
+const queryClient = new QueryClient()
+
+export const Providers = ({ children, cookieHeader }: { children: React.ReactNode; cookieHeader: string | null }) => {
+  const initialState = cookieToInitialState(wagmiConfig, cookieHeader)
+  return (
+    <WagmiProvider config={wagmiConfig} initialState={initialState}>
+      <QueryClientProvider client={queryClient}>
+        <TxKitProvider embedded>
+          {children}
+        </TxKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+  )
+}
+```
+
+```tsx
+// app/layout.tsx
+import { headers } from 'next/headers'
+import { Providers } from './providers'
+
+const RootLayout = async ({ children }: { children: React.ReactNode }) => {
+  const cookieHeader = (await headers()).get('cookie')
+  return (
+    <html lang="en">
+      <body>
+        <Providers cookieHeader={cookieHeader}>{children}</Providers>
+      </body>
+    </html>
+  )
+}
+
+export default RootLayout
+```
+
+This is wagmi's standard SSR pattern - txKit composes through
+[embedded mode](/api/tx-provider#embedded-mode).
+
+## Pages Router
+
+Pages Router is purely client-rendered for components - the only thing to
+remember is the global CSS import. Place txKit at the top of `_app.tsx`:
+
+```tsx
+// pages/_app.tsx
+import '@txkit/themes'
+
+import type { AppProps } from 'next/app'
+import { TxKitProvider } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+
+const App = ({ Component, pageProps }: AppProps) => (
+  <TxKitProvider config={{
+    chains: [ mainnet ],
+    transports: { [mainnet.id]: http(process.env.NEXT_PUBLIC_RPC_URL) },
+  }}>
+    <Component {...pageProps} />
+  </TxKitProvider>
+)
+
+export default App
+```
+
+## Common gotchas
+
+### `Buffer is not defined` / `process is not defined`
+
+Some wagmi connectors (notably WalletConnect) reach for Node globals.
+Next.js 14 polyfills these in the client bundle automatically; older
+versions need a `next.config.js` shim:
+
+```js
+module.exports = {
+  webpack: (config) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+    }
+    return config
+  },
+}
+```
+
+### `transpilePackages` is not needed
+
+`@txkit/react` ships dual ESM + CJS with proper conditional exports.
+You do not need to add it to `transpilePackages` in `next.config.js`.
+
+### Server actions and txKit
+
+Server actions run on the server - they cannot call wagmi hooks or
+read wallet state. The pattern is:
+
+1. Read user input in a client component (`<TransactionButton />`).
+2. Sign the transaction client-side (txKit calls the wallet).
+3. After the receipt resolves in `onFlowComplete`, call your server
+   action with the receipt hash for off-chain bookkeeping.
+
+The wallet popup never opens from a server action.
+
+### Strict Mode double-mounting
+
+React 18 Strict Mode mounts components twice in dev. txKit's flow store
+uses idempotent registration (deterministic `flowId`), so double-mount
+is safe - flow state is not duplicated. If you see flickering, check
+that your `flowId` prop is stable across renders.
+
+### Theme flash on first paint
+
+`theme: 'auto'` reads `prefers-color-scheme` only after hydration,
+which can cause a brief light-mode flash on dark systems. Set the
+class on the server via cookie, or default to a fixed theme on critical
+above-the-fold UI.
+
+## See also
+
+- [TxKitProvider](/api/tx-provider) - standalone vs embedded modes
+- [ConnectWallet - States](/api/connect-wallet#states) - the `initializing` hydration state
+- [Wallet Kit Integration](/api/connect-wallet#wallet-kit-integration-rainbowkit-appkit-connectkit) - composing with RainbowKit / AppKit

@@ -1,0 +1,270 @@
+# Security model
+
+txKit is a **safe bridge between dApps (and AI agents) and Web3 transactions**.
+It is an orchestrator, not a signer. This page explains what that means in
+practice, which defenses are shipped today, and which sit on the v0.2/v0.3
+roadmap.
+
+## Core invariant: txKit never holds keys
+
+Keys live in the wallet, Safe, Turnkey, Privy, or any wagmi-compatible signer.
+txKit does not call any keystore APIs and ships no signing primitives. The
+component layer composes with whatever your users already have:
+
+- Browser wallets via injected connector
+- WalletConnect (mobile, hardware, Safe)
+- Coinbase Wallet, Reown AppKit, RainbowKit, ConnectKit, Privy, Dynamic
+- [MoonPay's Open Wallet Standard](/protocol/ows) signers (post `@txkit/ows-adapter`)
+
+This separation is structural - there is nowhere in the codebase to put a
+private key, and nothing that asks for one.
+
+## Defense layers shipped in v0.1.0-alpha
+
+`TransactionButton` and the underlying `useTransactionFlow` hook gate every
+transaction through the following checks before the wallet popup opens. Each
+gate has a `safety.*` field on the component and is on by default.
+
+### Pre-sign simulation
+
+`safety.simulate` (default `true` - see `useTransactionFlow.ts` `DEFAULT_SAFETY`)
+runs `eth_call` + `estimateGas` against the connected RPC before requesting any
+signature. A revert produces the `simulation-failed` step status with the
+decoded revert reason; the user can `forceSubmit` (with explicit override) or
+retry. Catches insufficient balance, slippage failures at simulation time,
+frozen tokens, paused contracts, allowance gaps, and contract-level
+access-control failures.
+
+Simulation does **not** catch:
+
+- MEV (sandwich, front-running) - state at inclusion time differs from
+  simulation time
+- Slippage in volatile markets where simulation passes but inclusion reverts
+- Compromised RPC returning crafted simulation results
+
+For MEV protection, use a Flashbots Protect transport (roadmap).
+
+### MAX_UINT256 approval warning
+
+`safety.warnMaxApproval` (default `true`) flags any ERC-20 approval whose
+amount equals `MAX_UINT256` and surfaces an explicit warning at the review
+step (`confirming-risk` status). Implementation: `executeTxStep.ts` checks
+the decoded `approve(spender, amount)` call against the unlimited bit
+pattern. Components encourage typed-amount approvals via `approveAndExecute({ amount })` -
+pass an exact `bigint` and the warning does not fire.
+
+### Confirmation delay
+
+`safety.delayMs` (default `0`) shows a countdown on the button before the
+wallet popup opens. The wallet is never invoked during the delay - the user
+can cancel for free. Recommended for high-value transactions; see
+[TransactionButton - Anti-Phishing Confirmation Delay](/api/transaction-button#anti-phishing-confirmation-delay).
+
+### Pluggable risk scoring
+
+`safety.riskProvider` (default `null`) plugs txKit into Blowfish, Blockaid,
+GoPlus, or any other pre-sign scanner. Implementation receives `{to, data, value, chainId, from}`
+and returns `{level, warnings, blocked}`. `level: 'high'` surfaces a hard
+warning. `blocked: true` disables the "Sign anyway" button entirely. See
+[TransactionButton - Risk Provider](/api/transaction-button#risk-provider).
+
+### Bypass: `forceSubmit`
+
+`forceSubmit` skips simulation, MAX_UINT256 warning, and risk-provider gating
+in one step. It exists for known-good transactions that revert in simulation
+due to RPC quirks (stale state, fork mismatch). Treat it as an explicit user
+override - never call it programmatically.
+
+## Protocol-level defenses (PreparedEnvelope v0.1)
+
+`@txkit/tx-protocol` defines fields a producer (a Prepare MCP, an LLM tool,
+a backend) MUST or SHOULD set. The Zod validator enforces required fields;
+SHOULD fields are advisory and reflected in the wallet UI when present.
+
+| Field | Required by validator | What it defends against |
+|-------|----------------------|-------------------------|
+| `validity.notAfter` | ✅ Required | Dormant pre-signed tx (Drift $285M) - producer must set an expiry |
+| `chain` (CAIP-2) | ✅ Required | Cross-chain replay |
+| `calls[].operation: 'call' \| 'delegatecall'` | ✅ Required (per call) | Delegatecall spoof (Bybit $1.4B) - validator emits WARN on `delegatecall` |
+| `metadata.tokenMovements[]` | ✅ Required (array; may be empty) | Decoder cross-check (see roadmap) |
+| `origin: { url, verifyStatus }` | ⚠️ Optional in v0.1 schema | WalletConnect phishing - SHOULD be set; `@txkit/ows-adapter` will reject envelopes without it |
+| `producer.signature` | ⚠️ Optional in v0.1 schema | Tampering in transit - SHOULD be set with `secp256k1`/`ed25519`/`p256`; PQ schemes reserved |
+| `risk` | ⚠️ Optional | Pre-sign risk slot for Blowfish/Blockaid output |
+| `counterparties[].labelSource` | ⚠️ Optional | Address poisoning - protocol field is shipped, wallet UI consumption is on the roadmap |
+
+Note: "Required" here refers to the Zod schema in `packages/tx-protocol/src/schema.ts`.
+Fields marked "Optional" are part of the spec contract but left optional in
+v0.1 to ease producer onboarding. `@txkit/ows-adapter` (2 weeks post-launch)
+will tighten this.
+
+`verifyStatus` enum values: `'VERIFIED' | 'UNVERIFIED' | 'MISMATCH'`. There
+is no `'SCAM'` status - phishing is detected via `MISMATCH` (producer-attested
+URL does not match the dApp origin) or via the optional `risk` slot.
+
+## AI agent threat model
+
+The "AI bridge" framing is concrete. The threats below are observed in
+production today, not hypothetical:
+
+- **Malicious LLM tool routers.** A compromised or adversarial router
+  between the model and the tool registry can rewrite tool descriptions
+  ("stake 1 ETH" -> tool that calls `transfer(attacker, 999 ETH)`).
+  Multiple routers have been observed injecting modified tool calls;
+  documented losses are in the six-figure range per incident.
+- **Prompt injection in tool descriptions.** A malicious dApp that exposes
+  itself to LLM agents can craft tool descriptions / parameter docs that
+  trick the LLM into calling the tool with attacker-favorable args
+  (slippage `100%`, recipient = attacker).
+- **Unbounded AI approvals.** An autonomous agent left running may
+  approve `MAX_UINT256` to "save gas" and a later malicious tool drains
+  the bag.
+- **Stolen agent context.** If the agent's session memory is compromised
+  (keylogger, infostealer), all approvals issued from that session are
+  free for the attacker to drain.
+- **Cross-tool calldata smuggling.** A read-only MCP returns innocuous
+  state; a malicious "execute" MCP receives that state and constructs
+  drainer calldata - the LLM has no way to spot the swap.
+
+The defenses above are designed for these patterns:
+
+- **Decoded calldata + token movements** mean the wallet preview shows
+  what the chain will actually do, not what the LLM tool described.
+- **`safety.warnMaxApproval`** flags unbounded approvals at the review
+  step, regardless of how the calldata was constructed.
+- **Producer signature** (PreparedEnvelope `producer.signature`)
+  authenticates the Prepare MCP server; if a malicious router rewrites
+  the envelope between Prepare MCP and txKit, signature verification
+  fails (post-launch, with `@txkit/ows-adapter`).
+- **`safety.delayMs` confirmation countdown** for high-value tx forces a
+  human-in-the-loop pause - even an autonomous agent cannot dismiss the
+  delay programmatically.
+- **`safety.riskProvider`** plugs into AI-aware scanners (Blowfish,
+  Blockaid) which themselves train on AI-initiated attack patterns.
+
+The remaining vector - a fully compromised agent process with key access
+- is outside any UI layer's scope. txKit's invariant ("never holds keys")
+limits the blast radius: the keys live in a separate signer the agent
+does not control.
+
+## Execution-layer roadmap (tri-mode AA)
+
+Today txKit delegates to a single signer surface (wagmi connector). The
+architecture is designed for three execution backends behind the same
+component API:
+
+- **EOA / browser wallet (wagmi)** - shipped, the v0.1 default.
+- **ERC-4337 Smart Account** - roadmap. Paymaster sponsorship, atomic
+  batched UserOperations, session keys. Tens of millions of smart
+  accounts already deployed across L1 + L2s, with hundreds of millions
+  of UserOperations executed. Provider config will gate this through a
+  `bundler` / `paymaster` field; component API stays identical.
+- **EIP-7702 delegated EOA** - roadmap. Lets a normal EOA temporarily run
+  smart-account code. MetaMask, Coinbase Wallet, Trust Wallet, Ambire
+  already ship; pairs naturally with ERC-7715 scoped permissions
+  (MetaMask Advanced Permissions, Reown AppKit) - "agent can spend up to
+  X USDC per day on Uniswap, expires in 7 days".
+- **EIP-8141 Frame transactions** - reserved. Native Ethereum batching
+  with gas sponsorship and post-quantum-friendly transaction shape;
+  Vitalik publicly endorsed, target Hegota fork H2 2026.
+
+Component API stays `<TransactionButton steps={...} />` regardless of
+backend; the provider routes execution.
+
+## Sibling adapter packages (shipped in v0.1.0-alpha)
+
+Beyond the React + protocol core, the monorepo ships three adapter
+packages on the same alpha tag:
+
+- **[`@txkit/tx-decoder`](https://github.com/txkit/mono/tree/main/packages/tx-decoder)** -
+  decode raw EVM calldata into `PreparedTransaction` `clearSigning`
+  trees. ERC-7730 registry loader plus ABI-based fallback decoder. Zero
+  React or wagmi deps. Used wallet-side to re-verify `calls[*].data`
+  against the producer's `metadata.tokenMovements` (the swap-as-drainer
+  defense).
+- **[`@txkit/ows-adapter`](https://github.com/txkit/mono/tree/main/packages/ows-adapter)** -
+  bridge from `PreparedEnvelope` to the MoonPay Open Wallet Standard
+  `signAndSend` payload with policy hints. `toOwsSignAndSend` +
+  `annotateWithOwsResult` exports.
+- **[`@txkit/mcp-server`](https://github.com/txkit/mono/tree/main/packages/mcp-server)** -
+  hardened reference Prepare MCP exposing zod-sanitized tools to LLM
+  agents. Stdio + HTTP transports, narrow intent-based surface, no shell
+  access. Constructs `PreparedEnvelope`; never forwards private keys
+  through the MCP session.
+- **[`@txkit/x402-adapter`](https://github.com/txkit/mono/tree/main/packages/x402-adapter)** -
+  bridge x402 HTTP payments (Linux Foundation standard, since 2 April
+  2026) and `PreparedTransaction`. Attach payment intents and proofs to
+  envelopes; extract payment context from envelopes.
+
+## Roadmap: defenses not yet shipped
+
+These are deliberate gaps in v0.1.0-alpha. Documented so consumers do not
+assume defenses that are not there.
+
+- **Counterparty review UI** - the protocol carries `counterparties[].labelSource`
+  and `similarityWarning`, but no React component renders a counterparty
+  panel yet. Address-poisoning protection currently relies on the wallet's
+  own UX.
+- **EIP-7715 scoped permissions** - integration with MetaMask Advanced
+  Permissions, Reown AppKit permissions API. Lets agents request
+  scoped, time-limited permissions instead of full account access.
+- **Bridge DVN verification** - Kelp $293M lesson; reserved for
+  `content.bridgeConfig` in v0.3.
+- **Flashbots Protect transport** - MEV protection toggle on the provider.
+- **Producer signature enforcement** - the v0.1 schema marks
+  `producer.signature` as optional. `@txkit/ows-adapter` will reject
+  unsigned envelopes by default in a follow-up.
+
+## Component-level surface
+
+- **`TransactionButton`** - all `safety.*` gates above. Decoded calldata
+  preview at the review step. Block-explorer link on success.
+- **`ContractForm` (shipping in v0.2.0)** - flags 19 dangerous selectors with `level: 'warning' | 'danger'`
+  (approve, setApprovalForAll, transfer, transferFrom, delegateCall,
+  selfdestruct, burn, burnFrom, renounceOwnership, transferOwnership, upgradeTo,
+  upgradeToAndCall, permit, multicall, execute, withdraw, withdrawAll, pause,
+  unpause). Full destination address will be shown (not shortened) at the review step
+  to defend against address poisoning. Note: ContractForm is implemented in
+  the tree but not part of the public v0.1.0 surface yet - re-enabled with
+  Phase 2b (read functions, multi-function, ENS, gas estimation).
+- **`ConnectWallet`** - origin display in the modal (`connectingTo {dApp}` label).
+  Sign-step types in `SignData` only accept `eth_signTypedData_v4` and
+  `personal_sign` - there is no `eth_sign` codepath. Note: this only restricts
+  txKit-driven signature steps. ConnectWallet does not gate the wallet's own
+  signing methods; that is the wallet provider's surface.
+- **`TokenBalance`** - read-only. No signing, no approvals. Safe to embed in
+  pages where the user is just browsing.
+
+## What txKit does **not** protect against
+
+- **Compromised RPC** - if the user's RPC endpoint is malicious it can return
+  crafted simulation results. Use a reputable RPC provider; for high-value
+  flows, simulate against multiple RPCs.
+- **Compromised wallet binary** - keys live in the wallet, so a trojaned
+  wallet bypasses every defense above.
+- **Social engineering inside trusted UI** - if a verified dApp asks for an
+  approval, txKit warns loudly on `MAX_UINT256` but cannot tell intent apart
+  from "user actually wanted unlimited spend". Drift $285M was multisig
+  signers being socially engineered over months - `validity.notAfter`
+  mitigates the dormant-tx vector but not the social engineering itself.
+- **Off-chain signature replays** - the protocol requires `validity.notAfter`;
+  a producer that omits it would fail Zod validation, so this gate is
+  enforced. But signatures already produced by other (non-txKit) flows are
+  outside the threat model.
+- **MEV** - state-at-inclusion attacks (sandwich, front-running) are not
+  caught by simulation. Roadmap: Flashbots Protect transport.
+
+## Background
+
+The pivot from "Stripe Elements for Web3" to "Safe bridge between AI agents
+and Web3 transactions" happened on 2026-04-17 in response to AI-initiated
+phishing patterns (malicious LLM tool routers injecting modified calldata
+between read-MCP and signer). The protocol shape and the defense layers
+described above were specified through three rounds of agent-driven research
+(see `wiki/projects/tx-tx-protocol-spec-v0.1-research-2026-04-21.md`).
+
+## See also
+
+- [PreparedEnvelope spec](/protocol/prepared-tx) - full schema + attack-defense map
+- [TransactionButton - Safety Config](/api/transaction-button#safety-config)
+- [TransactionButton - Risk Provider](/api/transaction-button#risk-provider)
+- [OWS composition](/protocol/ows) - signer-side complement

@@ -1,0 +1,126 @@
+# Getting Started
+
+## Installation
+
+:::code-group
+
+```bash [npm]
+npm install @txkit/react @txkit/themes viem wagmi @tanstack/react-query
+```
+
+```bash [pnpm]
+pnpm add @txkit/react @txkit/themes viem wagmi @tanstack/react-query
+```
+
+```bash [yarn]
+yarn add @txkit/react @txkit/themes viem wagmi @tanstack/react-query
+```
+
+:::
+
+:::tip
+`@txkit/themes` is optional. Skip it if you use headless hooks (`useTransactionFlow`, `useTokenBalance`, `useWalletState`) or render custom UI via children render functions - you'll provide your own styles. Install it when you want txKit's built-in look out of the box.
+:::
+
+### Peer Dependencies
+
+| Package | Version |
+|---------|---------|
+| `react` | `>= 18` |
+| `react-dom` | `>= 18` |
+| `viem` | `>= 2` |
+| `wagmi` | `>= 3` |
+| `@tanstack/react-query` | `>= 5` |
+
+txKit is fully typed - no additional `@types/*` packages needed.
+
+## Quick Start (Testnet)
+
+Fastest way to try txKit - no RPC keys, no chain arrays:
+
+```tsx
+import '@txkit/themes'
+
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+
+const App = () => (
+  <TxKitProvider config={{ testnet: true }}>
+    <ConnectWallet />
+  </TxKitProvider>
+)
+```
+
+`testnet: true` ships a Sepolia-only preset using viem's public RPC endpoints. Mainnet is registered internally so ENS name and avatar resolution still works, but it's hidden from the chain selector so users don't accidentally switch.
+
+:::tip
+Need Sepolia ETH? The [Alchemy Sepolia Faucet](https://sepoliafaucet.com/) and [PoW Faucet](https://sepolia-faucet.pk910.de/) are free.
+:::
+
+## Setup (Mainnet)
+
+For production, pass your chains and transports explicitly:
+
+```tsx
+import '@txkit/themes'
+
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+
+const App = () => (
+  <TxKitProvider config={{
+    chains: [ mainnet ],
+    transports: { [mainnet.id]: http('https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY') },
+  }}>
+    <ConnectWallet />
+  </TxKitProvider>
+)
+```
+
+`TxKitProvider` creates `WagmiProvider` and `QueryClientProvider` internally - you don't need to set them up.
+
+:::warning
+Without `import '@txkit/themes'`, default component UI renders without styles. Skip it only if you provide your own styling via headless hooks or custom render functions.
+:::
+
+:::info
+`testnet: true` uses public RPC endpoints (no auth). Rate limits apply - fine for alpha and local development, not for production apps with real user traffic. For production, provide `chains` + `transports` with your own RPC provider (Alchemy, Infura, Ankr).
+:::
+
+## Config Options
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `testnet` | `boolean` | `false` | Use Sepolia preset (no `chains`/`transports` required) |
+| `chains` | `[Chain, ...Chain[]]` | Required unless `testnet: true` | Supported chains |
+| `transports` | `Record<number, Transport>` | Required unless `testnet: true` | RPC transport per chain |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` | Color theme |
+| `variant` | `'default' \| 'soft' \| 'sharp' \| 'rounded'` | `'default'` | Visual style preset |
+| `walletConnectProjectId` | `string` | - | Enables WalletConnect |
+| `autoConnect` | `boolean` | `true` | Reconnect on reload |
+
+For the full config reference, see [TxKitProvider](/api/tx-provider).
+
+## Already Using wagmi?
+
+If your app already has WagmiProvider and QueryClientProvider, use embedded mode to avoid duplicate providers:
+
+```tsx
+<WagmiProvider config={yourConfig}>
+  <QueryClientProvider client={yourQueryClient}>
+    <TxKitProvider embedded>
+      <ConnectWallet />
+    </TxKitProvider>
+  </QueryClientProvider>
+</WagmiProvider>
+```
+
+See [TxKitProvider - Embedded Mode](/api/tx-provider#embedded-mode) for details.
+
+## Where to next
+
+- [Security model](/concepts/security) - what defenses ship in v0.1.0-alpha and which are roadmap
+- [Next.js setup](/guides/nextjs) - App Router boundary, SSR via `cookieStorage`, common gotchas
+- [Testing](/guides/testing) - `renderWithTxKit` helper using wagmi's `mock` connector
+- [Compared to other libraries](/concepts/comparison) - decide between standalone and embedded
+- [FAQ](/faq) - common questions

@@ -1,0 +1,160 @@
+# Migrate from RainbowKit
+
+txKit is a UI kit + transaction layer; RainbowKit is wallet-first. Many dApps will keep RainbowKit (or another wallet kit) AND adopt txKit alongside via embedded mode. If you want to fully replace RainbowKit, this guide covers it.
+
+> **Recommended path: hybrid.** Keep RainbowKit for wallet UX and add `<TransactionButton />` + `<FlowSteps />` from txKit for tx-flow safety. Skip to "Hybrid Mode" below.
+
+## Architecture Shift
+
+| RainbowKit | txKit |
+|---|---|
+| `<RainbowKitProvider>` | `<TxKitProvider>` (or `embedded`) |
+| `<ConnectButton />` | `<ConnectWallet />` |
+| `useAccount` (wagmi) | `useWalletState()` |
+| `<TransactionStatus />` (custom) | `<TransactionButton />` + `<FlowSteps />` |
+
+## Step-by-Step Replacement
+
+### 1. Replace the Provider
+
+Before (RainbowKit):
+
+```tsx
+import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit'
+import { WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { mainnet } from 'viem/chains'
+
+const config = getDefaultConfig({
+  appName: 'My App',
+  projectId: 'WC_PROJECT_ID',
+  chains: [ mainnet ],
+})
+const queryClient = new QueryClient()
+
+const App = ({ children }) => (
+  <WagmiProvider config={config}>
+    <QueryClientProvider client={queryClient}>
+      <RainbowKitProvider>{children}</RainbowKitProvider>
+    </QueryClientProvider>
+  </WagmiProvider>
+)
+```
+
+After (txKit standalone):
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+
+const App = ({ children }) => (
+  <TxKitProvider config={{
+    chains: [ mainnet ],
+    transports: { [mainnet.id]: http() },
+    walletConnectProjectId: 'WC_PROJECT_ID',
+  }}>
+    {children}
+  </TxKitProvider>
+)
+```
+
+### 2. Replace the Connect Button
+
+Before:
+
+```tsx
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+const Header = () => <ConnectButton />
+```
+
+After:
+
+```tsx
+import { ConnectWallet } from '@txkit/react'
+const Header = () => <ConnectWallet />
+```
+
+Prop mapping:
+
+| RainbowKit `<ConnectButton>` prop | txKit `<ConnectWallet>` equivalent |
+|---|---|
+| `accountStatus="full"` | (default - full status shown) |
+| `chainStatus="full"` | (default) |
+| `showBalance` | `showBalance` (same name) |
+| `label="Connect"` | `label="Connect"` (same name) |
+| `theme={midnightTheme}` | wrap in `<div className="tx-root tx-dark">` |
+
+### 3. Add Transaction Flow Components
+
+RainbowKit doesn't ship a transaction-status component; teams build their own. txKit ships `<TransactionButton />` + compound `<FlowSteps />` / `<FlowProgress />` / `<FlowToast />`.
+
+```tsx
+import { TransactionButton, FlowSteps, FlowToast, txStep } from '@txkit/react'
+import { parseEther } from 'viem'
+
+const SendButton = () => (
+  <>
+    <TransactionButton steps={[ txStep('send', 'Send', { to: '0x...', value: parseEther('0.01') }) ]} />
+    <FlowSteps />
+    <FlowToast />
+  </>
+)
+```
+
+### 4. Theme Mapping
+
+| RainbowKit theme prop | txKit equivalent |
+|---|---|
+| `theme={midnightTheme}` | `<div className="tx-root tx-dark">` parent class |
+| `theme.colors.accentColor` | `--tx-color-primary` CSS variable |
+| `theme.radii.connectButton` | `variant="rounded"` on `<TxKitProvider>` |
+| `theme.fonts.body` | `--tx-font-family` CSS variable |
+
+See [Theming](/theming) for the full token reference.
+
+## Feature Parity
+
+| Feature | RainbowKit | txKit v0.1.0-alpha |
+|---|---|---|
+| Wallet connect modal | yes | yes (`<ConnectWallet />`) |
+| ENS name + avatar | yes | yes |
+| Chain switching prompt | yes | yes |
+| WalletConnect QR | yes | yes |
+| Recent wallets | yes | yes |
+| Custom theme tokens | yes (theme object) | yes (CSS vars) |
+| Transaction simulation | no | yes |
+| Multi-step flow primitives | no | yes |
+| Risk scoring slot | no | yes |
+| `MAX_UINT256` approval warning | no | yes |
+
+For features beyond v0.1.0-alpha (like custom wallet onboarding flows), keep RainbowKit and use **Hybrid Mode**.
+
+## Hybrid Mode (Recommended)
+
+Don't rip out RainbowKit. Use embedded mode and add `<TransactionButton />` + compound components for tx-flow safety:
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+
+const App = ({ children }) => (
+  <WagmiProvider config={config}>
+    <QueryClientProvider client={queryClient}>
+      <RainbowKitProvider>
+        <TxKitProvider embedded>
+          {children}
+        </TxKitProvider>
+      </RainbowKitProvider>
+    </QueryClientProvider>
+  </WagmiProvider>
+)
+```
+
+See the [Embedded Mode guide](/guides/embedded-mode) for AppKit/ConnectKit/Privy/Dynamic patterns.
+
+## Troubleshooting
+
+- **"useChainModal is not defined"** -> RainbowKit-specific hook; use `useTxKit().config.chains` to read available chains, or `useSwitchChain()` from wagmi directly.
+- **"My theme tokens don't apply"** -> ensure `.tx-root` class is on a parent element. `<TxKitProvider>` adds it automatically; manual `<div className="tx-root">` needed only when scoping inside a non-Provider tree.
+- **"Connect modal doesn't show my wallet"** -> set `walletConnectProjectId` in `<TxKitProvider config>`. Without it, only injected wallets appear.

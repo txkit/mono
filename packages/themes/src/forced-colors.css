@@ -1,0 +1,107 @@
+/* Windows High Contrast Mode (forced-colors: active)
+ *
+ * In this mode the OS / browser overrides custom CSS colors with a small
+ * fixed palette of "system colors" to maximize contrast for users with
+ * low vision. Most txKit visuals (gradient borders, semi-transparent
+ * surfaces, opacity-based disabled states) become invisible because
+ * they rely on subtle color differences.
+ *
+ * This file restores readability by:
+ * 1. Drawing explicit borders on interactive elements (forced-colors
+ *    discards background-color but respects borders).
+ * 2. Mapping txKit semantic states to system colors:
+ *    - Canvas      - background surface
+ *    - CanvasText  - regular text
+ *    - LinkText    - links / actionable secondary text
+ *    - ButtonText  - button text + outlines
+ *    - ButtonFace  - button background fill
+ *    - Highlight   - focus rings / selection
+ *    - GrayText    - disabled state
+ *    - Mark        - warnings / errors / risk
+ * 3. Replacing animated skeleton shimmers with solid GrayText blocks
+ *    (forced-colors strips backgrounds; an animated gradient becomes
+ *    invisible).
+ *
+ * The `forced-color-adjust: none` opt-out is used sparingly - only on
+ * brand-coloured wallet icons where the brand identity matters more
+ * than system-color overrides. Everywhere else we let the OS palette
+ * win.
+ */
+
+@media (forced-colors: active) {
+  /* Interactive elements need visible outlines to show up at all. */
+  .tx-root button,
+  .tx-root [role="button"],
+  .tx-root input,
+  .tx-root select,
+  .tx-root textarea {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+
+  /* Wallet brand icons keep their identity (forced-color-adjust opts
+     out of the OS palette so logo blue stays blue). */
+  .tx-root .tx-cw-wallet-icon,
+  .tx-root .tx-cw-qr-wallet-icon,
+  .tx-root .tx-tb-icon {
+    forced-color-adjust: none;
+  }
+
+  /* Focus indicators - use system Highlight for guaranteed contrast. */
+  .tx-root :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  /* Links / external-target text. */
+  .tx-root a,
+  .tx-root [role="link"] {
+    color: LinkText;
+  }
+
+  /* Disabled / loading - GrayText is the system disabled colour. */
+  .tx-root button:disabled,
+  .tx-root [aria-disabled="true"],
+  .tx-root [data-state="disabled"] {
+    color: GrayText;
+    border-color: GrayText;
+  }
+
+  /* Risk / error / warning surfaces map to Mark. */
+  .tx-root [role="alert"],
+  .tx-root [data-state="error"],
+  .tx-root [data-state="rejected"],
+  .tx-root [data-state="simulation-failed"],
+  .tx-root .tx-cf-warning {
+    color: Mark;
+    border-color: Mark;
+  }
+
+  /* Loading skeletons: animated gradient is invisible in forced-colors,
+     so collapse to a solid GrayText block. */
+  .tx-root [data-state="loading"] .tx-tb-amount,
+  .tx-root [data-state="loading"] .tx-tb-fiat,
+  .tx-root [data-state="loading"] .tx-tb-name,
+  .tx-root [data-state="loading"] .tx-tb-icon,
+  .tx-root [data-state="loading"] .tx-tb-icon-fallback,
+  .tx-root .tx-cw-skeleton {
+    background: GrayText;
+    color: Canvas;
+    animation: none;
+  }
+
+  /* FlowSteps current step indicator - rely on Highlight + ring for
+     "this is where you are". */
+  .tx-root .tx-fs-step[aria-current="step"] {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  /* Completed / success states - keep neutral with explicit border so
+     the checkmark icon remains visible. */
+  .tx-root [data-state="completed"],
+  .tx-root [data-state="success"] {
+    border-color: ButtonText;
+  }
+}

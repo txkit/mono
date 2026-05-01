@@ -1,0 +1,374 @@
+# ConnectWallet
+
+Wallet connection button with a built-in 5-state machine: disconnected, connecting, connected, wrong chain, and error. Handles ENS resolution, balance display, chain switching, and account dropdown.
+
+**Bundle:** 4.8 kB JS (gzip) + 2.1 kB CSS (gzip) added to your app.
+
+## Import
+
+```tsx
+import { ConnectWallet } from '@txkit/react'
+```
+
+## Usage
+
+```tsx
+<ConnectWallet />
+```
+
+## Props
+
+| Prop | Type | Default |
+|------|------|---------|
+| `className` | `string` | - |
+| `label` | `string` | `'Connect Wallet'` |
+| `chainId` | `number` | - |
+| `labels` | `Partial<ConnectWalletLabels>` | See [Labels](#labels) |
+| `size` | `'default' \| 'compact'` | `'default'` |
+| `variant` | `'default' \| 'outline' \| 'ghost' \| 'soft'` | `'default'` |
+| `showBalance` | `boolean` | `true` |
+| `showAvatar` | `boolean` | `true` |
+| `showEns` | `boolean` | `true` |
+| `showFiat` | `boolean` | `false` |
+| `showChainSelector` | `boolean` | `true` |
+| `avatarStyle` | `'gradient' \| 'pixel'` | `'gradient'` |
+| `onConnect` | `(data: { address: string; connector: string }) => void` | - |
+| `onDisconnect` | `() => void` | - |
+| `onError` | `(error: Error) => void` | - |
+| `onRequestConnect` | `() => boolean \| void` | - |
+| `formatAddress` | `(address: string, ensName?: string) => string` | - |
+
+- `chainId` - When set, forces the user to be on this chain. If they are on a different chain, the button shows "Wrong Network" and clicking it triggers a chain switch.
+- `onRequestConnect` - Intercept the connect button click. Return `true` to skip the built-in wallet selector modal - useful when delegating to RainbowKit's `useConnectModal`, Reown AppKit, or any custom wallet picker.
+- `formatAddress` - Custom address formatting function. Receives the raw address and resolved ENS name (if available). Return value is displayed in the button.
+- `labels` - Override any UI text string. See [Labels](#labels) below.
+
+## States
+
+`useWalletState` is a state machine with 5 states (the `WalletState` type
+union):
+
+| State | Button Shows | On Click |
+|-------|-------------|----------|
+| `disconnected` | Label text | Opens wallet selection modal |
+| `connecting` | Spinner + connecting wallet name | Disabled |
+| `connected` | Address / ENS + balance | Opens account dropdown |
+| `wrong-chain` | "Wrong Network" | Triggers chain switch |
+| `error` | "Try Again" | Opens wallet selection modal |
+
+The default `<ConnectWallet />` UI also exposes a separate
+`data-state="initializing"` attribute on the root element while the
+connector list is empty (typically the first frame after `TxKitProvider`
+mounts and `autoConnect` is hydrating). This is a UI affordance for
+skeleton placeholders, not part of the public `WalletState` union -
+custom-render consumers branch on `state` and treat the brief gap as
+`'disconnected'` (because `address` is still undefined).
+
+## Examples
+
+### Custom Label
+
+```tsx
+<ConnectWallet label="Sign In" />
+```
+
+### With Callbacks
+
+```tsx
+<ConnectWallet
+  onConnect={(data) => console.log('Connected:', data.address)}
+  onDisconnect={() => console.log('Disconnected')}
+  onError={(error) => console.error(error.message)}
+/>
+```
+
+### Custom Address Format
+
+```tsx
+<ConnectWallet
+  formatAddress={(address) => `${address.slice(0, 6)}..${address.slice(-2)}`}
+/>
+```
+
+### Force Chain
+
+```tsx
+import { arbitrum } from 'viem/chains'
+
+<ConnectWallet chainId={arbitrum.id} />
+```
+
+### Hide Balance and Avatar
+
+```tsx
+<ConnectWallet showBalance={false} showAvatar={false} />
+```
+
+## Wallet Kit Integration (RainbowKit / AppKit / ConnectKit)
+
+`ConnectWallet` ships its own wallet selector modal, but you can delegate
+the wallet picking step to an existing wallet kit (RainbowKit, Reown
+AppKit, ConnectKit, Privy, Dynamic) while keeping the txKit button visual
+language and the rest of the dApp's wagmi state unified.
+
+The hook is the `onRequestConnect` prop - return `true` from it to suppress
+the built-in modal. Anything that already calls `useAccount` / `useConnect`
+keeps working because all kits sit on the same wagmi context.
+
+### RainbowKit
+
+```tsx
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+import { RainbowKitProvider, useConnectModal } from '@rainbow-me/rainbowkit'
+import '@rainbow-me/rainbowkit/styles.css'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+
+const ConnectButton = () => {
+  const { openConnectModal } = useConnectModal()
+
+  return (
+    <ConnectWallet
+      onRequestConnect={() => {
+        if (!openConnectModal) {
+          return false
+        }
+        openConnectModal()
+        return true
+      }}
+    />
+  )
+}
+
+const App = () => (
+  <TxKitProvider config={{
+    chains: [ mainnet ],
+    transports: { [mainnet.id]: http() },
+  }}>
+    <RainbowKitProvider modalSize="compact" locale="en">
+      <ConnectButton />
+    </RainbowKitProvider>
+  </TxKitProvider>
+)
+```
+
+`TxKitProvider` owns the wagmi store and `RainbowKitProvider` reuses it -
+do not create a second wagmi config. Set `locale="en"` explicitly, RainbowKit
+defaults to the browser locale and will warn loudly without it.
+
+If your app already runs RainbowKit at the root, flip the wrapping order
+and switch to embedded mode - see [Embedded Mode](/api/tx-provider#embedded-mode):
+
+```tsx
+<WagmiProvider config={yourWagmiConfig}>
+  <QueryClientProvider client={queryClient}>
+    <RainbowKitProvider locale="en">
+      <TxKitProvider embedded>
+        <ConnectButton />
+      </TxKitProvider>
+    </RainbowKitProvider>
+  </QueryClientProvider>
+</WagmiProvider>
+```
+
+### Reown AppKit
+
+```tsx
+import { useAppKit } from '@reown/appkit/react'
+
+const ConnectButton = () => {
+  const { open } = useAppKit()
+
+  return (
+    <ConnectWallet
+      onRequestConnect={() => {
+        open({ view: 'Connect' })
+        return true
+      }}
+    />
+  )
+}
+```
+
+### ConnectKit
+
+```tsx
+import { useModal } from 'connectkit'
+
+const ConnectButton = () => {
+  const { setOpen } = useModal()
+
+  return (
+    <ConnectWallet
+      onRequestConnect={() => {
+        setOpen(true)
+        return true
+      }}
+    />
+  )
+}
+```
+
+### Choosing the right composition
+
+| Your starting point | Recommended setup |
+|---------------------|-------------------|
+| Greenfield project | `TxKitProvider` standalone, txKit's built-in modal |
+| Greenfield, want RainbowKit/AppKit modal styling | `TxKitProvider` standalone + wallet kit provider as child + `onRequestConnect` |
+| Existing app on RainbowKit / AppKit / ConnectKit / wagmi | `TxKitProvider embedded` inside the existing wagmi tree |
+
+In all three setups, `ConnectWallet`, `TokenBalance`, `TransactionButton`, and
+the flow components share one wagmi store - no duplicate connectors,
+no duplicate balance fetches, no nested provider warnings.
+
+## Custom Render
+
+Use the `children` render function for full UI control. The render function
+receives the full state machine - branch on `state` to render every phase.
+
+```tsx
+<ConnectWallet>
+  {({ state, displayAddress, ensAvatar, openModal, disconnect, switchChain, requiredChain, error, connectingWallet }) => {
+    if (state === 'connecting') {
+      return (
+        <button disabled>
+          Connecting to {connectingWallet ?? 'wallet'}...
+        </button>
+      )
+    }
+    if (state === 'wrong-chain' && requiredChain) {
+      return (
+        <button onClick={() => switchChain(requiredChain.id)}>
+          Switch to {requiredChain.name}
+        </button>
+      )
+    }
+    if (state === 'error') {
+      return (
+        <button onClick={openModal} aria-invalid="true">
+          {error?.message ?? 'Connection failed'} - retry
+        </button>
+      )
+    }
+    if (state === 'connected') {
+      return (
+        <button onClick={disconnect}>
+          {ensAvatar ? <img src={ensAvatar} alt="" /> : null}
+          {displayAddress}
+        </button>
+      )
+    }
+    return <button onClick={openModal}>Sign In</button>
+  }}
+</ConnectWallet>
+```
+
+### Render Data
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `state` | `WalletState` | Current connection state |
+| `address` | `` `0x${string}` \| undefined `` | Connected wallet address |
+| `displayAddress` | `string \| undefined` | Shortened address or ENS name |
+| `ensName` | `string \| null \| undefined` | ENS name |
+| `ensAvatar` | `string \| null \| undefined` | ENS avatar URL |
+| `formattedBalance` | `string \| undefined` | Native balance with symbol (e.g. "1.23 ETH") |
+| `fiatBalance` | `string \| undefined` | Fiat-formatted balance (e.g. "$3,456.78") |
+| `chain` | `Chain \| undefined` | Current chain |
+| `requiredChain` | `Chain \| undefined` | Required chain when `chainId` prop is set |
+| `chains` | `readonly Chain[]` | Available chains for switching |
+| `connectors` | `readonly Connector[]` | Available wallet connectors |
+| `connectingWallet` | `string \| undefined` | Name of wallet currently being connected |
+| `connect` | `(connector: Connector) => void` | Connect a specific wallet |
+| `disconnect` | `() => void` | Disconnect and close panel |
+| `switchChain` | `(chainId: number) => void` | Switch to a different chain |
+| `openModal` | `() => void` | Open wallet selection modal |
+| `closePanel` | `() => void` | Close any open panel |
+| `error` | `Error \| null` | Connection error |
+| `isPending` | `boolean` | True while connection is pending |
+| `isTimedOut` | `boolean` | True when connection has exceeded timeout |
+| `isWrongChain` | `boolean` | True when `chainId` is enforced and current chain differs |
+
+## Hook
+
+### useWalletState
+
+Headless hook for wallet connection state. Use this for complete UI control without the ConnectWallet component.
+
+```tsx
+import { useWalletState } from '@txkit/react'
+
+const MyWalletButton = () => {
+  const { state, displayAddress, connect, connectors, disconnect } = useWalletState()
+
+  if (state === 'connected') {
+    return <button onClick={disconnect}>{displayAddress}</button>
+  }
+
+  return (
+    <div>
+      {connectors.map((connector) => (
+        <button key={connector.uid} onClick={() => connect({ connector })}>
+          {connector.name}
+        </button>
+      ))}
+    </div>
+  )
+}
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `chainId` | `number` | - | Force specific chain. Shows wrong-chain state if mismatch. |
+| `showBalance` | `boolean` | `true` | Fetch and display native balance. |
+| `showEns` | `boolean` | `true` | Resolve ENS name and avatar. |
+
+Returns the same fields as [Render Data](#render-data) above (except `openModal` and `closePanel` which are component-specific).
+
+## Labels
+
+Override UI text by passing a partial `ConnectWalletLabels` object:
+
+```tsx
+<ConnectWallet
+  labels={{
+    connect: 'Sign In',
+    connecting: 'Signing in...',
+    disconnect: 'Sign Out',
+  }}
+/>
+```
+
+### All Label Keys
+
+`{chain}` and `{wallet}` placeholders are interpolated at runtime.
+
+| Key | Default | Where |
+|-----|---------|-------|
+| `connect` | `'Connect Wallet'` | Button - disconnected |
+| `connecting` | `'Connecting'` | Button - connecting |
+| `wrongChain` | `'Wrong Network'` | Button - wrong chain |
+| `switchChain` | `'Switch Network'` | Button - chain switch action |
+| `switchTo` | `'Switch to {chain}'` | Mismatch banner row |
+| `disconnect` | `'Disconnect'` | Dropdown menu |
+| `copyAddress` | `'Copy Address'` | Dropdown menu |
+| `copied` | `'Copied!'` | Post-copy feedback |
+| `error` | `'Connection Failed'` | Button - error state |
+| `retry` | `'Try Again'` | Button - retry |
+| `selectWallet` | `'Select Wallet'` | Modal title |
+| `whatIsWallet` | `'What is a wallet?'` | Modal info link |
+| `explorer` | `'Explorer'` | Dropdown menu |
+| `searchWallets` | `'Search wallets...'` | Modal search input |
+| `installedWallets` | `'Installed'` | Modal group header |
+| `recentWallets` | `'Recent'` | Modal group header |
+| `popularWallets` | `'Popular'` | Modal group header |
+| `allWallets` | `'All Wallets'` | Modal group header |
+| `openingWallet` | `'Opening {wallet}...'` | Connecting detail |
+| `approveInWallet` | `'Approve in {wallet}'` | Connecting detail |
+| `takingTooLong` | `'Taking too long?'` | Timeout hint |
+| `tryDifferent` | `'Try a different wallet'` | Timeout link |
+| `switchNetwork` | `'Switch Network'` | Chain selector title |
+| `unknownChain` | `'Unknown Network'` | Fallback for unknown chain id |
+| `scanWithPhone` | `'Scan with your phone'` | QR code instruction |
+| `copyLink` | `'Copy Link'` | WalletConnect URI button |
+| `connectingTo` | `'Connecting to'` | Anti-phishing dApp origin prefix |

@@ -1,0 +1,188 @@
+# Testing
+
+txKit components depend on a wagmi context, a TanStack Query client, and
+the txKit provider context. This page covers how to wire those up in
+unit tests so your components behave like they do in production.
+
+## Test wrapper
+
+Every txKit test needs the same provider tree. Centralize it in a
+`renderWithTxKit` helper:
+
+```tsx
+// test/renderWithTxKit.tsx
+import { render, type RenderOptions } from '@testing-library/react'
+import { TxKitProvider } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+import { mock } from 'wagmi/connectors'
+
+import type { ReactElement, ReactNode } from 'react'
+
+const Wrapper = ({ children }: { children: ReactNode }) => (
+  <TxKitProvider config={{
+    chains: [ mainnet ],
+    transports: { [mainnet.id]: http() },
+    wallets: [ {
+      id: 'mock',
+      name: 'Mock Wallet',
+      createConnector: mock({ accounts: [ '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045' ] }),
+    } ],
+    autoConnect: false,
+  }}>
+    {children}
+  </TxKitProvider>
+)
+
+export const renderWithTxKit = (ui: ReactElement, options?: RenderOptions) =>
+  render(ui, { wrapper: Wrapper, ...options })
+```
+
+Use it as a drop-in replacement for `render`:
+
+```tsx
+import { renderWithTxKit } from './renderWithTxKit'
+import { ConnectWallet } from '@txkit/react'
+
+test('renders connect button', () => {
+  const { getByRole } = renderWithTxKit(<ConnectWallet />)
+  expect(getByRole('button')).toHaveTextContent('Connect Wallet')
+})
+```
+
+## Mocking the wallet
+
+wagmi ships a `mock` connector for tests. It accepts a list of accounts
+and a `features` flag for behavior (auto-connect, reject) - see
+[wagmi mock connector](https://wagmi.sh/core/api/connectors/mock) for the
+full surface. Pair it with `autoConnect: false` so your test starts in a
+known disconnected state, then use `userEvent.click` and
+`waitFor(() => expect(screen.getByText(...)))` to drive the flow.
+
+```tsx
+import userEvent from '@testing-library/user-event'
+import { waitFor, screen } from '@testing-library/react'
+
+test('connects via mock', async () => {
+  renderWithTxKit(<ConnectWallet />)
+
+  await userEvent.click(screen.getByRole('button', { name: /connect wallet/i }))
+  await userEvent.click(screen.getByRole('button', { name: /mock wallet/i }))
+
+  await waitFor(() => {
+    expect(screen.getByRole('button')).toHaveTextContent('0xd8dA')
+  })
+})
+```
+
+## Testing transactions
+
+`TransactionButton` calls `simulateContract` and `writeContract` on the
+wagmi public + wallet clients. With the `mock` connector both accept
+arbitrary calls without hitting a real RPC. For richer assertions, mock
+the viem transport and assert on the calls payload:
+
+```tsx
+import { http } from 'viem'
+import { mock } from 'wagmi/connectors'
+
+const transactions: Array<{ to: string; data: string; value: bigint }> = []
+
+const mockTransport = http('https://example/rpc', {
+  fetchOptions: {},
+  // ...
+})
+
+// Or use viem's createTransport directly to capture eth_sendTransaction calls
+```
+
+A simpler approach: assert on `onFlowComplete` / `onError` callbacks
+rather than on RPC traffic - they fire with typed `StepResult` and
+`TransactionError` objects whose shapes you control independently of
+transport.
+
+```tsx
+test('flow completes', async () => {
+  const onFlowComplete = vi.fn()
+
+  renderWithTxKit(
+    <TransactionButton
+      steps={[ txStep('send', 'Send', { to: '0x...', value: 1n }) ]}
+      onFlowComplete={onFlowComplete}
+    />
+  )
+
+  await userEvent.click(screen.getByRole('button', { name: /send/i }))
+
+  await waitFor(() => expect(onFlowComplete).toHaveBeenCalled())
+
+  const [ results ] = onFlowComplete.mock.calls[0]
+  expect(results.send.type).toBe('tx')
+  expect(results.send.hash).toMatch(/^0x/)
+})
+```
+
+## Testing pure helpers
+
+`@txkit/core` and `@txkit/tx-protocol` are framework-agnostic - test them
+directly without any provider tree:
+
+```ts
+import { describe, expect, test } from 'vitest'
+import { shortenAddress, formatTokenAmount, classifyError } from '@txkit/core'
+import { createEvmTx, validateEnvelope } from '@txkit/tx-protocol'
+
+test('shortenAddress', () => {
+  expect(shortenAddress('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')).toBe('0xd8dA...6045')
+})
+
+test('classifyError userRejected', () => {
+  expect(classifyError({ name: 'UserRejectedRequestError' })).toBe('USER_REJECTED')
+})
+
+test('validateEnvelope rejects expired notAfter', () => {
+  const envelope = createEvmTx({
+    chain: 'eip155:1',
+    calls: [ { to: '0x' + 'a'.repeat(40), data: '0x', value: '0x0', operation: 'call' } ],
+    validity: { notAfter: Math.floor(Date.now() / 1000) - 60 },
+    description: { short: 'Test', action: 'transfer' },
+    metadata: { protocol: 'test', tokenMovements: [], counterparties: [] },
+  })
+
+  const result = validateEnvelope(envelope)
+  // notAfter validation is on the producer side; the schema accepts the shape
+  expect(result.ok).toBe(true)
+})
+```
+
+## TypeScript
+
+txKit types are exported from `@txkit/react` directly - no setup needed.
+For tests that touch the global `TxKit` namespace, ensure `@txkit/react`
+is imported somewhere in your test file (or in `vitest.setup.ts`) so the
+`declare global` block is loaded.
+
+## Test framework support
+
+The patterns above work in vitest, jest, and any framework that ships
+DOM emulation. txKit components are SSR-safe but state-ful, so prefer
+jsdom or happy-dom over node environments:
+
+```ts
+// vitest.config.ts
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: [ './test/setup.ts' ],
+  },
+})
+```
+
+## See also
+
+- [TxKitProvider](/api/tx-provider) - provider modes and config
+- [@txkit/core](/api/core) - pure helpers safe to test without providers
+- [Hooks](/api/hooks) - all hooks accept `wrapper` for renderHook

@@ -1,0 +1,429 @@
+.tx-txb {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tx-space-sm);
+  width: 100%;
+  font-family: var(--tx-font-family);
+}
+
+/* --- Button --- */
+
+.tx-txb-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tx-space-sm);
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 24px;
+  border: 1px solid transparent;
+  border-radius: var(--tx-radius-lg);
+  font-family: inherit;
+  font-size: var(--tx-font-size-base);
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: all var(--tx-transition);
+  user-select: none;
+}
+
+.tx-txb-button:hover:not(:disabled) {
+  transform: scale(1.025);
+}
+
+.tx-txb-button:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.tx-txb-button:focus-visible {
+  outline: 2px solid var(--tx-color-primary);
+  outline-offset: 2px;
+}
+
+.tx-txb-button:disabled {
+  background: var(--tx-color-bg-tertiary);
+  color: var(--tx-color-text-tertiary);
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+.tx-txb-button[data-state="pending"]:disabled {
+  background: var(--tx-color-bg-tertiary);
+  color: var(--tx-color-text-tertiary);
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+/* Suppress entrance animations on first render (mount into terminal state) */
+.tx-txb[data-mount="true"] .tx-txb-button {
+  animation: none;
+  transition: none;
+}
+
+/* State: pending (not started yet) */
+
+.tx-txb-button[data-state="pending"] {
+  background: var(--tx-color-primary);
+  color: var(--tx-color-primary-text);
+  box-shadow: var(--tx-shadow-sm);
+}
+
+.tx-txb-button[data-state="pending"]:hover:not(:disabled) {
+  background: var(--tx-color-primary-hover);
+  box-shadow: var(--tx-shadow-md);
+}
+
+.tx-txb-button[data-state="pending"]:active:not(:disabled) {
+  background: var(--tx-color-primary-active);
+}
+
+/* States: processing */
+
+.tx-txb-button[data-state="simulating"],
+.tx-txb-button[data-state="signing"],
+.tx-txb-button[data-state="tx-pending"],
+.tx-txb-button[data-state="waiting"] {
+  background: var(--tx-color-bg-secondary);
+  color: var(--tx-color-text-secondary);
+  cursor: wait;
+}
+
+.tx-txb-button[data-state="simulating"]:hover,
+.tx-txb-button[data-state="signing"]:hover,
+.tx-txb-button[data-state="tx-pending"]:hover,
+.tx-txb-button[data-state="waiting"]:hover {
+  transform: none;
+}
+
+/* State: confirming-risk */
+
+.tx-txb-button[data-state="confirming-risk"] {
+  background: var(--tx-color-warning);
+  color: var(--tx-color-warning-text);
+}
+
+/* State: completed */
+
+.tx-txb-button[data-state="completed"] {
+  background: var(--tx-color-success, #059669);
+  color: var(--tx-color-success-text, #fff);
+  animation: tx-txb-success-glow var(--tx-duration-slower) var(--tx-ease-default);
+}
+
+@keyframes tx-txb-success-glow {
+  0% { box-shadow: 0 0 0 0 oklch(0.6 0.18 145 / 0.4); }
+  100% { box-shadow: 0 0 0 8px oklch(0.6 0.18 145 / 0); }
+}
+
+/* States: error / simulation-failed
+ *
+ * Retry CTA stays neutral: status indicators (FlowProgress bar, FlowSteps
+ * icons, FlowToast) already signal failure in red. The retry button is a
+ * recovery action, not destructive, so it mirrors the rejected pattern -
+ * neutral surface, primary tint on hover. Mirrors industry practice
+ * (Stripe, GitHub, Linear: status red, retry neutral).
+ */
+
+.tx-txb-button[data-state="error"],
+.tx-txb-button[data-state="simulation-failed"] {
+  background: var(--tx-color-bg-secondary);
+  color: var(--tx-color-text);
+  border-color: var(--tx-color-border);
+  animation: tx-txb-shake var(--tx-duration-slow) var(--tx-ease-default);
+}
+
+.tx-txb-button[data-state="error"]:hover:not(:disabled),
+.tx-txb-button[data-state="simulation-failed"]:hover:not(:disabled) {
+  border-color: var(--tx-color-primary);
+  color: var(--tx-color-primary);
+}
+
+@keyframes tx-txb-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* State: rejected */
+
+.tx-txb-button[data-state="rejected"] {
+  background: var(--tx-color-bg-secondary);
+  color: var(--tx-color-text);
+  border-color: var(--tx-color-border);
+}
+
+.tx-txb-button[data-state="rejected"]:hover:not(:disabled) {
+  border-color: var(--tx-color-primary);
+  color: var(--tx-color-primary);
+}
+
+/* State: canceled */
+
+.tx-txb-button[data-state="canceled"] {
+  background: var(--tx-color-bg-tertiary);
+  color: var(--tx-color-text-tertiary);
+}
+
+/* State: skipped */
+
+.tx-txb-button[data-state="skipped"] {
+  background: var(--tx-color-bg-tertiary);
+  color: var(--tx-color-text-tertiary);
+}
+
+/* --- Icon (arrow-right / loader / check) --- */
+
+.tx-txb-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: block;
+  background-color: currentColor;
+  -webkit-mask-position: 50%;
+  mask-position: 50%;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.tx-txb-icon--spinning {
+  animation: tx-spin var(--tx-duration-spin) linear infinite;
+}
+
+/* tx-spin keyframe is defined globally in @txkit/themes base.css */
+
+/* --- Description above button (figma-style summary line) --- */
+
+.tx-txb-description {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: var(--tx-radius-md);
+  background: var(--tx-color-bg-secondary);
+  color: var(--tx-color-text-secondary);
+  font-family: var(--tx-font-family);
+  font-size: var(--tx-font-size-xs);
+  line-height: 1.45;
+  text-align: center;
+}
+
+/* --- Multi-step progress dots --- */
+
+.tx-txb-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tx-txb-progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--tx-radius-full);
+  background: var(--tx-color-border);
+  transition: background var(--tx-duration-fast) var(--tx-ease-default),
+              transform var(--tx-duration-fast) var(--tx-ease-default);
+}
+
+.tx-txb-progress-dot[data-state="completed"] {
+  background: var(--tx-color-primary);
+}
+
+.tx-txb-progress-dot[data-state="current"] {
+  background: var(--tx-color-primary);
+  transform: scale(1.25);
+  box-shadow: 0 0 0 3px var(--tx-color-primary-alpha);
+}
+
+.tx-txb-progress-label {
+  margin-left: 4px;
+  font-size: var(--tx-font-size-xs);
+  color: var(--tx-color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Countdown badge --- */
+
+.tx-txb-countdown {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--tx-radius-full);
+  background: oklch(1 0 0 / 0.2);
+  font-size: var(--tx-font-size-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Details (expandable) --- */
+
+.tx-txb-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tx-space-sm);
+  overflow: hidden;
+  max-height: 0;
+  font-size: var(--tx-font-size-sm, 12px);
+  transition: max-height var(--tx-transition);
+}
+
+.tx-txb-details[data-expanded="true"] {
+  max-height: 360px;
+  animation: tx-txb-details-in var(--tx-duration-normal) var(--tx-ease-default);
+}
+
+@keyframes tx-txb-details-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tx-txb-details-warning {
+  padding: var(--tx-space-xs, 4px) var(--tx-space-sm);
+  border-left: 3px solid var(--tx-color-warning);
+  border-radius: var(--tx-radius-sm);
+  background: var(--tx-color-warning-alpha);
+  color: var(--tx-color-text);
+  font-size: var(--tx-font-size-sm, 12px);
+}
+
+.tx-txb-details-error {
+  padding: var(--tx-space-xs, 4px) var(--tx-space-sm);
+  border-left: 3px solid var(--tx-color-error);
+  border-radius: var(--tx-radius-sm);
+  background: var(--tx-color-error-bg);
+  color: var(--tx-color-error);
+  font-size: var(--tx-font-size-sm, 12px);
+}
+
+/* --- Force submit / Cancel buttons --- */
+
+.tx-txb-force,
+.tx-txb-cancel {
+  min-height: 44px;
+  padding: var(--tx-space-sm) var(--tx-space-md);
+  border: 1px solid var(--tx-color-border);
+  border-radius: var(--tx-radius-sm);
+  background: transparent;
+  color: var(--tx-color-text-secondary);
+  font-family: inherit;
+  font-size: var(--tx-font-size-sm, 12px);
+  cursor: pointer;
+  transition: background var(--tx-transition), color var(--tx-transition);
+}
+
+.tx-txb-force:hover,
+.tx-txb-cancel:hover {
+  background: var(--tx-color-bg);
+  color: var(--tx-color-text);
+}
+
+.tx-txb-force:focus-visible,
+.tx-txb-cancel:focus-visible {
+  outline: 2px solid var(--tx-color-primary);
+  outline-offset: 2px;
+}
+
+/* --- Skip step link (optional steps only) --- */
+
+.tx-txb-skip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  min-height: 44px;
+  padding: var(--tx-space-xs) var(--tx-space-md);
+  border: none;
+  background: transparent;
+  color: var(--tx-color-text-secondary);
+  font-family: inherit;
+  font-size: var(--tx-font-size-xs);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color var(--tx-transition);
+}
+
+.tx-txb-skip:hover {
+  color: var(--tx-color-text);
+}
+
+.tx-txb-skip:focus-visible {
+  outline: 2px solid var(--tx-color-primary);
+  outline-offset: 2px;
+  border-radius: var(--tx-radius-sm);
+}
+
+/* --- Explorer link --- */
+
+.tx-txb-explorer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tx-space-xs);
+  min-height: 44px;
+  font-family: var(--tx-font-family);
+  font-size: var(--tx-font-size-xs);
+  color: var(--tx-color-text-secondary);
+  text-decoration: none;
+  transition: color var(--tx-transition);
+}
+
+.tx-txb-explorer:hover {
+  color: var(--tx-color-primary);
+}
+
+.tx-txb-explorer:focus-visible {
+  outline: 2px solid var(--tx-color-primary);
+  outline-offset: 2px;
+}
+
+/* --- Screen reader only --- */
+
+.tx-txb-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-txb-button,
+  .tx-txb-details,
+  .tx-txb-force,
+  .tx-txb-cancel,
+  .tx-txb-explorer,
+  .tx-txb-skip,
+  .tx-txb-progress-dot {
+    transition: none;
+  }
+
+  .tx-txb-button[data-state="error"],
+  .tx-txb-button[data-state="simulation-failed"],
+  .tx-txb-button[data-state="completed"],
+  .tx-txb-details[data-expanded="true"] {
+    animation: none;
+  }
+
+  .tx-txb-button:hover:not(:disabled),
+  .tx-txb-button:active:not(:disabled) {
+    transform: none;
+  }
+
+  .tx-txb-progress-dot[data-state="current"] {
+    transform: none;
+  }
+
+  .tx-txb-icon--spinning {
+    animation: none;
+  }
+}

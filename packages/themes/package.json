@@ -1,0 +1,58 @@
+{
+  "name": "@txkit/themes",
+  "version": "0.1.0-alpha.0",
+  "description": "CSS themes for txKit components",
+  "license": "MIT",
+  "author": "Michael Diamond",
+  "homepage": "https://txkit.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/txkit/mono.git",
+    "directory": "packages/themes"
+  },
+  "bugs": {
+    "url": "https://github.com/txkit/mono/issues"
+  },
+  "keywords": [
+    "txkit",
+    "themes",
+    "css",
+    "web3",
+    "ethereum",
+    "dark-mode",
+    "light-mode",
+    "design-tokens",
+    "css-variables",
+    "theming",
+    "ui-kit",
+    "defi"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.css",
+    "./base": "./dist/base.css",
+    "./dark": "./dist/dark.css",
+    "./forced-colors": "./dist/forced-colors.css",
+    "./variants/soft": "./dist/variants/soft.css",
+    "./variants/sharp": "./dist/variants/sharp.css",
+    "./variants/rounded": "./dist/variants/rounded.css"
+  },
+  "files": ["dist", "LICENSE", "README.md", "CHANGELOG.md"],
+  "scripts": {
+    "prepublishOnly": "pnpm run build",
+    "build": "mkdir -p dist dist/variants && postcss src/index.css -o dist/index.css && cp src/base.css src/dark.css src/forced-colors.css dist/ && cp src/variants/*.css dist/variants/",
+    "dev": "mkdir -p dist dist/variants && postcss src/index.css -o dist/index.css && cp src/base.css src/dark.css src/forced-colors.css dist/ && cp src/variants/*.css dist/variants/",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.3"
+  },
+  "sideEffects": ["*.css"]
+}

@@ -1,0 +1,35 @@
+.tx-error-boundary {
+  padding: var(--tx-space-lg, 1rem);
+  color: var(--tx-color-error, #DC2626);
+  background-color: var(--tx-color-bg-secondary, #F9FAFB);
+  border-radius: var(--tx-radius-md, 0.375rem);
+  font-size: var(--tx-font-size-sm, 0.875rem);
+}
+
+.tx-error-boundary-message {
+  margin: 0;
+}
+
+.tx-error-boundary-retry {
+  min-height: 44px;
+  padding: var(--tx-space-sm, 0.5rem) var(--tx-space-md, 1rem);
+  margin-top: var(--tx-space-md, 1rem);
+  background: none;
+  color: var(--tx-color-error, #DC2626);
+  border: 1px solid var(--tx-color-error, #DC2626);
+  border-radius: var(--tx-radius-sm, 0.25rem);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--tx-font-size-sm, 0.875rem);
+}
+
+.tx-error-boundary-retry:focus-visible {
+  outline: 2px solid var(--tx-color-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-error-boundary-retry {
+    transition: none;
+  }
+}

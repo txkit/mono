@@ -1,0 +1,1349 @@
+/* In playground, tx-root doesn't paint its own background.
+   We want the surrounding playground surface to show through -
+   component's own chips/buttons/text keep their theme colors,
+   but the big "theme canvas" belongs to the playground. */
+.playground .tx-root {
+  background: transparent;
+}
+
+/* --- Playground OKLCH Token System --- */
+
+:root {
+  /* Surface - dark neutral palette (v0 reference) */
+  --pg-bg: oklch(0.145 0 0);
+  --pg-fg: oklch(0.95 0 0);
+  --pg-card: oklch(0.175 0 0);
+  --pg-card-fg: oklch(0.95 0 0);
+  --pg-surface-elevated: oklch(0.2 0 0);
+  --pg-surface-sunken: oklch(0.12 0 0);
+
+  /* UI - single muted neutral used for sidebar, segmented containers, panel backgrounds */
+  --pg-primary: oklch(0.511 0.262 276);
+  --pg-primary-text: oklch(0.72 0.18 276);
+  --pg-primary-fg: oklch(1 0 0);
+  --pg-secondary: oklch(0.2 0 0);
+  --pg-secondary-fg: oklch(0.95 0 0);
+  --pg-muted: oklch(0.2 0 0);
+  --pg-muted-fg: oklch(0.55 0 0);
+  --pg-accent: oklch(0.2 0 0);
+  --pg-accent-fg: oklch(0.95 0 0);
+  --pg-destructive: oklch(0.5 0.2 27);
+
+  /* Border + Input */
+  --pg-border: oklch(0.22 0 0);
+  --pg-border-hover: oklch(0.3 0 0);
+  --pg-input: oklch(0.18 0 0);
+
+  /* Sidebar = pg-muted (same surface family, just structural position) */
+  --pg-sidebar: oklch(0.2 0 0);
+  --pg-sidebar-fg: oklch(0.95 0 0);
+  --pg-sidebar-accent: oklch(0.25 0 0);
+  --pg-sidebar-accent-fg: oklch(0.95 0 0);
+  --pg-sidebar-border: oklch(0.22 0 0);
+
+  /* Semantic colors */
+  --pg-violet: oklch(0.585 0.233 292.717);
+  --pg-indigo: oklch(0.511 0.262 276);
+  --pg-emerald: oklch(0.696 0.17 162.48);
+  --pg-amber: oklch(0.828 0.189 84.429);
+
+  /* Radius */
+  --pg-radius: 0.5rem;
+  --pg-radius-sm: calc(var(--pg-radius) - 2px);
+  --pg-radius-md: var(--pg-radius);
+  --pg-radius-lg: calc(var(--pg-radius) + 2px);
+}
+
+.bg-light {
+  /* Main bg slightly off-white; muted neutral shared by sidebar + segmented + panels */
+  --pg-bg: oklch(0.985 0 0);
+  --pg-fg: oklch(0.145 0 0);
+  --pg-card: oklch(1 0 0);
+  --pg-card-fg: oklch(0.145 0 0);
+  --pg-surface-elevated: oklch(1 0 0);
+  --pg-surface-sunken: oklch(0.96 0 0);
+
+  --pg-primary: oklch(0.511 0.262 276);
+  --pg-primary-text: oklch(0.511 0.262 276);
+  --pg-primary-fg: oklch(1 0 0);
+  --pg-secondary: oklch(0.96 0 0);
+  --pg-secondary-fg: oklch(0.205 0 0);
+  --pg-muted: oklch(0.96 0 0);
+  --pg-muted-fg: oklch(0.45 0 0);
+  --pg-accent: oklch(0.96 0 0);
+  --pg-accent-fg: oklch(0.205 0 0);
+  --pg-destructive: oklch(0.577 0.245 27.325);
+
+  --pg-border: oklch(0.9 0 0);
+  --pg-border-hover: oklch(0.82 0 0);
+  --pg-input: oklch(1 0 0);
+
+  /* Sidebar shares the muted neutral - one grey across the whole UI */
+  --pg-sidebar: oklch(0.96 0 0);
+  --pg-sidebar-fg: oklch(0.145 0 0);
+  --pg-sidebar-accent: oklch(0.92 0 0);
+  --pg-sidebar-accent-fg: oklch(0.205 0 0);
+  --pg-sidebar-border: oklch(0.9 0 0);
+
+  color-scheme: light;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: oklch(0.985 0 0);
+  color: var(--pg-fg);
+}
+
+@media (prefers-color-scheme: dark) {
+  body { background: oklch(0.145 0 0); }
+}
+
+
+/* --- Layout --- */
+
+.playground {
+  display: grid;
+  grid-template-columns: 256px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* --- Sidebar --- */
+
+.playground-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--pg-sidebar);
+  border-right: 1px solid var(--pg-sidebar-border);
+  overflow: hidden;
+}
+
+.playground-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 16px;
+}
+
+.playground-brand-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: var(--pg-radius-sm);
+  transition: opacity 150ms ease;
+}
+
+.playground-brand-link:hover {
+  opacity: 0.7;
+}
+
+.playground-brand-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--pg-radius-sm);
+  display: block;
+  flex-shrink: 0;
+}
+
+.playground-logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--tx-color-primary);
+  letter-spacing: -0.01em;
+}
+
+.playground-nav {
+  margin-top: 8px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 12px 16px;
+}
+
+.playground-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--pg-radius);
+  background: transparent;
+  color: var(--pg-sidebar-fg);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.playground-nav-item:hover {
+  background: oklch(from var(--pg-sidebar-accent) l c h / 0.5);
+}
+
+.playground-nav-item.active {
+  background: var(--pg-sidebar-accent);
+  color: var(--pg-sidebar-accent-fg);
+  font-weight: 500;
+}
+
+.playground-nav-count {
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--pg-muted-fg);
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.playground-nav-item.active .playground-nav-count {
+  color: var(--pg-sidebar-fg);
+  opacity: 0.6;
+}
+
+.playground-nav-sub {
+  padding-left: 28px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.playground-nav-sub.active {
+  opacity: 1;
+}
+
+.playground-sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid var(--pg-sidebar-border);
+}
+
+.playground-sidebar-github {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--pg-radius);
+  color: var(--pg-muted-fg);
+  font-size: 13px;
+  text-decoration: none;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.playground-sidebar-github:hover {
+  background: oklch(from var(--pg-sidebar-accent) l c h / 0.5);
+  color: var(--pg-fg);
+}
+
+.playground-sidebar-version {
+  padding: 0 12px;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--pg-muted-fg);
+}
+
+/* --- Nav group categories --- */
+
+.playground-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+
+.playground-nav-group-label {
+  padding: 4px 12px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pg-muted-fg);
+}
+
+/* --- Breadcrumb --- */
+
+.playground-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--pg-muted-fg);
+}
+
+.playground-breadcrumb-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.playground-breadcrumb-link:hover {
+  color: var(--pg-fg);
+}
+
+.playground-breadcrumb-sep {
+  opacity: 0.5;
+}
+
+.playground-breadcrumb-current {
+  color: var(--pg-fg);
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .playground-breadcrumb {
+    display: none;
+  }
+}
+
+/* --- Main area --- */
+
+.playground-main {
+  position: relative;
+  overflow-y: auto;
+  background: var(--pg-bg);
+  color: var(--pg-fg);
+  transition: background 200ms ease;
+}
+
+.playground-toolbar-row {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 40px;
+  margin: 0 0 32px;
+  background: var(--pg-bg);
+  border-bottom: 1px solid var(--pg-border);
+}
+
+.playground-content {
+  padding: 0 40px 32px;
+}
+
+.playground-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.playground-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--pg-fg);
+}
+
+.bundle-badges {
+  display: flex;
+  gap: 6px;
+}
+
+.bundle-badge {
+  padding: 4px 8px;
+  border-radius: var(--pg-radius-sm);
+  border: 1px solid oklch(from var(--pg-emerald) l c h / 0.2);
+  background: oklch(from var(--pg-emerald) l c h / 0.1);
+  color: var(--pg-emerald);
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+}
+
+.playground-description {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: -16px 0 20px;
+  color: var(--pg-muted-fg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.playground-description-summary {
+  margin: 0;
+  max-width: 680px;
+  color: var(--pg-fg);
+}
+
+.playground-description-features {
+  margin: 0;
+  padding-left: 18px;
+  max-width: 680px;
+  list-style: disc;
+  color: var(--pg-muted-fg);
+}
+
+.playground-description-features li {
+  margin: 2px 0;
+}
+
+.playground-description-when {
+  margin: 0;
+  font-size: 13px;
+  color: var(--pg-muted-fg);
+  padding: 8px 12px;
+  border-left: 2px solid var(--pg-primary);
+  background: var(--pg-surface-sunken);
+  border-radius: 0 4px 4px 0;
+}
+
+.playground-description-when-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pg-primary);
+  margin-right: 8px;
+}
+
+.playground-docs-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--pg-primary);
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.playground-docs-link:hover {
+  text-decoration: underline;
+}
+
+/* --- Toolbar --- */
+
+.playground-toolbar {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  padding: 4px 0;
+}
+
+.playground-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.playground-toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--pg-border);
+}
+
+.playground-toolbar-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--pg-muted-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.playground-toolbar-buttons {
+  display: flex;
+  gap: 0;
+  padding: 2px;
+  border-radius: var(--pg-radius);
+  background: var(--pg-muted);
+}
+
+.playground-toolbar-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: calc(var(--pg-radius) - 2px);
+  background: transparent;
+  color: var(--pg-muted-fg);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-transform: capitalize;
+}
+
+.playground-toolbar-btn:hover {
+  color: var(--pg-fg);
+}
+
+.playground-toolbar-btn.active {
+  background: var(--pg-card);
+  color: var(--pg-fg);
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.08), 0 1px 1px oklch(0 0 0 / 0.06);
+}
+
+/* --- Color scheme picker --- */
+
+.playground-color-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  padding: 0;
+}
+
+.playground-color-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.playground-color-btn:hover {
+  transform: scale(1.1);
+}
+
+.playground-color-btn.active {
+  box-shadow:
+    0 0 0 2px var(--pg-bg),
+    0 0 0 4px oklch(0.511 0.262 276),
+    0 0 12px oklch(0.511 0.262 276 / 0.3);
+}
+
+.playground-color-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+/* --- Unified playground surface --- */
+
+.playground-surface {
+  margin-bottom: 16px;
+  border: 1px solid var(--pg-border);
+  border-radius: var(--pg-radius-lg);
+  background: var(--pg-muted);
+  overflow: hidden;
+}
+
+.playground-surface > * + * {
+  border-top: 1px solid var(--pg-border);
+}
+
+.playground-surface .state-visualizer,
+.playground-surface .control-panel {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  margin: 0;
+}
+
+.playground-stage {
+  padding: 32px;
+  background: var(--pg-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+}
+
+/* --- Story sections (unified figma-style card) --- */
+
+.story-section {
+  margin: 0 0 16px;
+  border-radius: var(--pg-radius-lg);
+  border: 1px solid var(--pg-border);
+  background: var(--pg-card);
+  box-shadow: 0 1px 3px oklch(0 0 0 / 0.04), 0 1px 2px oklch(0 0 0 / 0.02);
+  /* Do NOT set overflow:hidden - it clips dropdowns/modals rendered inline
+     by child components (e.g. ConnectWallet AccountDropdown). Children that
+     need to respect the rounded corners inherit border-radius explicitly. */
+}
+
+/* Headless sections share the same outer card chrome as regular ones - the
+ * `headless` flag now only suppresses the inner stage tint (see below) so
+ * the example grid reads as one unified surface set. */
+
+.story-section-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 20px 16px;
+  background: transparent;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+.story-section-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.story-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pg-fg);
+  margin: 0;
+}
+
+.story-section-title-code {
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.92em;
+  font-weight: 600;
+  padding: 1px 6px;
+  color: var(--pg-primary);
+  background: color-mix(in oklch, var(--pg-primary) 10%, transparent);
+  border-radius: 4px;
+  vertical-align: baseline;
+}
+
+.story-section-title[data-linkable] {
+  cursor: pointer;
+}
+
+.story-section-anchor {
+  margin-left: 6px;
+  opacity: 0;
+  color: var(--pg-primary);
+  transition: opacity 150ms ease;
+}
+
+.story-section-title[data-linkable]:hover .story-section-anchor {
+  opacity: 1;
+}
+
+.story-section-desc {
+  font-size: 12px;
+  color: var(--pg-muted-fg);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.story-section-use-when {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--pg-muted-fg);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.story-section-use-when em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--pg-fg);
+}
+
+.story-provider-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  border: 1px dashed var(--pg-border);
+  border-radius: var(--pg-radius-md);
+  background: color-mix(in oklch, var(--pg-primary) 4%, transparent);
+}
+
+.story-provider-placeholder-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pg-primary);
+}
+
+.story-provider-placeholder-tree {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.story-provider-placeholder-step {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--pg-card);
+  border: 1px solid var(--pg-border);
+  font-size: 12px;
+  color: var(--pg-muted-fg);
+}
+
+.story-provider-placeholder-tree-vertical {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  white-space: pre;
+}
+
+.story-provider-placeholder-tree-vertical .story-provider-placeholder-step {
+  border-radius: var(--pg-radius-sm);
+  text-align: left;
+  font-size: 12px;
+}
+
+.story-file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 6px;
+  padding: 4px 10px;
+  border-radius: var(--pg-radius-sm);
+  background: color-mix(in oklch, var(--pg-primary) 6%, transparent);
+  border: 1px solid var(--pg-border);
+  font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  color: var(--pg-fg);
+}
+
+.story-file-label-runtime {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.story-file-label-runtime[data-runtime="client"] {
+  background: color-mix(in oklch, var(--pg-primary) 14%, transparent);
+  color: var(--pg-primary);
+}
+
+.story-file-label-runtime[data-runtime="server"] {
+  background: color-mix(in oklch, currentcolor 10%, transparent);
+  color: var(--pg-muted-fg);
+}
+
+.story-code-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--pg-primary-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 150ms ease;
+}
+
+.story-code-toggle:hover {
+  text-decoration: underline;
+}
+
+.story-code-chevron {
+  transition: transform 200ms ease;
+}
+
+.story-code-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.story-description {
+  font-size: 13px;
+  color: var(--pg-muted-fg);
+  margin-bottom: 12px;
+}
+
+.story-flow-narrative {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--pg-muted-fg);
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: var(--pg-radius);
+  background: var(--pg-card);
+  border: 1px solid var(--pg-border);
+}
+
+.story-section-stage {
+  margin: 0 20px;
+  padding: 32px 24px;
+  background: var(--pg-surface-sunken);
+  border: 1px solid var(--pg-border);
+  border-radius: var(--pg-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 80px;
+}
+
+/* Section with code: stage + code-block stacked inside the outer card
+   with spacing around and between them (figma multi-step example). */
+.story-section .code-block {
+  margin: 16px 20px 20px;
+}
+
+.story-section-stage + .code-block {
+  margin-top: 16px;
+}
+
+/* Headless sections: stage stays plain so children control their own visual */
+.story-section--headless .story-section-stage {
+  background: transparent;
+}
+
+/* Legacy story-card for stories not yet migrated */
+.story-card {
+  padding: 24px;
+  border-radius: var(--pg-radius-lg);
+  border: 1px solid var(--pg-border);
+  background: transparent;
+  transition: border-color 200ms ease;
+}
+
+.story-card:hover {
+  border-color: var(--pg-border-hover);
+}
+
+.story-card--headless {
+  border-style: dashed;
+}
+
+/* --- Live tab 2-column layout (Figma playground style) --- */
+
+.story-live-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .story-live-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  }
+}
+
+.story-live-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.story-live-right {
+  min-width: 0;
+}
+
+.story-live-preview-card {
+  padding: 48px 32px;
+  border-radius: var(--pg-radius-lg);
+  border: 1px solid var(--pg-border);
+  background: var(--pg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-live-preview-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+/* Tx flow surfaces are full-width by design (button, step list, progress
+ * bar). Other components (ConnectWallet, TokenBalance) keep their natural
+ * width and center horizontally as flex items. */
+.story-live-preview-inner > .tx-txb,
+.story-live-preview-inner > .tx-fs,
+.story-live-preview-inner > .tx-fp {
+  align-self: stretch;
+}
+
+@media (min-width: 1024px) {
+  .story-live-right .control-panel {
+    position: sticky;
+    top: 16px;
+  }
+}
+
+/* --- Story Tabs (same as toolbar segmented) --- */
+
+.story-tabs {
+  display: flex;
+  gap: 0;
+  padding: 2px;
+  background: var(--pg-muted);
+  border-radius: var(--pg-radius);
+  margin-bottom: 12px;
+  width: fit-content;
+}
+
+.story-tab {
+  padding: 6px 14px;
+  border: none;
+  border-radius: calc(var(--pg-radius) - 2px);
+  background: transparent;
+  color: var(--pg-muted-fg);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-transform: capitalize;
+}
+
+.story-tab:hover {
+  color: var(--pg-fg);
+}
+
+.story-tab.active {
+  background: var(--pg-card);
+  color: var(--pg-fg);
+  box-shadow: 0 1px 2px oklch(0 0 0 / 0.08), 0 1px 1px oklch(0 0 0 / 0.06);
+}
+
+/* --- Theme info (TxKitProvider story) --- */
+
+.theme-info {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 6px;
+  background: var(--tx-color-bg-secondary);
+  color: var(--tx-color-text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.theme-info-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.theme-info-btn {
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--tx-color-border);
+  background: transparent;
+  color: var(--tx-color-text);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+
+.theme-info-btn:hover {
+  border-color: var(--pg-primary);
+}
+
+/* --- Headless example styles --- */
+
+.headless-wallet-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.headless-wallet-btn {
+  padding: 6px 12px;
+  border-radius: var(--pg-radius-sm);
+  border: 1px solid var(--pg-border);
+  background: transparent;
+  color: var(--pg-fg);
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color 150ms ease;
+}
+
+.headless-wallet-btn:hover {
+  border-color: var(--pg-primary);
+}
+
+.headless-wallet-info {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+}
+
+.headless-wallet-disconnect {
+  margin-top: 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--pg-border);
+  border-radius: var(--pg-radius-sm);
+  background: transparent;
+  color: var(--pg-fg);
+  cursor: pointer;
+}
+
+/* --- Headless TX styles --- */
+
+.headless-tx {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.headless-tx-hash {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--pg-muted-fg);
+}
+
+.headless-tx-error {
+  color: var(--pg-destructive);
+  font-size: 13px;
+}
+
+.headless-tx-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.headless-tx-btn {
+  padding: 6px 14px;
+  border-radius: var(--pg-radius-sm);
+  border: 1px solid var(--pg-primary);
+  background: oklch(from var(--pg-primary) l c h / 0.1);
+  color: var(--pg-primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 150ms ease;
+}
+
+.headless-tx-btn:hover {
+  background: oklch(from var(--pg-primary) l c h / 0.2);
+}
+
+.headless-tx-btn--retry {
+  background: var(--pg-destructive);
+  border-color: var(--pg-destructive);
+  color: oklch(1 0 0);
+}
+
+.headless-tx-btn--success {
+  background: var(--pg-emerald);
+  border-color: var(--pg-emerald);
+  color: oklch(1 0 0);
+}
+
+.headless-tx-link {
+  font-size: 12px;
+  color: var(--pg-primary);
+}
+
+/* --- Custom render example styles --- */
+
+.custom-render-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.custom-render-address {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.custom-render-balance {
+  color: var(--pg-muted-fg);
+}
+
+.custom-render-btn {
+  padding: 8px 16px;
+  border-radius: var(--pg-radius);
+  border: 1px solid var(--pg-primary);
+  background: oklch(from var(--pg-primary) l c h / 0.1);
+  color: var(--pg-primary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 150ms ease;
+}
+
+.custom-render-btn:hover {
+  background: oklch(from var(--pg-primary) l c h / 0.15);
+}
+
+.custom-render-disconnect {
+  padding: 4px 8px;
+  border-radius: var(--pg-radius-sm);
+  border: 1px solid var(--pg-border);
+  background: transparent;
+  color: var(--pg-fg);
+  cursor: pointer;
+}
+
+/* --- Custom TX render styles --- */
+
+.custom-tx-render {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--pg-border);
+  border-radius: var(--pg-radius);
+}
+
+.custom-tx-hash {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--pg-muted-fg);
+}
+
+.custom-tx-link {
+  font-size: 12px;
+  color: var(--pg-primary);
+}
+
+/* --- Token balance custom render --- */
+
+.custom-balance {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.custom-balance-amount {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.custom-balance-fiat {
+  color: var(--pg-muted-fg);
+  font-size: 14px;
+}
+
+/* --- Multiple tokens row --- */
+
+.story-row {
+  display: flex;
+  gap: 16px;
+}
+
+/* --- Empty state placeholder --- */
+
+.story-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--pg-radius-sm);
+  border: 1px dashed var(--pg-border);
+  color: var(--pg-muted-fg);
+  font-size: 13px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.story-empty-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pg-border-hover);
+  flex-shrink: 0;
+}
+
+/* --- Icons CSS extracted to ./components/Icons/icons.css for shared use across entries --- */
+
+/* --- Focus visible (a11y) --- */
+
+.playground-nav-item:focus-visible,
+.playground-toolbar-btn:focus-visible,
+.playground-color-btn:focus-visible,
+.story-code-toggle:focus-visible,
+.search-trigger:focus-visible,
+.headless-wallet-btn:focus-visible,
+.headless-tx-btn:focus-visible,
+.custom-render-btn:focus-visible,
+.custom-render-disconnect:focus-visible,
+.headless-wallet-disconnect:focus-visible,
+.theme-info-btn:focus-visible {
+  outline: 2px solid var(--pg-primary);
+  outline-offset: 2px;
+}
+
+/* --- Info grid (headless examples) --- */
+
+.story-info-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  padding: 12px 16px;
+  border-radius: var(--pg-radius-sm);
+  border: 1px solid var(--pg-border);
+  background: var(--pg-surface-sunken);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+}
+
+.story-info-key {
+  color: var(--pg-muted-fg);
+}
+
+.story-info-value {
+  color: var(--pg-fg);
+  font-weight: 500;
+}
+
+/* --- Mobile sidebar --- */
+
+.playground-sidebar-overlay {
+  display: none;
+}
+
+.playground-sidebar-close {
+  display: none;
+}
+
+.playground-mobile-menu {
+  display: none;
+}
+
+.search-icon-svg {
+  font-size: 14px;
+  opacity: 0.5;
+}
+
+@media (max-width: 1023px) {
+  .playground {
+    grid-template-columns: 1fr;
+  }
+
+  .playground-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 256px;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 200ms ease-out;
+  }
+
+  .playground-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .playground-sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: oklch(0 0 0 / 0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  .playground-sidebar-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: var(--pg-radius-sm);
+    background: transparent;
+    color: var(--pg-sidebar-fg);
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .playground-sidebar-close:hover {
+    background: var(--pg-sidebar-accent);
+  }
+
+  .playground-mobile-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: var(--pg-radius-sm);
+    background: transparent;
+    color: var(--pg-fg);
+    font-size: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .playground-mobile-menu:hover {
+    background: var(--pg-accent);
+  }
+
+  .playground-toolbar-row {
+    padding: 12px 16px;
+  }
+
+  .playground-content {
+    padding: 0 16px 32px;
+  }
+
+  .playground-toolbar-divider {
+    display: none;
+  }
+}
+
+/* --- Custom scrollbar --- */
+
+.playground-nav::-webkit-scrollbar,
+.playground-main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.playground-nav::-webkit-scrollbar-track,
+.playground-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.playground-nav::-webkit-scrollbar-thumb,
+.playground-main::-webkit-scrollbar-thumb {
+  background: var(--pg-border);
+  border-radius: 3px;
+}
+
+.playground-nav::-webkit-scrollbar-thumb:hover,
+.playground-main::-webkit-scrollbar-thumb:hover {
+  background: var(--pg-border-hover);
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .playground-main,
+  .story-card,
+  .story-code-toggle,
+  .playground-nav-item,
+  .playground-toolbar-btn,
+  .custom-render-btn,
+  .headless-tx-btn,
+  .headless-wallet-btn {
+    transition: none;
+  }
+
+  .responsive-viewport {
+    transition: none;
+  }
+}

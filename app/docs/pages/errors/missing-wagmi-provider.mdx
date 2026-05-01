@@ -1,0 +1,60 @@
+# MissingWagmiProviderError
+
+> WagmiProvider not found in embedded mode.
+
+## Cause
+
+Thrown when `<TxKitProvider embedded>` is rendered without a parent
+`<WagmiProvider>` and `<QueryClientProvider>` in the component tree.
+
+In embedded mode, txKit does not create its own wagmi store - it reads
+from the existing one. If no wagmi context is found, the embedded provider
+cannot resolve chains, transports, or connectors and aborts immediately.
+
+## Solution
+
+Wrap `<TxKitProvider embedded>` inside your existing wagmi setup:
+
+```tsx
+import { WagmiProvider, createConfig } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { TxKitProvider } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+import { injected } from 'wagmi/connectors'
+
+const wagmiConfig = createConfig({
+  chains: [ mainnet ],
+  transports: { [mainnet.id]: http() },
+  connectors: [ injected() ],
+})
+
+const queryClient = new QueryClient()
+
+const App = () => (
+  <WagmiProvider config={wagmiConfig}>
+    <QueryClientProvider client={queryClient}>
+      <TxKitProvider embedded config={{ theme: 'dark' }}>
+        {/* txKit components go here */}
+      </TxKitProvider>
+    </QueryClientProvider>
+  </WagmiProvider>
+)
+```
+
+If you do not have your own wagmi config, drop the `embedded` prop and pass
+`chains` and `transports` directly to `TxKitProvider` - it will create the
+wagmi store itself. See [Standalone Mode](/api/tx-provider#standalone-mode).
+
+## Sanity checks
+
+The `useEmbeddedWagmi` helper also emits a `console.warn` (without throwing)
+in two related scenarios:
+
+- The external wagmi config has no `chains` at all.
+- The external wagmi config has chains but is missing mainnet (`chainId: 1`),
+  which disables ENS name and avatar resolution in `ConnectWallet` /
+  `useWalletState`.
+
+These do not raise `MissingWagmiProviderError` - components keep rendering -
+but you should add mainnet to your wagmi config if you rely on ENS.

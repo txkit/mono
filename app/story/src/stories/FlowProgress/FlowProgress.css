@@ -1,0 +1,62 @@
+.story-flow-progress-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+}
+
+/* --- Examples - shared stage so each demo gets a wide, comfortable footprint --- */
+
+.story-fp-stage {
+  width: 100%;
+  max-width: 560px;
+  padding: 16px 0;
+}
+
+/* --- Custom render demo (Tier 2) --- */
+
+.story-fp-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  font-family: var(--tx-font-family);
+}
+
+.story-fp-custom-label {
+  font-size: var(--tx-font-size-sm);
+  font-weight: 500;
+  color: var(--tx-color-text);
+}
+
+.story-fp-custom-track {
+  width: 100%;
+  height: 8px;
+  border-radius: var(--tx-radius-full);
+  background: var(--tx-color-bg-tertiary);
+  overflow: hidden;
+}
+
+.story-fp-custom-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--tx-color-primary),
+    color-mix(in oklch, var(--tx-color-primary) 60%, white)
+  );
+  transition: width var(--tx-duration-normal) var(--tx-ease-default);
+}
+
+/* --- Headless demo (Tier 3) --- */
+
+.story-fp-headless {
+  display: inline-block;
+  padding: 8px 14px;
+  border: 1px solid var(--tx-color-border);
+  border-radius: var(--tx-radius-full);
+  background: var(--tx-color-bg-secondary);
+  color: var(--tx-color-text);
+  font-family: var(--tx-font-mono);
+  font-size: var(--tx-font-size-sm);
+}

@@ -1,0 +1,402 @@
+/* --- ContractForm Root --- */
+
+.tx-cf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tx-space-md, 12px);
+  font-family: var(--tx-font-family, system-ui, -apple-system, sans-serif);
+}
+
+
+/* --- Field Container --- */
+
+.tx-cf-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tx-space-xs, 4px);
+}
+
+
+/* --- Label --- */
+
+.tx-cf-label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--tx-space-xs, 4px);
+  font-size: var(--tx-font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--tx-color-text, #0f172a);
+  line-height: 1.5;
+}
+
+
+/* --- Type Badge --- */
+
+.tx-cf-type {
+  font-size: var(--tx-font-size-xs, 0.75rem);
+  font-weight: 400;
+  font-family: var(--tx-font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  color: var(--tx-color-text-tertiary, #64748b);
+}
+
+
+/* --- Hint --- */
+
+.tx-cf-hint {
+  margin: 0;
+  font-size: var(--tx-font-size-xs, 0.75rem);
+  color: var(--tx-color-text-secondary, #475569);
+  line-height: 1.5;
+}
+
+
+/* --- Input --- */
+
+.tx-cf-input {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--tx-color-border, #e2e8f0);
+  border-radius: var(--tx-radius-md, 8px);
+  background: var(--tx-color-bg, #fff);
+  color: var(--tx-color-text, #0f172a);
+  font-family: var(--tx-font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: var(--tx-font-size-sm, 0.875rem);
+  line-height: 1.5;
+  transition: border-color var(--tx-duration-fast) var(--tx-ease-default), box-shadow var(--tx-duration-fast) var(--tx-ease-default);
+}
+
+.tx-cf-input--string {
+  font-family: var(--tx-font-family, system-ui, -apple-system, sans-serif);
+}
+
+.tx-cf-input--textarea {
+  resize: vertical;
+  overflow-wrap: break-word;
+}
+
+.tx-cf-input:hover:not(:disabled) {
+  border-color: var(--tx-color-border-hover, #cbd5e1);
+}
+
+.tx-cf-input:focus-visible {
+  outline: 2px solid var(--tx-color-primary, #4338ca);
+  outline-offset: 2px;
+}
+
+.tx-cf-input[aria-invalid="true"] {
+  border-color: var(--tx-color-error, #dc2626);
+  box-shadow: 0 0 0 1px var(--tx-color-error, #dc2626);
+}
+
+.tx-cf-input:disabled {
+  background: var(--tx-color-bg-secondary, #f8fafc);
+  color: var(--tx-color-text-tertiary, #64748b);
+  cursor: not-allowed;
+}
+
+
+/* --- Bool Checkbox --- */
+
+.tx-cf-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: var(--tx-space-sm, 8px);
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.tx-cf-checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--tx-color-border, #e2e8f0);
+  border-radius: var(--tx-radius-sm, 6px);
+  background: var(--tx-color-bg, #fff);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--tx-duration-fast) var(--tx-ease-default), border-color var(--tx-duration-fast) var(--tx-ease-default);
+}
+
+.tx-cf-checkbox:checked {
+  background: var(--tx-color-primary, #4338ca);
+  border-color: var(--tx-color-primary, #4338ca);
+}
+
+.tx-cf-checkbox:focus-visible {
+  outline: 2px solid var(--tx-color-primary, #4338ca);
+  outline-offset: 2px;
+}
+
+.tx-cf-checkbox:disabled {
+  cursor: not-allowed;
+  background: var(--tx-color-bg-tertiary);
+  border-color: var(--tx-color-border);
+}
+
+.tx-cf-checkbox-label {
+  font-size: var(--tx-font-size-sm, 0.875rem);
+  font-family: var(--tx-font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  color: var(--tx-color-text-secondary, #475569);
+}
+
+
+/* --- Error Message --- */
+
+.tx-cf-error {
+  margin: 0;
+  font-size: var(--tx-font-size-xs, 0.75rem);
+  color: var(--tx-color-error, #dc2626);
+  line-height: 1.5;
+}
+
+
+/* --- Form Error Banner --- */
+
+.tx-cf-form-error {
+  padding: 8px 12px;
+  border: 1px solid var(--tx-color-error);
+  border-radius: var(--tx-radius-sm, 6px);
+  background: var(--tx-color-error-alpha);
+  color: var(--tx-color-error);
+  font-size: var(--tx-font-size-xs, 0.75rem);
+  line-height: 1.5;
+}
+
+
+/* --- Security Warning Banner --- */
+
+.tx-cf-warnings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tx-space-xs, 4px);
+}
+
+.tx-cf-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--tx-radius-md, 8px);
+  font-size: var(--tx-font-size-sm, 0.875rem);
+  line-height: 1.5;
+}
+
+.tx-cf-warning-icon {
+  flex-shrink: 0;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+.tx-cf-warning-message {
+  flex: 1;
+  min-width: 0;
+  color: var(--tx-color-text);
+}
+
+.tx-cf-warning[data-level="warning"] {
+  background: var(--tx-color-warning-alpha, oklch(0.75 0.17 65 / 0.1));
+  border: 1px solid var(--tx-color-warning);
+  color: var(--tx-color-warning);
+}
+
+.tx-cf-warning[data-level="warning"] .tx-cf-warning-icon {
+  color: var(--tx-color-warning);
+}
+
+.tx-cf-warning[data-level="danger"] {
+  background: var(--tx-color-error-alpha, oklch(0.58 0.22 25 / 0.1));
+  border: 1px solid var(--tx-color-error);
+  color: var(--tx-color-error);
+}
+
+.tx-cf-warning[data-level="danger"] .tx-cf-warning-icon {
+  color: var(--tx-color-error);
+}
+
+
+/* --- Review Section --- */
+
+.tx-cf-review {
+  border: 1px solid var(--tx-color-border, #e2e8f0);
+  border-radius: var(--tx-radius-md, 8px);
+  overflow: hidden;
+}
+
+.tx-cf-review summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: var(--tx-font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--tx-color-text-secondary, #475569);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.tx-cf-review summary::-webkit-details-marker {
+  display: none;
+}
+
+.tx-cf-review summary::before {
+  content: '\25B8';
+  margin-right: var(--tx-space-sm, 8px);
+  transition: transform var(--tx-duration-fast) var(--tx-ease-default);
+}
+
+.tx-cf-review[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.tx-cf-review summary:focus-visible {
+  outline: 2px solid var(--tx-color-primary, #4338ca);
+  outline-offset: -2px;
+}
+
+.tx-cf-review-content {
+  position: relative;
+  padding: 8px 12px;
+  border-top: 1px solid var(--tx-color-border, #e2e8f0);
+}
+
+
+/* --- Calldata Preview --- */
+
+.tx-cf-calldata {
+  margin: 0;
+  padding: 8px;
+  background: var(--tx-color-bg-secondary, #f8fafc);
+  border-radius: var(--tx-radius-sm, 6px);
+  font-family: var(--tx-font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  font-size: var(--tx-font-size-xs, 0.75rem);
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.6;
+  color: var(--tx-color-text, #0f172a);
+}
+
+
+/* --- Copy Button --- */
+
+.tx-cf-copy {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  min-height: 44px;
+  padding: 4px 8px;
+  border: 1px solid var(--tx-color-border, #e2e8f0);
+  border-radius: var(--tx-radius-sm, 6px);
+  background: var(--tx-color-bg, #fff);
+  color: var(--tx-color-text-secondary, #475569);
+  font-size: var(--tx-font-size-xs, 0.75rem);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--tx-duration-fast) var(--tx-ease-default), background var(--tx-duration-fast) var(--tx-ease-default);
+}
+
+.tx-cf-review-content:hover .tx-cf-copy,
+.tx-cf-copy:focus-visible {
+  opacity: 1;
+}
+
+.tx-cf-copy:hover {
+  background: var(--tx-color-bg-tertiary, #f1f5f9);
+}
+
+.tx-cf-copy:focus-visible {
+  outline: 2px solid var(--tx-color-primary, #4338ca);
+  outline-offset: 2px;
+}
+
+
+/* --- Tuple (struct) --- */
+
+.tx-cf-tuple {
+  border-left: 2px solid var(--tx-color-primary-alpha);
+  padding-left: var(--tx-space-md, 12px);
+}
+
+.tx-cf-tuple summary {
+  display: flex;
+  align-items: center;
+  gap: var(--tx-space-xs, 4px);
+  min-height: 44px;
+  font-size: var(--tx-font-size-sm, 0.875rem);
+  font-weight: 500;
+  color: var(--tx-color-text, #0f172a);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.tx-cf-tuple summary::-webkit-details-marker {
+  display: none;
+}
+
+.tx-cf-tuple summary:focus-visible {
+  outline: 2px solid var(--tx-color-primary, #4338ca);
+  outline-offset: 2px;
+}
+
+.tx-cf-tuple-type {
+  font-size: var(--tx-font-size-xs, 0.75rem);
+  font-family: var(--tx-font-mono, 'IBM Plex Mono', ui-monospace, monospace);
+  color: var(--tx-color-text-tertiary, #64748b);
+  margin-left: var(--tx-space-xs, 4px);
+}
+
+.tx-cf-tuple-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tx-space-sm, 8px);
+  padding-top: var(--tx-space-sm, 8px);
+}
+
+
+/* --- Unsupported Field --- */
+
+.tx-cf-unsupported {
+  padding: 8px 12px;
+  border: 1px dashed var(--tx-color-border, #e2e8f0);
+  border-radius: var(--tx-radius-md, 8px);
+  color: var(--tx-color-text-tertiary, #64748b);
+  font-size: var(--tx-font-size-xs, 0.75rem);
+  text-align: center;
+}
+
+
+/* --- Screen Reader Only --- */
+
+.tx-cf-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+/* --- Reduced Motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .tx-cf-input,
+  .tx-cf-checkbox,
+  .tx-cf-copy,
+  .tx-cf-review summary::before {
+    transition: none;
+  }
+}

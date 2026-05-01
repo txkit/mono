@@ -1,0 +1,69 @@
+.story-flow-steps-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+}
+
+/* --- Custom render demo (Tier 2) --- */
+
+.story-fs-custom-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.story-fs-custom-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--tx-color-border);
+  border-radius: var(--tx-radius-md);
+  background: var(--tx-color-bg-secondary);
+  font-family: var(--tx-font-family);
+  font-size: var(--tx-font-size-sm);
+}
+
+.story-fs-custom-item[data-status="completed"] {
+  border-color: color-mix(in oklch, var(--tx-color-success) 35%, transparent);
+}
+
+.story-fs-custom-item[data-status="tx-pending"],
+.story-fs-custom-item[data-status="signing"],
+.story-fs-custom-item[data-status="waiting"] {
+  border-color: color-mix(in oklch, var(--tx-color-primary) 35%, transparent);
+}
+
+.story-fs-custom-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--tx-radius-full);
+  background: var(--tx-color-bg-tertiary);
+  color: var(--tx-color-text-secondary);
+  font-family: var(--tx-font-mono);
+  font-size: var(--tx-font-size-xs);
+}
+
+.story-fs-custom-label {
+  color: var(--tx-color-text);
+  font-weight: 500;
+}
+
+/* --- Headless demo (Tier 3) --- */
+
+.story-fs-headless {
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--tx-color-border);
+  border-radius: var(--tx-radius-md);
+  background: var(--tx-color-bg-secondary);
+  color: var(--tx-color-text);
+  font-family: var(--tx-font-mono);
+  font-size: var(--tx-font-size-sm);
+  line-height: 1.6;
+  white-space: pre;
+}

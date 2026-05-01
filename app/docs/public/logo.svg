@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 128">
+  <rect width="128" height="128" rx="24" fill="#4338CA"/>
+  <text x="16" y="92" font-family="'IBM Plex Mono', ui-monospace, Menlo, monospace" font-weight="700" font-size="64" fill="#ffffff">tx</text>
+  <text x="152" y="92" font-family="'IBM Plex Mono', ui-monospace, Menlo, monospace" font-weight="700" font-size="72" fill="#0F172A" letter-spacing="-2">txKit</text>
+</svg>

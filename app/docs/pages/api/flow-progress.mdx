@@ -1,0 +1,80 @@
+# FlowProgress
+
+Progress bar for multi-step transaction flows. Automatically connects to TransactionButton through TxKitProvider context.
+
+## Quick Start
+
+```tsx
+import { TransactionButton, FlowProgress, txStep } from '@txkit/react'
+
+<FlowProgress />
+<TransactionButton
+  steps={[
+    txStep('approve', 'Approve', approveTx),
+    txStep('swap', 'Swap', swapTx),
+  ]}
+/>
+```
+
+## Three Tiers of Customization
+
+### Tier 1: Zero-Config
+
+```tsx
+<FlowProgress />
+```
+
+### Tier 2: Custom Render
+
+```tsx
+<FlowProgress>
+  {({ progress, status, currentStepLabel }) => (
+    <div>
+      <div style={{ width: `${progress * 100}%`, height: 4, background: 'var(--tx-color-primary, #4338CA)' }} />
+      <span>{currentStepLabel} - {Math.round(progress * 100)}%</span>
+    </div>
+  )}
+</FlowProgress>
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | - | CSS class |
+| `children` | `(data: RenderData) => ReactNode` | - | Custom render function |
+| `data-testid` | `string` | - | Test ID for automated testing |
+| `flowId` | `string` | `'__default__'` | Flow ID to display |
+| `showSummary` | `boolean` | `false` | Show "Overall Progress - X%" row above the bar |
+| `summaryLabel` | `string` | `'Overall Progress'` | Custom label for the summary row |
+
+## Render Data
+
+```ts
+type FlowProgressRenderData = {
+  progress: number              // 0 to 1
+  status: FlowStatus
+  currentStepLabel: string | undefined
+}
+```
+
+## Status Reference
+
+`FlowProgress` reflects the current `FlowStatus` of the registered flow.
+
+| Status | Meaning |
+|---|---|
+| `idle` | No flow started |
+| `simulating-all` | Pre-flight simulation across all steps |
+| `running` | A step is currently executing |
+| `paused` | User paused mid-flow |
+| `completed` | All steps succeeded |
+| `error` | A step threw an unexpected error |
+| `rejected` | User rejected a wallet popup |
+| `canceled` | User canceled the flow before completion |
+
+The root element exposes `data-status="<FlowStatus>"` for CSS theming.
+
+## Progress Calculation
+
+Progress is calculated as `completedSteps / totalSteps`. Skipped steps count as completed (already-fulfilled prerequisites). Failed steps stop progress at the failed step's index. Canceled flows render with a neutral grey bar via `data-status="canceled"`.

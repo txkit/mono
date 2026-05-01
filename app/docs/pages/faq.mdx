@@ -1,0 +1,208 @@
+# FAQ
+
+Common questions about txKit. If something is missing, file an issue at
+[github.com/txkit/mono/issues](https://github.com/txkit/mono/issues).
+
+## Setup
+
+### Does txKit work with Next.js / Vite / Remix?
+
+Yes - any React 18+ app. See [Next.js setup](/guides/nextjs) for App Router
+specifics. For Vite and Remix the setup is identical to "Quick Start" in
+[Getting Started](/getting-started) - import `@txkit/themes`, wrap in
+`TxKitProvider`, drop components.
+
+### Does txKit need wagmi v2 or v3?
+
+`>= v3`. The peer dependency in `@txkit/react/package.json` is `wagmi >=3`.
+v2 is not supported - v3 changed `WagmiContext` exposure, which the embedded
+mode relies on for detecting an external wagmi config.
+
+### Why two providers - WagmiProvider AND TxKitProvider?
+
+In standalone mode there is only one - `TxKitProvider` creates the
+`WagmiProvider` and `QueryClientProvider` internally. You only see two
+when using [embedded mode](/api/tx-provider#embedded-mode), which is the
+right setup if your app already runs RainbowKit / AppKit / ConnectKit.
+
+### Do I need `walletConnectProjectId`?
+
+Only if you want WalletConnect support. Without it, the WC connector is
+silently dropped from the wallet list and injected (browser) wallets and
+Coinbase Wallet still work. Get a project ID free at
+[cloud.reown.com](https://cloud.reown.com).
+
+## Theming
+
+### Tailwind / CSS-in-JS conflicts?
+
+No conflicts. txKit uses CSS custom properties scoped to `.tx-root` and
+component classes prefixed with `tx-`. Tailwind utility classes apply
+freely on consumer DOM around txKit components, and CSS-in-JS libraries
+(Emotion, styled-components) coexist without specificity wars.
+
+### How do I change the brand color?
+
+Override `--tx-color-primary` (and the `-hover` / `-active` variants)
+on `.tx-root` or any ancestor:
+
+```css
+.tx-root {
+  --tx-color-primary: oklch(0.55 0.22 280);
+  --tx-color-primary-hover: oklch(0.50 0.22 280);
+  --tx-color-primary-active: oklch(0.45 0.22 280);
+}
+```
+
+See [Theming - CSS Custom Properties](/theming#css-custom-properties).
+
+### Can I use my own dark mode toggle?
+
+Yes. Either pass `theme: 'dark'` (or `'light'` / `'auto'`) to
+`TxKitProvider` config, or call `setTheme` from `useTxKit()` after wrapping
+the user's toggle. The component reads CSS `.tx-dark` class - you can
+also apply it to a wrapper `<div>` directly if you prefer to drive theme
+externally.
+
+### Theme flash on first paint in Next.js?
+
+`theme: 'auto'` reads `prefers-color-scheme` after hydration, which can
+cause a brief light-mode flash on dark systems. For zero flash, set the
+theme class on the server based on a cookie - same pattern as wagmi's
+`cookieStorage`. See [Next.js setup](/guides/nextjs).
+
+## Wallets
+
+### Can I add a custom wallet (e.g. an in-house connector)?
+
+Yes - pass a `WalletConfig` to `config.wallets`:
+
+```tsx
+<TxKitProvider config={{
+  chains, transports,
+  wallets: [
+    { id: 'inhouse', name: 'In-house', createConnector: myConnectorFactory },
+  ],
+}}>
+```
+
+See [TxKitProvider - WalletConfig](/api/tx-provider#walletconfig).
+
+### Why does ENS not resolve on my chain?
+
+ENS lives on Ethereum mainnet. txKit registers mainnet automatically in
+`testnet: true` mode for ENS lookups even though the user is on Sepolia.
+For custom chain configurations, ensure mainnet is in `config.chains` or
+the resolver will return `null`.
+
+## Transactions
+
+### Why does the approve step get skipped?
+
+`approveAndExecute` calls `allowance(owner, spender)` before executing -
+if the existing allowance covers the requested amount, the approve step
+goes to `'skipped'` status and the flow advances. This is the intended
+behavior. See [TransactionButton - Approve + Execute Auto-Skip](/api/transaction-button#approve--execute-auto-skip).
+
+### `simulation-failed` keeps firing - what now?
+
+Three options:
+
+1. Read the decoded revert reason in the review UI. Often points to
+   slippage, insufficient balance, or contract pause state.
+2. If the transaction will succeed at submission time despite simulation
+   reverting (rare - happens with stale forked state or RPC quirks), use
+   the `forceSubmit` action to bypass simulation for that step.
+3. Disable simulation entirely with `safety={{ simulate: false }}` -
+   trade-off: you lose all the protections in [Security model](/concepts/security)
+   for that button.
+
+### How do I cancel a CoW Protocol order from a sign step?
+
+Use the `onCancel` option on the step. It fires when the user clicks
+cancel during the `waitForCondition` phase, before the order is filled:
+
+```ts
+signAndSubmit({
+  id: 'cow-order',
+  label: 'Place CoW Order',
+  signData,
+  onSign: async (signature) => {
+    const { orderId } = await submitOrder(signature)
+    return { data: { orderId } }
+  },
+  onCancel: async (ctx) => {
+    const { orderId } = ctx.results['cow-order']?.data ?? {}
+    if (orderId) {
+      await cancelOrder(orderId)
+    }
+  },
+})
+```
+
+## Bundle size
+
+### How big is `@txkit/react`?
+
+The `npm pack --dry-run` size for `@txkit/react@0.1.0-alpha` is around
+280 kB unpacked, but the relevant number is the gzipped delta added to
+your app bundle. After tree-shaking, importing `<ConnectWallet />` alone
+adds ~30 kB gzip; the full surface (`ConnectWallet` + `TokenBalance` +
+`TransactionButton`) is around 60 kB gzip.
+
+This excludes peer dependencies (`wagmi`, `viem`, `@tanstack/react-query`,
+`react`) which any Web3 app already pays for.
+
+### Does `@txkit/themes` add JavaScript?
+
+No. `@txkit/themes` is pure CSS. The default `import '@txkit/themes'` adds
+~5 kB gzip of stylesheet to the bundle.
+
+### Can I import only a subset?
+
+Components are tree-shaken automatically by Webpack/Vite/esbuild when you
+use named imports. There are no subpath exports - everything ships from
+`@txkit/react`.
+
+## Server / SSR
+
+### Can I render `<TokenBalance />` on the server?
+
+No - txKit components are client components (`'use client'` is baked in).
+On a server route they throw a build-time error in App Router or render
+nothing in Pages Router. Move them to a client island. See
+[Next.js setup](/guides/nextjs).
+
+### Can I call helpers from `@txkit/core` on the server?
+
+Yes. `@txkit/core` is framework-agnostic - `shortenAddress`,
+`formatTokenAmount`, `classifyError`, etc. work in Node, edge runtimes,
+and browsers identically.
+
+### Can I validate envelopes on the server?
+
+Yes. `@txkit/tx-protocol` is server-safe - the only runtime dependency is
+`zod`. Use `validateEnvelope` in API routes and server actions to verify
+envelopes received from MCP tools or LLM agents before passing them to
+the client for signing.
+
+## License & roadmap
+
+### Is txKit free?
+
+Yes. `@txkit/react`, `@txkit/core`, `@txkit/themes`, and
+`@txkit/tx-protocol` are all MIT-licensed. The deferred Pro tier
+(SwapWidget, StakingPanel, MintButton, etc.) will be paid - it ships
+after v0.1.0 stable.
+
+### When is v0.2?
+
+When the security defenses still on the roadmap (calldata decoder,
+counterparty UI, OWS adapter) ship. The current pre-release line is
+`v0.1.0-alpha.*`. Track [github.com/txkit/mono/releases](https://github.com/txkit/mono/releases).
+
+### Can I contribute?
+
+Issues and PRs welcome at
+[github.com/txkit/mono](https://github.com/txkit/mono). For larger
+changes, open a discussion first.

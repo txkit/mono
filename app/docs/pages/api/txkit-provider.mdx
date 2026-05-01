@@ -1,0 +1,226 @@
+# TxKitProvider
+
+Root provider component that initializes wagmi, TanStack Query, and txKit context. Wrap your app with `TxKitProvider` to use any txKit component.
+
+**Bundle:** 2.1 kB JS (gzip) + 0.3 kB CSS (gzip). Wagmi, viem, and TanStack Query are peer dependencies and not counted - any Web3 app already pays for them.
+
+## Import
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+```
+
+## Standalone Mode
+
+Default mode - txKit creates and manages WagmiProvider and QueryClientProvider internally.
+
+```tsx
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+import { mainnet, arbitrum } from 'viem/chains'
+import { http } from 'viem'
+
+const App = () => (
+  <TxKitProvider config={{
+    chains: [mainnet, arbitrum],
+    transports: {
+      [mainnet.id]: http(),
+      [arbitrum.id]: http(),
+    },
+  }}>
+    <ConnectWallet />
+  </TxKitProvider>
+)
+```
+
+### Config Props
+
+| Prop | Type | Default |
+|------|------|---------|
+| `chains` | `[Chain, ...Chain[]]` | Required |
+| `transports` | `Record<number, Transport>` | Required |
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` |
+| `variant` | `'default' \| 'soft' \| 'sharp' \| 'rounded'` | `'default'` |
+| `wallets` | `WalletConfig[]` | injected + WC + Coinbase |
+| `walletConnectProjectId` | `string` | - |
+| `autoConnect` | `boolean` | `true` |
+| `pollingInterval` | `number` | `4000` |
+| `licenseKey` | `string` | - |
+
+- `chains` - At least one chain is required. Each chain needs a matching transport entry.
+- `transports` - Map of `chainId` to viem transport. Use `http()` for public RPC or `http('https://your-rpc.com')` for custom endpoints.
+- `walletConnectProjectId` - Required to enable WalletConnect. Get one at [cloud.reown.com](https://cloud.reown.com).
+- `variant` - Visual style preset. See [Theming - Visual Variants](/theming#visual-variants).
+- `autoConnect` - When `true`, reconnects the last used wallet on page reload.
+- `pollingInterval` - Block polling interval in ms. Drives `TokenBalance` refetch cadence and underlying wagmi watchers.
+- `licenseKey` - Reserved for the Pro tier. Components that gate Pro features (deferred) check this via `useTxKit().isProEnabled`.
+
+### WalletConfig
+
+`config.wallets` accepts an array of `WalletConfig` objects. Omit it for the default set (injected wallets, WalletConnect, Coinbase Wallet).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `string` | Stable identifier - persisted in localStorage for `autoConnect` |
+| `name` | `string` | Human-readable wallet name shown in the modal |
+| `icon` | `string` | Optional icon URL (PNG/SVG) for the wallet selector |
+| `createConnector` | `CreateConnectorFn` | wagmi connector factory |
+
+```tsx
+import { injected, walletConnect } from 'wagmi/connectors'
+
+<TxKitProvider config={{
+  chains: [ mainnet ],
+  transports: { [mainnet.id]: http() },
+  wallets: [
+    {
+      id: 'metamask',
+      name: 'MetaMask',
+      icon: 'https://example.com/metamask.svg',
+      createConnector: injected({ target: 'metaMask' }),
+    },
+    {
+      id: 'walletconnect',
+      name: 'WalletConnect',
+      createConnector: walletConnect({ projectId: 'YOUR_ID' }),
+    },
+  ],
+}}>
+```
+
+## Embedded Mode
+
+Use embedded mode when your app already has its own WagmiProvider and QueryClientProvider. txKit will use the existing providers instead of creating new ones.
+
+```tsx
+import { WagmiProvider, createConfig } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+import { injected } from 'wagmi/connectors'
+
+const wagmiConfig = createConfig({
+  chains: [mainnet],
+  transports: { [mainnet.id]: http() },
+  connectors: [injected()],
+})
+
+const queryClient = new QueryClient()
+
+const App = () => (
+  <WagmiProvider config={wagmiConfig}>
+    <QueryClientProvider client={queryClient}>
+      <TxKitProvider embedded config={{ theme: 'dark' }}>
+        <ConnectWallet />
+      </TxKitProvider>
+    </QueryClientProvider>
+  </WagmiProvider>
+)
+```
+
+### Embedded Config Props
+
+| Prop | Type | Default |
+|------|------|---------|
+| `theme` | `'light' \| 'dark' \| 'auto'` | `'auto'` |
+| `variant` | `'default' \| 'soft' \| 'sharp' \| 'rounded'` | `'default'` |
+| `pollingInterval` | `number` | `4000` |
+| `licenseKey` | `string` | - |
+
+- `variant` - Visual style preset. See [Theming - Visual Variants](/theming#visual-variants).
+
+In embedded mode, chains, transports, and wallets are managed by the external WagmiProvider.
+
+## Integrating with an Existing Wallet Kit
+
+If your app already uses RainbowKit, AppKit, ConnectKit, Privy, or Dynamic, use **embedded mode**. txKit will reuse the existing `WagmiProvider`/`QueryClientProvider` instead of creating its own.
+
+```tsx
+// RainbowKit + txKit (shared wagmi config)
+<WagmiProvider config={config}>
+  <QueryClientProvider client={queryClient}>
+    <RainbowKitProvider>
+      <TxKitProvider embedded config={{ theme: 'dark' }}>
+        <App />
+      </TxKitProvider>
+    </RainbowKitProvider>
+  </QueryClientProvider>
+</WagmiProvider>
+```
+
+The same pattern works for AppKit, ConnectKit, Privy, Dynamic. See [Embedded Mode](/guides/embedded-mode) for the full setup.
+
+## useTxKit
+
+Hook to access txKit context from any component inside TxKitProvider.
+
+```tsx
+import { useTxKit } from '@txkit/react'
+
+const MyComponent = () => {
+  const { theme, setTheme, config } = useTxKit()
+
+  return (
+    <button onClick={() => setTheme('dark')}>
+      Current theme: {theme}
+    </button>
+  )
+}
+```
+
+### Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `theme` | `'light' \| 'dark'` | Resolved theme (never `'auto'`) |
+| `setTheme` | `(value: 'light' \| 'dark' \| 'auto') => void` | Update theme; persists to localStorage |
+| `config` | `ResolvedConfig` | Resolved configuration with defaults applied |
+| `isProEnabled` | `boolean` | Whether a valid Pro license is active |
+
+Throws `ProviderNotFoundError` if used outside of TxKitProvider. See [ProviderNotFoundError](/errors/provider-not-found).
+
+### ResolvedConfig
+
+The `config` field is the resolved snapshot - all defaults applied, all
+optional fields filled in. Use this when you need to read the wagmi
+configuration at runtime (e.g. to construct a transport for an out-of-band
+RPC call):
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `testnet` | `boolean` | True when `testnet: true` was passed in standalone config |
+| `embedded` | `boolean` | True for embedded mode - `transports`/`wallets` are managed externally |
+| `chains` | `[Chain, ...Chain[]]` | All chains registered with wagmi (includes mainnet in testnet mode for ENS lookups) |
+| `displayChains` | `[Chain, ...Chain[]]` | Chains shown in UI (the chain selector and `chainId` wrong-chain checks). Mainnet is filtered out in testnet mode |
+| `transports` | `Record<number, Transport>` | Map keyed by chain ID. Empty `{}` in embedded mode |
+| `walletConnectProjectId` | `string \| null` | `null` when WalletConnect is not configured |
+| `wallets` | `WalletConfig[]` | Resolved wallet list. Empty `[]` in embedded mode (managed by external wagmi) |
+| `autoConnect` | `boolean` | Whether wagmi reconnects on page reload |
+| `pollingInterval` | `number` | Block polling interval in ms |
+| `blockWatching` | `{ enabled: boolean; throttleMs: number }` | Resolved BalanceWatcher config |
+| `licenseKey` | `string \| null` | Pro license key, `null` if not provided |
+
+The `chains` vs `displayChains` distinction matters in testnet mode:
+mainnet is registered with wagmi (so ENS works) but hidden from the
+chain selector UI to keep test users on Sepolia.
+
+## Type reference
+
+txKit's runtime types live in the `TxKit` global namespace - import them
+through types-only imports if your build needs explicit declarations:
+
+```ts
+import type { } from '@txkit/react' // side-effect import to load global types
+
+type MyTheme = TxKit.Theme           // 'light' | 'dark' | 'auto'
+type MyVariant = TxKit.Variant       // 'default' | 'soft' | 'sharp' | 'rounded'
+type MyConfig = TxKit.Config         // discriminated: ConfigTestnet | ConfigCustom
+type MyResolved = TxKit.ResolvedConfig
+type MyContext = TxKit.Context       // what useTxKit() returns
+type MyEmbedded = TxKit.EmbeddedConfig
+type MyWallet = TxKit.WalletConfig
+```
+
+`TxKit.Config` is a discriminated union:
+- `ConfigTestnet` (`testnet: true`) - `chains` + `transports` are optional, filled from Sepolia defaults
+- `ConfigCustom` (`testnet?: false`) - `chains` + `transports` are required

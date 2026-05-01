@@ -1,0 +1,55 @@
+# txKit
+
+Safe bridge between AI agents and Web3 transactions - open protocol + reference React components.
+
+## Why txKit
+
+- **Never holds keys.** Orchestrator, not signer. Composes with any wagmi connector, RainbowKit / AppKit / ConnectKit, Privy / Dynamic, MoonPay OWS, Safe, Turnkey.
+- **Shipped anti-phishing defenses.** Pre-sign simulation, MAX-approval warning, decoded calldata preview, configurable confirmation delay, pluggable risk provider (Blowfish / Blockaid). See the [security model](/concepts/security).
+- **Open envelope spec.** [`@txkit/tx-protocol`](/protocol/prepared-tx) is the canonical `PreparedEnvelope` shape for AI-initiated transactions, with attack-defense fields for Drift, Bybit, Kelp, multicall bait, address poisoning. Composable with [MoonPay OWS](/protocol/ows).
+- **Vendor-neutral.** Bring your own RPC, connectors, theme. No lock-in to a hosted RPC, wallet kit, or paymaster.
+- **Composes, doesn't replace.** [Embedded mode](/api/tx-provider#embedded-mode) runs alongside your existing wagmi / RainbowKit / AppKit / ConnectKit / Privy setup - no duplicate providers, no doubled balance fetches.
+- **WCAG 2.1 AA.** Focus management, keyboard nav, reduced-motion fallbacks, screen-reader announcements baked in. [Details](/concepts/accessibility).
+- **Tiny.** 2-7 kB JS gzip per component, tree-shaken on import. Peer deps (`wagmi`, `viem`, `@tanstack/react-query`) already in any Web3 app.
+
+## What is txKit?
+
+txKit is two things:
+
+1. **`@txkit/tx-protocol`** - an open `PreparedEnvelope` shape for AI-initiated Web3 operations (decode, simulate, preview before signing). Composable with [MoonPay's Open Wallet Standard](/protocol/ows).
+2. **`@txkit/react`** - reference UI components that consume `PreparedEnvelope` to render confirmation flows, with full lifecycle handling for wallets, balances, transactions, and signatures.
+
+**Core invariant**: txKit never holds keys. It is an **orchestrator**, not a signer - keys remain in the wallet, Safe, Turnkey, Privy, or any wagmi-compatible signer.
+
+Drop a component into your app, pass your config, and it works - no Web3 plumbing required.
+
+## Quick Example
+
+```tsx
+import { TxKitProvider, ConnectWallet } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+
+const App = () => (
+  <TxKitProvider config={{
+    chains: [mainnet],
+    transports: { [mainnet.id]: http() },
+  }}>
+    <ConnectWallet />
+  </TxKitProvider>
+)
+```
+
+## Next Steps
+
+- [Getting Started](/getting-started) - installation and setup
+- [Security model](/concepts/security) - which defenses ship today, which are roadmap
+- [Compared to other libraries](/concepts/comparison) - vs RainbowKit, AppKit, ConnectKit, thirdweb, Privy
+- [Accessibility](/concepts/accessibility) - WCAG 2.1 AA conformance
+- [PreparedTransaction v0.1](/protocol/prepared-tx) - canonical envelope spec for AI-initiated tx
+- [OWS composition](/protocol/ows) - how txKit composes with MoonPay Open Wallet Standard
+- [TxKitProvider](/api/tx-provider) - configuration, embedded mode, useTxKit hook
+- [ConnectWallet](/api/connect-wallet) - wallet connection with ENS, balance, chain switching
+- [TransactionButton](/api/transaction-button) - multi-step transaction flow with simulation and risk preview
+- [Theming](/theming) - CSS custom properties reference
+- [FAQ](/faq) - common questions about setup, theming, wallets, bundle size

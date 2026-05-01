@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../.. && pnpm --filter @txkit/story build",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "github": {
+    "silent": true
+  }
+}

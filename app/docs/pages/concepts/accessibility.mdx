@@ -1,0 +1,145 @@
+# Accessibility
+
+txKit components target **WCAG 2.1 AA** out of the box. Accessibility is a
+hard requirement of the component library, not a polish step - every
+component ships with focus management, keyboard support, screen-reader
+announcements, and reduced-motion fallbacks.
+
+## What ships
+
+| Pattern | Implementation | Where |
+|---------|---------------|-------|
+| Focus trap (modals/dropdowns) | `useFocusTrap` - dynamic `querySelectorAll` re-run on each Tab so newly mounted elements stay reachable | `WalletModal`, `AccountDropdown` |
+| Escape key | `useEscapeKey` with `enabled` flag | All modals, all dropdowns |
+| Click outside | `useClickOutside` (`mousedown` + `touchstart`) | Modals, dropdowns |
+| Body scroll lock | `useScrollLock` with scrollbar-width compensation - no layout shift when modal opens | `WalletModal` |
+| Focus return | Reference to the trigger button is restored on close (`buttonRef.current?.focus()`) | `ConnectWallet`, `ContractForm` (v0.2.0) |
+| Status region | `role="status"` + `aria-live="polite"` + visually hidden text describing the current state | `TokenBalance`, `FlowSteps`, `FlowProgress` |
+| Error alert | `role="alert"` for blocking errors (simulation failure, risk warning) | `TransactionButtonDefault`, `FlowToast` |
+| `aria-busy` | Set on the root element of components that are fetching | `TokenBalance`, `TransactionButton` |
+| `aria-current="step"` | Marks the active step in `FlowSteps` (`<ol>` based) | `FlowSteps` |
+| `aria-expanded` + `aria-controls` | On dropdown trigger buttons | `ConnectWallet`, `Select` |
+| `aria-invalid` + `aria-describedby` | On invalid form fields with linked error message | `ContractForm` (deferred from public surface) |
+| `data-testid` | Optional prop on every public component for test selectors | All components |
+
+## Color contrast
+
+Every text/background combination in the default themes meets WCAG 2.1 AA:
+**4.5:1** for body text and **3:1** for large text or UI components.
+
+Disabled states use explicit color tokens (`var(--tx-color-text-tertiary)`)
+instead of `opacity` reductions - opacity-based dimming fails contrast at
+typical 50% values and looks broken with custom backgrounds.
+
+The token palette is defined in [Theming - CSS Custom Properties](/theming#css-custom-properties)
+in OKLCH for perceptual uniformity. If you override `--tx-color-*` tokens,
+verify with a contrast checker - txKit cannot enforce contrast on user-supplied
+overrides.
+
+## Touch targets
+
+All interactive elements (buttons, links, list rows) hit the **44 x 44 px**
+WCAG 2.5.5 target. The `--tx-tap-target` token holds the value:
+
+```css
+--tx-tap-target: 44px;
+```
+
+Compact variants (`<ConnectWallet size="compact" />`) maintain 44 px height
+through padding even when the visible button looks smaller, so the
+hit-area stays accessible.
+
+## Focus indicators
+
+Every interactive element ships a `:focus-visible` style:
+
+```css
+:focus-visible {
+  outline: 2px solid var(--tx-color-primary);
+  outline-offset: 2px;
+}
+```
+
+`:focus-visible` (not `:focus`) means keyboard users see the ring while
+mouse users do not - the standard modern pattern.
+
+## Reduced motion
+
+Every CSS file ends with a `@media (prefers-reduced-motion: reduce)` block
+that nukes animations and transitions:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  .tx-cw-spinner,
+  .tx-cw-pulse {
+    animation: none;
+  }
+  * {
+    transition: none !important;
+  }
+}
+```
+
+Custom render consumers should mirror this - the underlying DOM still
+respects the system preference for any CSS variables they read.
+
+## Keyboard navigation
+
+| Surface | Behavior |
+|---------|----------|
+| `ConnectWallet` button | `Enter` / `Space` opens modal or dropdown |
+| `WalletModal` | Tab cycles wallet list. Search input grabs initial focus when search is enabled. Escape closes. |
+| `AccountDropdown` | Tab cycles menu items. `Enter` activates. Escape closes and returns focus to the connect button. |
+| `TransactionButton` review | Tab cycles Confirm / Cancel. Escape cancels. |
+| `ContractForm` (v0.2.0) | Standard form Tab order. Submit on Enter inside any input. |
+| `FlowSteps` | Pure presentational - not interactive. Active step exposed via `aria-current="step"` for screen readers. |
+
+## Screen reader testing
+
+txKit components have been validated with VoiceOver (macOS) and NVDA
+(Windows). The status region pattern (`role="status"` + `aria-live="polite"`)
+means balance updates and flow status changes announce automatically
+without users needing to navigate back to the component.
+
+For balance components, the announcement reads as a full sentence:
+"Balance: 1.5 ETH, $3,200.00" rather than the visible "1.5 ETH" - achieved
+via a visually-hidden child element that mirrors the visible text in
+sentence form.
+
+## Z-index discipline
+
+All overlays use CSS custom properties, never magic numbers:
+
+```css
+--tx-z-dropdown: 1000;
+--tx-z-modal: 1001;
+--tx-z-toast: 1002;
+```
+
+This guarantees stacking order is predictable across compound usage
+(modal opens above dropdown, toast above modal). Override the tokens if
+your app already has its own overlay stack.
+
+## Where it could be better
+
+- `useTransactionFlow` does not yet announce pending → success transitions
+  through `aria-live` (toast does, but not the inline button label).
+- `FlowToast` is a portal but does not yet move keyboard focus on
+  show/dismiss. Adding focus management is on the roadmap.
+- Text scaling beyond 200% has not been formally validated. The OKLCH
+  palette and `rem`-based sizing should hold up but consider this
+  best-effort until tested.
+
+## Conformance statement
+
+txKit aims for **WCAG 2.1 Level AA** conformance. We do not currently
+publish a formal VPAT (Voluntary Product Accessibility Template) - if
+you need one for procurement, file an issue describing the deployment
+context.
+
+## See also
+
+- [Theming](/theming) - CSS tokens including `--tx-tap-target`,
+  `--tx-z-*`, `--tx-color-*`
+- [ConnectWallet - Custom Render](/api/connect-wallet#custom-render) -
+  retain accessibility patterns when rendering your own UI

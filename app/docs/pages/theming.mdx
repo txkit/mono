@@ -1,0 +1,205 @@
+# Theming
+
+txKit uses CSS custom properties with the `--tx-*` prefix. No CSS-in-JS, no Tailwind - just standard custom properties that cascade naturally.
+
+## CSS Import
+
+Import the theme package in your app entry point:
+
+```tsx
+import '@txkit/themes'
+```
+
+This single import includes light/dark themes and all visual variants. You can also import parts individually:
+
+```tsx
+import '@txkit/themes/base'              // light theme only
+import '@txkit/themes/dark'              // dark theme overrides
+import '@txkit/themes/variants/soft'     // soft variant only
+```
+
+## Theme Modes
+
+Pass `theme` to `TxKitProvider`:
+
+```tsx
+<TxKitProvider config={{
+  // ...
+  theme: 'dark', // 'light' | 'dark' | 'auto' (default)
+}}>
+```
+
+`'auto'` follows the user's system preference via `prefers-color-scheme`.
+
+### Switching at Runtime
+
+Use `setTheme` from the `useTxKit` hook:
+
+```tsx
+import { useTxKit } from '@txkit/react'
+
+const ThemeToggle = () => {
+  const { theme, setTheme } = useTxKit()
+
+  return (
+    <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+      {theme}
+    </button>
+  )
+}
+```
+
+## Visual Variants
+
+Pass `variant` to `TxKitProvider` to apply a visual style preset:
+
+```tsx
+<TxKitProvider config={{
+  // ...
+  variant: 'soft', // 'default' | 'soft' | 'sharp' | 'rounded'
+}}>
+```
+
+| Variant | Radii (sm/md/lg) | Button Radius | Shadows | Transition | Feel |
+|---------|------------------|---------------|---------|------------|------|
+| `default` | 4/6/8px | `radius-md` | Standard | 150ms ease | Neutral |
+| `soft` | 8/12/16px | `radius-md` | Subtle, diffused | 200ms ease-out | Gentle |
+| `sharp` | 0/0/0px | 0 | None | 100ms linear | Crisp |
+| `rounded` | 16/20/28px | Pill (9999px) | Elevated | 200ms cubic-bezier | Playful |
+
+Variants override `--tx-radius-*`, `--tx-shadow-*`, and `--tx-transition`. They combine with any theme mode (light/dark).
+
+## Customizing
+
+Override any `--tx-*` variable in your CSS:
+
+```css
+.tx-root {
+  --tx-color-primary: #8B5CF6;
+  --tx-radius-md: 12px;
+}
+```
+
+For dark mode overrides, target `.tx-dark`:
+
+```css
+.tx-dark {
+  --tx-color-primary: #A78BFA;
+}
+```
+
+## CSS Custom Properties
+
+All color values are defined in [OKLCH](https://oklch.com/) for perceptual uniformity. The hex values below are approximations - check `packages/themes/src/base.css` and `dark.css` for canonical OKLCH definitions.
+
+### Colors
+
+| Variable | Light (approx hex) | Dark (approx hex) |
+|----------|--------------------|-------------------|
+| `--tx-color-primary` | `#4338CA` | `#6366F1` |
+| `--tx-color-primary-hover` | `#3730A3` | `#818CF8` |
+| `--tx-color-primary-active` | `#312E81` | `#4F46E5` |
+| `--tx-color-primary-text` | `#FFFFFF` | `#FFFFFF` |
+| `--tx-color-primary-alpha` | `primary @ 10%` | `primary @ 15%` |
+| `--tx-color-ring` | `primary @ 40%` | `primary @ 50%` |
+
+### Semantic
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--tx-color-success` | `#059669` | `#34D399` |
+| `--tx-color-warning` | `#D97706` | `#FBBF24` |
+| `--tx-color-error` | `#DC2626` | `#F87171` |
+| `--tx-color-info` | `#2563EB` | `#60A5FA` |
+
+### Surfaces
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--tx-color-bg` | `#FFFFFF` | `#0F172A` |
+| `--tx-color-bg-elevated` | `#FFFFFF` | `#1E293B` |
+| `--tx-color-bg-secondary` | `#F8FAFC` | `#1E293B` |
+| `--tx-color-bg-tertiary` | `#F1F5F9` | `#334155` |
+| `--tx-color-bg-muted` | `#F1F1F4` | `#1F2937` |
+
+### Text
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--tx-color-text` | `#0F172A` | `#F1F5F9` |
+| `--tx-color-text-secondary` | `#475569` | `#94A3B8` |
+| `--tx-color-text-tertiary` | `#94A3B8` | `#64748B` |
+
+### Borders
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--tx-color-border` | `#E2E8F0` | `#334155` |
+| `--tx-color-border-hover` | `#CBD5E1` | `#475569` |
+
+### Typography
+
+| Variable | Value |
+|----------|-------|
+| `--tx-font-family` | `system-ui, -apple-system, sans-serif` |
+| `--tx-font-mono` | `'IBM Plex Mono', ui-monospace, monospace` |
+| `--tx-font-size-xs` | `0.75rem` |
+| `--tx-font-size-sm` | `0.875rem` |
+| `--tx-font-size-base` | `1rem` |
+| `--tx-font-size-lg` | `1.125rem` |
+
+### Spacing
+
+| Variable | Value |
+|----------|-------|
+| `--tx-space-xs` | `0.25rem` |
+| `--tx-space-sm` | `0.5rem` |
+| `--tx-space-md` | `0.75rem` |
+| `--tx-space-lg` | `1rem` |
+| `--tx-space-xl` | `1.5rem` |
+| `--tx-space-2xl` | `2rem` |
+
+### Radii
+
+Default variant. Visual variants override these (see [Visual Variants](#visual-variants)).
+
+| Variable | Value |
+|----------|-------|
+| `--tx-radius-sm` | `4px` |
+| `--tx-radius-md` | `6px` |
+| `--tx-radius-lg` | `8px` |
+| `--tx-radius-xl` | `12px` |
+| `--tx-radius-full` | `9999px` |
+| `--tx-radius-button` | `var(--tx-radius-md)` |
+
+### Shadows
+
+Two-layer OKLCH shadows. Dark mode uses higher opacity for visibility on dark surfaces.
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--tx-shadow-sm` | `0 1px 2px black/4%, 0 1px 1px black/3%` | `0 1px 2px black/20%, 0 1px 1px black/15%` |
+| `--tx-shadow-md` | `0 4px 12px black/8%, 0 1px 2px black/4%` | `0 4px 12px black/30%, 0 1px 2px black/20%` |
+| `--tx-shadow-lg` | `0 8px 24px black/12%, 0 2px 4px black/4%` | `0 8px 24px black/40%, 0 2px 4px black/20%` |
+
+### Motion
+
+| Variable | Value |
+|----------|-------|
+| `--tx-transition` | `150ms ease` |
+| `--tx-duration-fast` | `100ms` |
+| `--tx-duration-normal` | `200ms` |
+| `--tx-duration-moderate` | `300ms` |
+| `--tx-duration-slow` | `400ms` |
+| `--tx-ease-default` | `cubic-bezier(0.2, 0, 0, 1)` |
+| `--tx-ease-enter` | `cubic-bezier(0.05, 0.7, 0.1, 1)` |
+| `--tx-ease-exit` | `cubic-bezier(0.3, 0, 0.8, 0.15)` |
+| `--tx-ease-spring` | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
+
+### Z-index
+
+| Variable | Value |
+|----------|-------|
+| `--tx-z-dropdown` | `1000` |
+| `--tx-z-modal` | `1001` |
+| `--tx-z-toast` | `1002` |

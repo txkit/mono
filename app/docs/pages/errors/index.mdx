@@ -1,0 +1,33 @@
+# Errors
+
+txKit errors include a link to the relevant documentation page with details on the cause and how to fix it.
+
+## Error Classes
+
+| Error | Description |
+|-------|-------------|
+| [InvalidConfigError](/errors/invalid-config) | Invalid TxKitProvider configuration |
+| [ProviderNotFoundError](/errors/provider-not-found) | TxKitProvider not found in component tree |
+| [MissingWagmiProviderError](/errors/missing-wagmi-provider) | No WagmiProvider found when using embedded mode |
+| [NestedProviderError](/errors/nested-provider) | Standalone TxKitProvider nested inside another |
+
+## Base Class
+
+All txKit errors extend `TxKitError`, which provides:
+
+- `shortMessage` - brief description of the error
+- `docsPath` - path to the documentation page
+- `details` - additional context (optional)
+
+```ts
+import { TxKitError } from '@txkit/core'
+
+try {
+  // ...
+} catch (error) {
+  if (error instanceof TxKitError) {
+    console.log(error.shortMessage)
+    console.log(error.docsPath)
+  }
+}
+```

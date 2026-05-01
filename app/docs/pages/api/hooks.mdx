@@ -1,0 +1,161 @@
+# Hooks
+
+Every txKit component is built on a public headless hook. Hooks are exported
+from the package root - import everything from `@txkit/react`. There are no
+subpath exports.
+
+## Index
+
+| Hook | Returns | Documented in |
+|------|---------|---------------|
+| `useTxKit` | Resolved config + theme + Pro flag | [TxKitProvider - useTxKit](/api/tx-provider#usetxkit) |
+| `useWalletState` | Wallet state machine | [ConnectWallet - useWalletState](/api/connect-wallet#usewalletstate) |
+| `useDisplayUri` | WalletConnect QR pairing URI | Below |
+| `useTokenBalance` | Single token balance | [TokenBalance - useTokenBalance](/api/token-balance#usetokenbalance) |
+| `useTokenBalances` | Multi-token batch via multicall | [TokenBalance - useTokenBalances](/api/token-balance#usetokenbalances) |
+| `useTokenPrice` | Fiat price (DeFiLlama + forex) | [TokenBalance - useTokenPrice](/api/token-balance#usetokenprice) |
+| `useTransactionFlow` | Multi-step flow state + actions | [TransactionButton - Tier 3 hook](/api/transaction-button#tier-3-headless-hook) |
+| `useFlowState` | Flow entry by `flowId` | Below |
+| `useFlowStore` | Raw flow store handle | Below |
+| `useBalanceInvalidation` | Manual balance refresh | Below |
+| `useBalanceContext` | BalanceWatcher context value | Below |
+
+## useDisplayUri
+
+WalletConnect-only. Captures the pairing URI emitted asynchronously by the WC
+connector after `connect()` is called, so you can render a QR code or copy a
+deep link before the wallet pairs.
+
+```tsx
+import { useDisplayUri } from '@txkit/react'
+
+const { displayUri, isLoadingUri } = useDisplayUri(connector, isPending)
+```
+
+| Param | Type | Description |
+|-------|------|-------------|
+| `connector` | `Connector \| undefined` | The WC connector currently in `pending` state |
+| `isPending` | `boolean` | True while connect is in flight - hook resets URI when this drops |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| `displayUri` | `string \| undefined` | WC pairing URI, e.g. `wc:abc123@2?...` - render to QR or copy |
+| `isLoadingUri` | `boolean` | True between `connect()` call and `display_uri` event |
+
+The URI is one-shot - after pairing, `displayUri` becomes `undefined`. The
+hook reads `connector.emitter` (a wagmi runtime property), so it returns
+`undefined` for connectors that don't emit `display_uri` (injected, Coinbase
+Wallet) - no error, just falsy values.
+
+## useFlowState
+
+Subscribes to a single flow entry from the flow store. Place anywhere inside
+`TxKitProvider` - powers `FlowSteps`, `FlowProgress`, and `FlowToast` under the
+hood.
+
+```tsx
+import { useFlowState, DEFAULT_FLOW_ID } from '@txkit/react'
+
+const entry = useFlowState() // defaults to DEFAULT_FLOW_ID
+
+if (!entry) {
+  return null
+}
+
+const { flow, steps, actions } = entry
+return <pre>{flow.status} - step {flow.currentStepIndex} of {steps.length}</pre>
+```
+
+| Param | Type | Default |
+|-------|------|---------|
+| `flowId` | `string` | `DEFAULT_FLOW_ID` (`'__default__'`) |
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| `entry` | `FlowEntry \| undefined` | `undefined` if no `TransactionButton` with this `flowId` is mounted |
+
+`FlowEntry` shape: `{ flow: FlowState; steps: FlowStep[]; actions: FlowActions }`.
+Use `useTransactionFlow` directly when you want the headless hook (you own the
+`steps` array). Use `useFlowState` when you're building a sibling visualizer
+that just observes whatever `TransactionButton` mounted.
+
+## useFlowStore
+
+Raw access to the flow store handle. Returns `null` when used outside
+`TxKitProvider`. Power-user tool for registering custom flows or implementing
+your own compound components.
+
+```tsx
+import { useFlowStore } from '@txkit/react'
+
+const store = useFlowStore()
+const allFlows = store ? Array.from(store.entries.entries()) : []
+```
+
+The flow store uses `useSyncExternalStore` semantics - direct mutations on
+`store.entries` will not trigger re-renders. Use `setFlowEntry` and
+`notifyFlowListeners` (also exported) for that.
+
+## useBalanceInvalidation
+
+Manual refresh of TanStack Query balance caches. Use after operations that
+change balances outside of txKit's awareness - external bridges, faucet
+funding, manual `wagmi` `writeContract` calls.
+
+```tsx
+import { useBalanceInvalidation } from '@txkit/react'
+
+const { invalidateAll, invalidateAffected } = useBalanceInvalidation()
+
+// After a faucet drip
+invalidateAll()
+
+// After a custom tx whose receipt logs you have
+invalidateAffected(receipt.logs, senderAddress)
+```
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| `invalidateAll` | `() => void` | Invalidates every `['balance']` and `['readContracts']` query - simple but coarse |
+| `invalidateAffected` | `(logs, sender) => void` | Surgical: parses `Transfer` / `Deposit` / `Withdrawal` logs and invalidates only the matching `(address, token)` tuples |
+
+`useTransactionFlow` calls `invalidateAffected` automatically after each
+step completes - you only need this hook for balance changes that happen
+outside the flow.
+
+## useBalanceContext
+
+Read access to the `BalanceWatcher` context value. `BalanceWatcher` is the
+invisible component inside `TxKitProvider` that watches `useWatchBlockNumber`
+and throttles balance-query invalidations on new blocks (configurable via
+`config.blockWatching.{ enabled, throttleMs }`). It is also gated by
+`useActiveBrowserTab` - background tabs do not invalidate.
+
+```tsx
+import { useBalanceContext } from '@txkit/react'
+
+const balanceCtx = useBalanceContext()
+
+if (balanceCtx) {
+  console.log('Last block:', balanceCtx.lastBlockNumber)
+  balanceCtx.invalidateBalance(myAddress, USDC_ADDRESS)
+}
+```
+
+| Returns | Type | Description |
+|---------|------|-------------|
+| `null` | - | When called outside `TxKitProvider` (graceful degradation, no throw) |
+| `lastBlockNumber` | `bigint \| undefined` | Most recent block observed by the watcher |
+| `invalidateBalance` | `(address, token?) => void` | Invalidate cached balance for one (address, token) pair. Omit `token` for native |
+| `invalidateAllBalances` | `() => void` | Invalidate everything `BalanceWatcher` tracks |
+
+This is the lowest-level hook - prefer `useBalanceInvalidation` for app code,
+prefer `useTokenBalance` for rendering. Reach for `useBalanceContext` only
+when building a custom block-aware component.
+
+## See also
+
+- [TxKitProvider](/api/tx-provider) - root provider, `useTxKit`
+- [ConnectWallet](/api/connect-wallet) - `useWalletState`
+- [TokenBalance](/api/token-balance) - `useTokenBalance`, `useTokenBalances`, `useTokenPrice`
+- [TransactionButton](/api/transaction-button) - `useTransactionFlow`

@@ -1,0 +1,152 @@
+# Architecture
+
+txKit sits between LLM tool calls and the signer in a three-layer
+architecture. Understanding the layers makes it clear what txKit owns,
+what it does not own, and where each defense gate runs.
+
+## The three layers
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│ LLM Harness (Claude Code, Cursor, Codex, custom agent)  │
+└──────────────┬──────────────────────────────────────────┘
+               │ MCP / tool protocol
+┌──────────────▼──────────────────────────────────────────┐
+│ Layer 1: Read MCP                                       │
+│ - returns protocol state (JSON / markdown)              │
+│ - no on-chain side effects, no signatures               │
+│ - examples: stakewise/llm-tools, lido-sdk, rocket-mcp   │
+└──────────────┬──────────────────────────────────────────┘
+               │
+┌──────────────▼──────────────────────────────────────────┐
+│ Layer 2: Prepare MCP                                    │
+│ - returns unsigned calldata + human-readable summary    │
+│ - shape defined by @txkit/tx-protocol (PreparedEnvelope)│
+│ - no key access, no signing                             │
+└──────────────┬──────────────────────────────────────────┘
+               │ PreparedEnvelope (open spec)
+┌──────────────▼──────────────────────────────────────────┐
+│ Layer 3: txKit (execution orchestrator)                 │
+│ - validates envelope shape (zod)                        │
+│ - decodes calldata, simulates, renders preview UI       │
+│ - runs anti-phishing gates (MAX approval, delay, risk)  │
+│ - delegates signing to the wallet / OWS / wagmi signer  │
+│ - tracks receipts, invalidates balances                 │
+└──────────────┬──────────────────────────────────────────┘
+               │ wallet_sendTransaction / signAndSend
+          ┌────▼────┐
+          │ Signer  │ EOA, Smart Account, EIP-7702 EOA, OWS, Safe, Turnkey
+          └─────────┘
+```
+
+The protocol shape between Layer 2 and Layer 3 is the **open standard**
+under txKit's stewardship - any producer (Lido, Rocket Pool, Aave, your
+own backend, an LLM tool) that emits a valid `PreparedEnvelope` works
+with the entire txKit consumer surface.
+
+## What each layer owns
+
+| Layer | Owns | Does not own |
+|-------|------|-------------|
+| **LLM Harness** | Tool selection, conversation, agent reasoning | On-chain state, calldata construction, signing |
+| **Layer 1 (Read MCP)** | Reading protocol state via RPC / subgraph / API | Producing transactions, signing |
+| **Layer 2 (Prepare MCP)** | Constructing `PreparedEnvelope` (calldata + token movements + counterparties + origin) | Signing, RPC calls, key access |
+| **Layer 3 (txKit)** | Validation, decoding, simulation, UI, balance tracking | Key custody, raw signing |
+| **Signer** | Key custody, raw `eth_sendTransaction` / `signAndSend` / `signMessage` | Calldata decoding, simulation, preview UX |
+
+## Composition with MoonPay OWS
+
+[MoonPay's Open Wallet Standard](/protocol/ows) defines the signer surface
+(Layer 4 in the diagram above). The boundary is clean: OWS sees only
+`{to, data, value}` and applies its own raw-tx policy engine. txKit
+composes with it by translating `PreparedEnvelope` (which has rich
+metadata) into the OWS `signAndSend` payload via
+[`@txkit/ows-adapter`](https://github.com/txkit/mono/tree/main/packages/ows-adapter)
+(`toOwsSignAndSend` + `annotateWithOwsResult` exported in v0.1.0-alpha).
+
+The canonical messaging:
+
+> **OWS signs. txKit decides what's safe to sign.**
+
+Both layers are non-overlapping by design - see [OWS composition](/protocol/ows)
+for the scope table.
+
+## Why three layers?
+
+Splitting Read and Prepare from Layer 3 has practical consequences:
+
+- **Layer 1 and 2 can be written by anyone.** StakeWise, Lido, Rocket Pool,
+  Aave each ship their own MCP servers that emit `PreparedEnvelope` for
+  their protocols. They do not need to ship UI - the txKit consumer
+  renders any compliant envelope.
+- **The standard is the moat, not the implementation.** A valid envelope
+  from any producer flows through any txKit consumer. Layer 2 producers
+  compete on protocol coverage and accuracy; Layer 3 competes on UX,
+  security gates, and integration depth.
+- **Keys never cross a layer boundary.** Layer 1 and 2 are read/prepare
+  only. Layer 3 has no key access. The signer is a separate process
+  (browser wallet, OWS daemon, hardware device, MPC service).
+
+## Threat model and where each defense runs
+
+| Threat | Layer where defense runs | Mechanism |
+|--------|------------------------|-----------|
+| LLM hallucinated tool args | Layer 2 (Prepare MCP) | Producer-side input validation; reject malformed calldata |
+| Producer-side calldata tampering | Layer 3 (txKit) | `producer.signature` verification + wallet-side decoder cross-check (decoder roadmap) |
+| Compromised RPC | Layer 3 + signer | Reputable RPC provider; multi-RPC simulation (roadmap) |
+| Malicious LLM tool router (prompt injection) | Layer 2 + Layer 3 | Layer 2 validates AI inputs; Layer 3 simulates and shows decoded calldata before signing |
+| Unbounded approvals | Layer 3 | `safety.warnMaxApproval` flags `MAX_UINT256` at review step |
+| MEV (sandwich, frontrun) | Signer | Flashbots Protect transport (roadmap) |
+| Compromised wallet binary | None | Outside the system - keys are in the wallet |
+
+See [Security model](/concepts/security) for the full defense map and
+which gates ship in v0.1.0-alpha vs roadmap.
+
+## Roadmap: tri-mode execution layer
+
+Layer 3 currently delegates to a single signer surface (wagmi). The
+architecture is designed for three execution backends behind the same
+component API:
+
+| Backend | Status | Use case |
+|---------|--------|----------|
+| EOA / browser wallet (wagmi) | Shipped | Today's default |
+| ERC-4337 Smart Account | Roadmap | Account abstraction with paymasters and batched operations |
+| EIP-7702 delegated EOA | Roadmap | EOAs that temporarily run smart-account code (MetaMask Advanced Permissions, ERC-7715 scoped permissions) |
+| EIP-8141 Frame transactions | Reserved | Native Ethereum batching with gas sponsorship and post-quantum readiness; CFI status, target Hegota fork H2 2026 |
+
+The component API does not change - consumers keep using
+`<TransactionButton steps={...} />` regardless of backend. The provider
+config picks the routing.
+
+## Where MCP servers fit
+
+txKit ships a reference Prepare MCP at
+[`@txkit/mcp-server`](https://github.com/txkit/mono/tree/main/packages/mcp-server)
+in v0.1.0-alpha. Hardened post-CVE-2026-30615: zod-sanitized tool inputs,
+narrow intent-based surface, no shell access, stdio + HTTP transports.
+Exports `createServer`, `prepareEvmTxTool`, `DEFAULT_TOOLS`,
+`createHttpHandler`, `runStdio`. Never forwards private keys through the
+MCP session - the server is a pure Layer 2 producer.
+
+Partner protocols (StakeWise, Lido, Aave) build their own Prepare MCPs
+against the open `@txkit/tx-protocol` spec - any envelope they emit
+flows through the same Layer 3 consumer surface.
+
+## Sibling adapter packages
+
+Beyond the core React + protocol packages, the monorepo ships three
+cross-protocol adapters:
+
+| Package | Purpose |
+|---------|---------|
+| [`@txkit/tx-decoder`](https://github.com/txkit/mono/tree/main/packages/tx-decoder) | Decode raw EVM calldata into PreparedTransaction `clearSigning` trees. ERC-7730 registry loader, ABI-based fallback decoder. Zero React or wagmi deps. |
+| [`@txkit/ows-adapter`](https://github.com/txkit/mono/tree/main/packages/ows-adapter) | Bridge MoonPay Open Wallet Standard and PreparedTransaction. `toOwsSignAndSend` + `annotateWithOwsResult`. |
+| [`@txkit/x402-adapter`](https://github.com/txkit/mono/tree/main/packages/x402-adapter) | Bridge x402 HTTP payments (Linux Foundation, since 2 April 2026) and PreparedTransaction. Attach payment intents/proofs to envelopes; extract payment context. |
+
+## See also
+
+- [Security model](/concepts/security) - defense layers in detail
+- [PreparedEnvelope spec](/protocol/prepared-tx) - the Layer 2 / Layer 3 contract
+- [OWS composition](/protocol/ows) - signer-side complement
+- [Compared to other libraries](/concepts/comparison) - where txKit sits in the React Web3 ecosystem

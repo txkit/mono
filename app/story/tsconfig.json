@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "paths": {
+      "@txkit/react": ["../../packages/react/src"],
+      "@txkit/core": ["../../packages/core/src"],
+      "@txkit/themes/*": ["../../packages/themes/src/*"]
+    }
+  },
+  "include": [
+    "src",
+    "../../packages/react/src/types/global.ts"
+  ]
+}

@@ -1,0 +1,324 @@
+/* --- TokenBalance: Inline (default) --- */
+
+.tx-tb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tx-space-sm);
+  font-family: var(--tx-font-family);
+  font-size: var(--tx-font-size-sm);
+  line-height: 1.5;
+  color: var(--tx-color-text);
+}
+
+.tx-tb-text {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tx-tb-line {
+  display: inline-flex;
+  /* Center alignment instead of baseline avoids subpixel drift between states:
+     baseline alignment of inline-flex `.tb-amount` next to text `.tb-symbol`
+     produces different line-box heights in ready vs loading (no symbol). */
+  align-items: center;
+  gap: var(--tx-space-xs);
+}
+
+.tx-tb-icon-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.tx-tb-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--tx-radius-full);
+  object-fit: cover;
+  display: block;
+}
+
+.tx-tb-icon-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--tx-radius-full);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--tx-color-primary-text);
+  user-select: none;
+}
+
+/* Inline + showFiat = two-line layout, scale icon to balance the taller block */
+.tx-tb[data-show-fiat]:not(.tx-tb-row) .tx-tb-icon,
+.tx-tb[data-show-fiat]:not(.tx-tb-row) .tx-tb-icon-fallback {
+  width: 32px;
+  height: 32px;
+}
+
+.tx-tb[data-show-fiat]:not(.tx-tb-row) .tx-tb-icon-fallback {
+  font-size: 14px;
+}
+
+.tx-tb-amount {
+  font-family: var(--tx-font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  min-height: 1.5em;
+  line-height: 1.5;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tx-tb-integer {
+  font-weight: 600;
+}
+
+.tx-tb-fraction {
+  font-weight: 400;
+  color: var(--tx-color-text-secondary);
+}
+
+.tx-tb-symbol {
+  color: var(--tx-color-text-secondary);
+}
+
+.tx-tb-fiat {
+  color: var(--tx-color-text-tertiary);
+  font-size: var(--tx-font-size-xs);
+  min-height: 1.5em;
+  line-height: 1.5;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* --- Row variant --- */
+
+.tx-tb-row {
+  display: flex;
+  align-items: center;
+  gap: var(--tx-space-md);
+  min-height: var(--tx-row-min-height);
+  padding: var(--tx-space-sm) 0;
+  font-size: var(--tx-font-size-sm);
+}
+
+.tx-tb-row .tx-tb-icon-wrap {
+  flex-shrink: 0;
+}
+
+.tx-tb-row .tx-tb-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.tx-tb-row .tx-tb-icon-fallback {
+  width: 36px;
+  height: 36px;
+  font-size: 14px;
+}
+
+.tx-tb-row .tx-tb-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.tx-tb-name {
+  font-weight: 500;
+  color: var(--tx-color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tx-tb-row .tx-tb-symbol {
+  font-size: var(--tx-font-size-xs);
+  color: var(--tx-color-text-tertiary);
+}
+
+.tx-tb-row .tx-tb-values {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.tx-tb-row .tx-tb-amount {
+  font-size: var(--tx-font-size-sm);
+}
+
+.tx-tb-row .tx-tb-fiat {
+  font-size: var(--tx-font-size-xs);
+}
+
+/* tx-shimmer keyframe is defined globally in @txkit/themes base.css */
+
+/* Loading shimmer: keep default 1.5em min-height (inherited from .tb-amount /
+   .tb-fiat) so the row matches ready / error heights to the pixel. Only override
+   min-width to give the skeleton rectangle visible footprint. */
+.tx-tb[data-state="loading"] .tx-tb-amount,
+.tx-tb[data-state="loading"] .tx-tb-fiat {
+  background: linear-gradient(
+    90deg,
+    var(--tx-color-bg-tertiary) 25%,
+    var(--tx-color-bg-secondary) 50%,
+    var(--tx-color-bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: tx-shimmer var(--tx-duration-breathe) ease-in-out infinite;
+  color: transparent;
+  border-radius: var(--tx-radius-sm);
+}
+
+.tx-tb[data-state="loading"] .tx-tb-amount {
+  min-width: 160px;
+}
+
+.tx-tb[data-state="loading"] .tx-tb-fiat {
+  min-width: 100px;
+}
+
+.tx-tb[data-state="loading"] .tx-tb-icon,
+.tx-tb[data-state="loading"] .tx-tb-icon-fallback {
+  background: linear-gradient(
+    90deg,
+    var(--tx-color-bg-tertiary) 25%,
+    var(--tx-color-bg-secondary) 50%,
+    var(--tx-color-bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: tx-shimmer var(--tx-duration-breathe) ease-in-out infinite;
+}
+
+.tx-tb[data-state="loading"] .tx-tb-name {
+  background: linear-gradient(
+    90deg,
+    var(--tx-color-bg-tertiary) 25%,
+    var(--tx-color-bg-secondary) 50%,
+    var(--tx-color-bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: tx-shimmer var(--tx-duration-breathe) ease-in-out infinite;
+  color: transparent;
+  border-radius: var(--tx-radius-sm);
+  min-width: 60px;
+}
+
+/* Row variant uses smaller widths to match ready geometry */
+.tx-tb-row[data-state="loading"] .tx-tb-amount {
+  min-width: 80px;
+}
+
+.tx-tb-row[data-state="loading"] .tx-tb-fiat {
+  min-width: 56px;
+}
+
+.tx-tb-row[data-state="loading"] .tx-tb-name {
+  min-width: 72px;
+}
+
+/* --- Error state --- */
+
+.tx-tb-retry {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--tx-color-text-tertiary);
+  cursor: pointer;
+  border-radius: var(--tx-radius-sm);
+  transition: color var(--tx-transition);
+}
+
+.tx-tb-retry::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+}
+
+.tx-tb-retry:hover {
+  color: var(--tx-color-text);
+}
+
+.tx-tb-retry:focus-visible {
+  outline: 2px solid var(--tx-color-primary);
+  outline-offset: 2px;
+}
+
+.tx-tb-retry-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask-position: 50%;
+  mask-position: 50%;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* --- Balance change flash --- */
+
+@keyframes tx-flash {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+
+  50% {
+    background-color: var(--tx-color-primary-alpha);
+  }
+}
+
+.tx-tb[data-changed="true"] {
+  animation: tx-flash 0.6s ease-out;
+}
+
+/* --- Visually hidden status for screen readers --- */
+
+.tx-tb-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-tb[data-state="loading"] .tx-tb-amount,
+  .tx-tb[data-state="loading"] .tx-tb-fiat,
+  .tx-tb[data-state="loading"] .tx-tb-icon,
+  .tx-tb[data-state="loading"] .tx-tb-icon-fallback,
+  .tx-tb[data-state="loading"] .tx-tb-name,
+  .tx-tb[data-changed="true"] {
+    animation: none;
+  }
+
+  .tx-tb-retry {
+    transition: none;
+  }
+
+  .tx-tb[data-state="loading"] .tx-tb-amount,
+  .tx-tb[data-state="loading"] .tx-tb-fiat,
+  .tx-tb[data-state="loading"] .tx-tb-name {
+    opacity: 0.6;
+  }
+}

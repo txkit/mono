@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish txKit packages
+    runs-on: ubuntu-latest
+    if: startsWith(github.event.release.tag_name, 'v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      - run: pnpm test
+
+      - run: pnpm build
+
+      # NOTE: --provenance is intentionally disabled until the source
+      # repository becomes public (npm provenance rejects private GitHub
+      # source repos). Re-add --provenance with the public-repo migration.
+      # Publish order respects dependency graph: core has no internal
+      # deps, themes is css-only, tx-protocol has no @txkit deps, react
+      # depends on @txkit/core.
+
+      - name: Publish @txkit/core
+        run: pnpm --filter @txkit/core publish --no-git-checks --access public --tag alpha
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @txkit/themes
+        run: pnpm --filter @txkit/themes publish --no-git-checks --access public --tag alpha
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @txkit/tx-protocol
+        run: pnpm --filter @txkit/tx-protocol publish --no-git-checks --access public --tag alpha
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @txkit/tx-decoder
+        run: pnpm --filter @txkit/tx-decoder publish --no-git-checks --access public --tag alpha
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @txkit/ows-adapter
+        run: pnpm --filter @txkit/ows-adapter publish --no-git-checks --access public --tag alpha
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @txkit/x402-adapter
+        run: pnpm --filter @txkit/x402-adapter publish --no-git-checks --access public --tag alpha
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @txkit/react
+        run: pnpm --filter @txkit/react publish --no-git-checks --access public --tag alpha
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

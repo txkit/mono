@@ -1,0 +1,20 @@
+/*
+ * Sharp variant - zero radii, no shadows, compact spacing, crisp borders.
+ * Overrides: radius, shadow, spacing, transition.
+ */
+.tx-sharp {
+  --tx-radius-sm: 0;
+  --tx-radius-md: 0;
+  --tx-radius-lg: 0;
+  --tx-radius-xl: 2px;
+  --tx-radius-button: 0;
+
+  --tx-shadow-sm: none;
+  --tx-shadow-md: none;
+  --tx-shadow-lg: none;
+
+  --tx-space-sm: 0.375rem;
+  --tx-space-md: 0.625rem;
+
+  --tx-transition: 100ms linear;
+}

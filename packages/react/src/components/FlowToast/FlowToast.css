@@ -1,0 +1,232 @@
+.tx-ft {
+  position: fixed;
+  z-index: var(--tx-z-toast, 1002);
+  max-width: 380px;
+  min-width: 300px;
+  pointer-events: auto;
+  font-family: var(--tx-font-family);
+  color: var(--tx-color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* Smooth re-stack when other toasts at the same position appear / dismiss */
+  transition: transform var(--tx-duration-normal) var(--tx-ease-default);
+}
+
+.tx-ft-bottom-right {
+  right: var(--tx-space-lg);
+  bottom: var(--tx-space-lg);
+}
+
+.tx-ft-bottom-left {
+  left: var(--tx-space-lg);
+  bottom: var(--tx-space-lg);
+}
+
+.tx-ft-top-right {
+  right: var(--tx-space-lg);
+  top: var(--tx-space-lg);
+}
+
+.tx-ft-top-left {
+  left: var(--tx-space-lg);
+  top: var(--tx-space-lg);
+}
+
+@media (max-width: 640px) {
+  .tx-ft {
+    left: var(--tx-space-lg);
+    right: var(--tx-space-lg);
+    max-width: none;
+    min-width: 0;
+  }
+}
+
+.tx-ft-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--tx-color-border);
+  border-radius: var(--tx-radius-lg);
+  background: var(--tx-color-bg);
+  font-family: var(--tx-font-family);
+  box-shadow:
+    0 4px 6px -1px oklch(0 0 0 / 0.08),
+    0 2px 4px -1px oklch(0 0 0 / 0.04);
+  animation: tx-ft-slide-in-right var(--tx-duration-normal) var(--tx-ease-enter);
+}
+
+/* Type-tinted background + border so the toast reads as a status surface,
+ * not a neutral notification. Matches the figma swatch for each type. */
+.tx-ft-content[data-type="success"] {
+  background: var(--tx-color-success-bg);
+  border-color: color-mix(in oklch, var(--tx-color-success) 35%, transparent);
+}
+
+.tx-ft-content[data-type="error"] {
+  background: var(--tx-color-error-bg);
+  border-color: color-mix(in oklch, var(--tx-color-error) 35%, transparent);
+}
+
+.tx-ft-content[data-type="warning"] {
+  background: var(--tx-color-warning-bg);
+  border-color: color-mix(in oklch, var(--tx-color-warning) 35%, transparent);
+}
+
+.tx-ft-content[data-type="info"] {
+  background: var(--tx-color-info-bg, var(--tx-color-bg));
+  border-color: color-mix(in oklch, var(--tx-color-info) 35%, transparent);
+}
+
+/* Direction-aware slide-in: toasts in left corners slide from the left */
+.tx-ft-top-left .tx-ft-content,
+.tx-ft-bottom-left .tx-ft-content {
+  animation-name: tx-ft-slide-in-left;
+}
+
+.tx-dark .tx-ft-content {
+  box-shadow:
+    0 4px 6px -1px oklch(0 0 0 / 0.3),
+    0 2px 4px -1px oklch(0 0 0 / 0.2);
+}
+
+/* --- Icon (tinted by type via CSS mask so SVG adopts theme color) --- */
+
+.tx-ft-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+/* When a description is present (2-line), align icon to top.
+   Without description (1-line), center icon with the title. */
+.tx-ft-content[data-has-description] .tx-ft-icon {
+  margin-top: 1px;
+}
+
+.tx-ft-content:not([data-has-description]) {
+  align-items: center;
+}
+
+.tx-ft-content[data-type="success"] .tx-ft-icon {
+  color: var(--tx-color-success);
+}
+
+.tx-ft-content[data-type="error"] .tx-ft-icon {
+  color: var(--tx-color-error);
+}
+
+.tx-ft-content[data-type="info"] .tx-ft-icon {
+  color: var(--tx-color-info);
+}
+
+.tx-ft-content[data-type="warning"] .tx-ft-icon {
+  color: var(--tx-color-warning);
+}
+
+/* --- Text block --- */
+
+.tx-ft-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.tx-ft-message {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--tx-color-text);
+}
+
+.tx-ft-description {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--tx-color-text-secondary);
+}
+
+/* --- Dismiss button (44x44 touch target, 16px visible X) --- */
+
+.tx-ft-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: -14px -8px -14px 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--tx-radius-sm);
+  background: transparent;
+  color: var(--tx-color-text-secondary);
+  cursor: pointer;
+  transition: background-color var(--tx-duration-fast) var(--tx-ease-default);
+}
+
+.tx-ft-dismiss:hover {
+  color: var(--tx-color-text);
+}
+
+.tx-ft-dismiss:focus-visible {
+  outline: 2px solid var(--tx-color-text);
+  outline-offset: -4px;
+}
+
+.tx-ft-dismiss-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+/* --- Slide animations (direction-aware) --- */
+
+@keyframes tx-ft-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tx-ft-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-ft-content {
+    animation: none;
+  }
+
+  .tx-ft-dismiss {
+    transition: none;
+  }
+}

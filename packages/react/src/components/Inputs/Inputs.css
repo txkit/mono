@@ -1,0 +1,313 @@
+/*
+ * txKit Input Primitives
+ *
+ * Shared styles for TextInput, NumberInput, AddressInput, Checkbox, Select.
+ * All styles use CSS custom properties so they inherit variant/theme/color from
+ * ancestor .tx-root / .tx-dark / .tx-color-* / .tx-soft etc.
+ */
+
+/* --- Wrapper (label + control + helper/error) --- */
+
+.tx-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--tx-font-family);
+}
+
+.tx-input[data-disabled="true"] {
+  color: var(--tx-color-text-tertiary);
+  cursor: not-allowed;
+}
+
+.tx-input[data-disabled="true"] .tx-input-field {
+  background: var(--tx-color-bg-secondary);
+  color: var(--tx-color-text-tertiary);
+  border-color: var(--tx-color-border-subtle);
+}
+
+.tx-input-label {
+  font-size: var(--tx-font-size-sm);
+  font-weight: 500;
+  color: var(--tx-color-text);
+  line-height: 1.3;
+}
+
+.tx-input-helper {
+  font-size: var(--tx-font-size-xs);
+  color: var(--tx-color-text-secondary);
+  line-height: 1.4;
+}
+
+.tx-input-error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--tx-font-size-xs);
+  color: var(--tx-color-error);
+  line-height: 1.4;
+}
+
+/* --- Control base (used by TextInput, NumberInput, AddressInput, Select) --- */
+
+.tx-input-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tx-input-field {
+  width: 100%;
+  min-height: var(--tx-tap-target);
+  padding: 0 12px;
+  border: 1px solid var(--tx-color-border);
+  border-radius: var(--tx-radius-md);
+  background: var(--tx-color-bg);
+  color: var(--tx-color-text);
+  font-family: inherit;
+  font-size: var(--tx-font-size-sm);
+  line-height: 1.4;
+  outline: none;
+  transition: border-color var(--tx-duration-fast) var(--tx-ease-default),
+              box-shadow var(--tx-duration-fast) var(--tx-ease-default);
+}
+
+.tx-input-field::placeholder {
+  color: var(--tx-color-text-tertiary);
+}
+
+.tx-input-field:hover:not(:disabled) {
+  border-color: var(--tx-color-border-hover);
+}
+
+.tx-input-field:focus-visible {
+  border-color: var(--tx-color-primary);
+  box-shadow: 0 0 0 3px var(--tx-color-ring);
+}
+
+.tx-input-field:disabled {
+  cursor: not-allowed;
+  background: var(--tx-color-bg-secondary);
+}
+
+/* Valid state */
+.tx-input[data-state="valid"] .tx-input-field {
+  border-color: var(--tx-color-success);
+}
+
+.tx-input[data-state="valid"] .tx-input-field:focus {
+  box-shadow: 0 0 0 3px oklch(from var(--tx-color-success) l c h / 0.3);
+}
+
+/* Invalid state */
+.tx-input[data-state="invalid"] .tx-input-field,
+.tx-input[data-error="true"] .tx-input-field {
+  border-color: var(--tx-color-error);
+}
+
+.tx-input[data-state="invalid"] .tx-input-field:focus,
+.tx-input[data-error="true"] .tx-input-field:focus {
+  box-shadow: 0 0 0 3px oklch(from var(--tx-color-error) l c h / 0.3);
+}
+
+/* Warning state (anti-phishing) */
+.tx-input[data-state="warning"] .tx-input-field {
+  border-color: var(--tx-color-warning);
+}
+
+.tx-input[data-state="warning"] .tx-input-field:focus {
+  box-shadow: 0 0 0 3px oklch(from var(--tx-color-warning) l c h / 0.3);
+}
+
+/* --- Number input (right-aligned with unit suffix) --- */
+
+.tx-input-field[data-type="number"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding-right: 56px;
+}
+
+.tx-input-unit {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--tx-font-size-sm);
+  color: var(--tx-color-text-tertiary);
+  font-family: var(--tx-font-mono);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* --- Address input (monospace + validity indicator) --- */
+
+.tx-input-field[data-type="address"] {
+  font-family: var(--tx-font-mono);
+  font-size: var(--tx-font-size-xs);
+  padding-right: 40px;
+}
+
+.tx-input-indicator {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+.tx-input-indicator--valid { color: var(--tx-color-success); }
+.tx-input-indicator--invalid { color: var(--tx-color-error); }
+.tx-input-indicator--warning { color: var(--tx-color-warning); }
+.tx-input-indicator--checking {
+  color: var(--tx-color-primary);
+  animation: tx-input-spin var(--tx-duration-spin) linear infinite;
+}
+
+@keyframes tx-input-spin {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* --- Checkbox --- */
+
+.tx-checkbox-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--tx-font-family);
+}
+
+.tx-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  min-height: var(--tx-tap-target);
+}
+
+.tx-checkbox-wrap[data-disabled="true"] .tx-checkbox {
+  color: var(--tx-color-text-tertiary);
+  cursor: not-allowed;
+}
+
+.tx-checkbox-wrap[data-disabled="true"] .tx-checkbox-control {
+  background: var(--tx-color-bg-secondary);
+  border-color: var(--tx-color-border-subtle);
+}
+
+.tx-checkbox-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.tx-checkbox-input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  appearance: none;
+  border: 1px solid var(--tx-color-border);
+  border-radius: var(--tx-radius-sm);
+  background: var(--tx-color-bg);
+  cursor: inherit;
+  transition: all var(--tx-duration-fast) var(--tx-ease-default);
+}
+
+.tx-checkbox-input:hover:not(:disabled) {
+  border-color: var(--tx-color-primary);
+}
+
+.tx-checkbox-input:checked {
+  background: var(--tx-color-primary);
+  border-color: var(--tx-color-primary);
+}
+
+.tx-checkbox-input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--tx-color-ring);
+}
+
+.tx-checkbox-mark {
+  position: relative;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background-color: var(--tx-color-primary-text);
+  opacity: 0;
+  transition: opacity var(--tx-duration-fast) var(--tx-ease-default);
+  pointer-events: none;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+.tx-checkbox-input:checked + .tx-checkbox-mark {
+  opacity: 1;
+}
+
+.tx-checkbox-label {
+  font-size: var(--tx-font-size-sm);
+  color: var(--tx-color-text);
+  line-height: 1.4;
+}
+
+/* --- Select (chevron on the right) --- */
+
+.tx-select-control {
+  position: relative;
+}
+
+.tx-select-field {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.tx-select-chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  background-color: var(--tx-color-text-tertiary);
+  transform: translateY(-50%);
+  pointer-events: none;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-input-field,
+  .tx-checkbox-input,
+  .tx-checkbox-mark {
+    transition: none;
+  }
+
+  .tx-input-indicator--checking {
+    animation: none;
+  }
+}

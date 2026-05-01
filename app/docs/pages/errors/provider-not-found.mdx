@@ -1,0 +1,40 @@
+# ProviderNotFoundError
+
+> TxKitProvider not found.
+
+## Cause
+
+Thrown when a txKit hook or component is used outside of a `<TxKitProvider>`.
+
+## Solution
+
+Wrap your app (or the relevant subtree) with `<TxKitProvider>`:
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+
+const App = () => (
+  <TxKitProvider config={{
+    chains: [ mainnet ],
+    transports: { [mainnet.id]: http() },
+  }}>
+    {/* txKit components go here */}
+  </TxKitProvider>
+)
+```
+
+## Components and Hooks That Throw
+
+If `useTxKit()` is called outside a `<TxKitProvider>`, the following will throw `ProviderNotFoundError`:
+
+**Components:**
+- `<ConnectWallet />`, `<TransactionButton />`, `<TokenBalance />`
+- `<FlowSteps />`, `<FlowProgress />`, `<FlowToast />`
+
+**Hooks:**
+- `useTransactionFlow()`, `useTokenBalance()`, `useTokenBalances()`, `useTokenPrice()`, `useWalletState()`
+- `useFlowState()`, `useFlowStore()`
+
+Solution: wrap your tree with `<TxKitProvider>` near the root.

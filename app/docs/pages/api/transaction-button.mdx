@@ -1,0 +1,507 @@
+# TransactionButton
+
+Multi-step transaction flow component - from simulation to on-chain confirmation. Handles approval flows, anti-phishing safety, signature steps, and error recovery.
+
+**Bundle:** 6.5 kB JS (gzip) + 2.1 kB CSS (gzip). Includes the flow store, simulation, decoded calldata preview, and risk-confirm UI used by `FlowSteps` / `FlowProgress` / `FlowToast`.
+
+## Quick Start
+
+```tsx
+import { TransactionButton, txStep } from '@txkit/react'
+import { parseEther } from 'viem'
+
+// Simple ETH transfer
+<TransactionButton
+  steps={[ txStep('send', 'Send ETH', { to: '0x...', value: parseEther('1') }) ]}
+  label="Send 1 ETH"
+  onFlowComplete={(results) => console.log('Done!', results)}
+/>
+```
+
+### Approve + Execute (ERC-20)
+
+```tsx
+import { TransactionButton, approveAndExecute } from '@txkit/react'
+import { parseUnits } from 'viem'
+
+<TransactionButton
+  steps={approveAndExecute({
+    token: USDC_ADDRESS,
+    spender: ROUTER_ADDRESS,
+    amount: parseUnits('100', 6),
+    tx: {
+      address: ROUTER_ADDRESS,
+      abi: routerAbi,
+      functionName: 'swap',
+      args: [ USDC_ADDRESS, WETH_ADDRESS, parseUnits('100', 6), minOut ],
+    },
+  })}
+  label="Swap 100 USDC"
+/>
+```
+
+## Three Tiers of Customization
+
+### Tier 1: Zero-Config
+
+```tsx
+<TransactionButton
+  steps={[ txStep('send', 'Send', { to: '0x...', value: parseEther('1') }) ]}
+/>
+```
+
+### Tier 2: Custom Render
+
+```tsx
+<TransactionButton
+  steps={[ txStep('send', 'Send', { to: '0x...', value: parseEther('1') }) ]}
+>
+  {({ flow, currentStep, start, retry, reset, explorerUrl }) => (
+    <div>
+      <p>Status: {flow.status}</p>
+      {flow.status === 'idle' && <button onClick={start}>Send</button>}
+      {flow.status === 'error' && <button onClick={retry}>Retry</button>}
+      {flow.status === 'completed' && <button onClick={reset}>Done</button>}
+      {explorerUrl && <a href={explorerUrl}>View on Explorer</a>}
+    </div>
+  )}
+</TransactionButton>
+```
+
+### Tier 3: Headless Hook
+
+```tsx
+import { useTransactionFlow, txStep } from '@txkit/react'
+import { parseEther } from 'viem'
+
+const { flow, start, retry, reset } = useTransactionFlow({
+  steps: [ txStep('send', 'Send', { to: '0x...', value: parseEther('1') }) ],
+  onFlowComplete: (results) => console.log('All steps done!', results),
+  onStepError: (error, stepId) => console.error(`Step ${stepId} failed:`, error.message),
+})
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `steps` | `FlowStep[]` | required | Step definitions for this transaction flow |
+| `className` | `string` | - | CSS class |
+| `children` | `(data: RenderData) => ReactNode` | - | Custom render function |
+| `data-testid` | `string` | - | Test ID for automated testing |
+| `flowId` | `string` | `'__default__'` | Flow ID for parallel flows |
+| `label` | `string` | `"Send"` | Button text |
+| `description` | `string` | - | Optional summary text shown above the button |
+| `labels` | `Partial<Labels>` | - | UI text overrides |
+| `chainId` | `number` | current chain | Target chain (auto-switches) |
+| `safety` | `Partial<SafetyConfig>` | - | Anti-phishing config |
+| `confirmations` | `number` | `1` | Block confirmations to wait |
+| `resetDelay` | `number` | `0` | Auto-reset after success (ms) |
+| `disabled` | `boolean` | `false` | Disable button |
+| `showExplorerLink` | `boolean` | `true` | Show explorer link |
+| `onFlowComplete` | `(results: Record<string, StepResult>) => void` | - | Called when entire flow completes |
+| `onStepComplete` | `(stepId: string, result: StepResult) => void` | - | Called on any step completion |
+| `onError` | `(error: TransactionError, stepId: string) => void` | - | Called on any step error |
+| `onFlowStatusChange` | `(status: FlowStatus) => void` | - | Called on every flow status change |
+
+## Step Definitions
+
+### Transaction Step (on-chain)
+
+```ts
+txStep('approve', 'Approve USDC', {
+  address: USDC_ADDRESS,
+  abi: erc20Abi,
+  functionName: 'approve',
+  args: [ SPENDER, amount ],
+})
+```
+
+### Dynamic Step Arguments
+
+The `tx` argument of `txStep(id, label, tx)` is `TxParams | (ctx: StepContext) => TxParams | Promise<TxParams>`. Use the function form when step inputs aren't known at flow definition time - e.g. they depend on a prior step's receipt, an off-chain quote fetched before flow start, or a runtime `eth_call` against the connected chain.
+
+The same pattern applies to `signData`, `shouldSkip`, `waitForCondition`, `onStart`, `onError`, and `onCancel`.
+
+#### Pattern 1: Closure (off-chain data fetched before flow)
+
+When the args depend on data fetched once before the flow starts (a swap quote, an order id, a nonce), capture it in a closure:
+
+```tsx
+const SwapButton = () => {
+  const [ steps, setSteps ] = useState<FlowStep[] | null>(null)
+
+  const prepareSwap = async () => {
+    const quote = await fetchQuote({ tokenIn: USDC, tokenOut: WETH, amount })
+    setSteps([
+      txStep('swap', 'Swap', {
+        to: SWAP_ROUTER,
+        data: quote.calldata,
+        value: quote.value,
+      }),
+    ])
+  }
+
+  if (!steps) {
+    return <button onClick={prepareSwap}>Get quote</button>
+  }
+  return <TransactionButton steps={steps} label="Swap" />
+}
+```
+
+#### Pattern 2: Inter-step (depends on prior step result)
+
+`StepContext` exposes `previousResult` (last step) and `results[stepId]` (any completed step by id). A swap step that needs the receipt of a prior approve:
+
+```ts
+txStep('swap', 'Swap', (ctx) => ({
+  to: SWAP_ROUTER,
+  data: encodeSwapCalldata({
+    approveBlock: ctx.results['approve'].receipt.blockNumber,
+    minOut: computeMinOut(ctx.results['approve']),
+  }),
+  value: 0n,
+}))
+```
+
+#### Pattern 3: Async runtime read
+
+Need an on-chain read at step start? Return a `Promise<TxParams>` and use `ctx.publicClient` for the read:
+
+```ts
+txStep('claim', 'Claim rewards', async (ctx) => {
+  const pending = await ctx.publicClient.readContract({
+    address: REWARDS_VAULT,
+    abi: rewardsAbi,
+    functionName: 'pendingRewards',
+    args: [ ctx.address ],
+  })
+  return {
+    address: REWARDS_VAULT,
+    abi: rewardsAbi,
+    functionName: 'claim',
+    args: [ pending ],
+  }
+})
+```
+
+#### When to combine with `shouldSkip`
+
+If the dynamic computation also decides whether the step should run at all, pair it with `shouldSkip`. The skip check runs first - if it returns true, the `tx` factory is never invoked:
+
+```ts
+txStep('stake', 'Stake', async (ctx) => buildStakeTx(ctx), {
+  shouldSkip: (ctx) => !autoStake,
+})
+```
+
+### Signature Step (off-chain)
+
+```ts
+import { signAndSubmit } from '@txkit/react'
+
+signAndSubmit({
+  id: 'place-order',
+  label: 'Place Order',
+  signData: {
+    method: 'eth_signTypedData_v4',
+    domain: orderDomain,
+    types: orderTypes,
+    value: orderData,
+  },
+  onSign: async (signature, ctx) => {
+    const orderId = await submitOrder(signature)
+    return { data: { orderId } }
+  },
+  waitForCondition: async (ctx, signal) => {
+    await pollUntil(() => checkOrderFilled(orderId), { signal })
+  },
+})
+```
+
+## Flow Helpers
+
+| Helper | Description |
+|--------|-------------|
+| `txStep(id, label, tx, options?)` | Create a single transaction step |
+| `approveAndExecute({ token, spender, amount, tx })` | ERC-20 approve + action (handles USDT approve-to-zero) |
+| `multiApproveAndExecute({ approvals, tx })` | Multiple token approvals + action |
+| `signAndSubmit({ id, label, signData, onSign })` | Off-chain signature + submission |
+
+## Compound Components
+
+`FlowSteps`, `FlowProgress`, and `FlowToast` read flow state from
+`TxKitProvider` context - they are siblings of `TransactionButton`, not
+children. Place each one in the part of the layout where it makes UX sense
+(progress in the header, step list near the action, toast in a portal).
+
+```tsx
+<TxKitProvider config={config}>
+  <header>
+    <FlowProgress showSummary />
+  </header>
+
+  <main>
+    <FlowSteps orientation="vertical" />
+    <TransactionButton
+      steps={approveAndExecute({ token: USDC, spender: ROUTER, amount, tx: swapTx })}
+      label="Swap"
+      description="Approve USDC, then swap for WETH on Uniswap v4"
+    />
+  </main>
+
+  <FlowToast position="bottom-right" autoDismiss={5000} />
+</TxKitProvider>
+```
+
+For multiple parallel flows in one tree (rare), set the same `flowId` on
+the button and each compound component to scope them together:
+
+```tsx
+<TransactionButton flowId="swap" steps={swapSteps} />
+<FlowSteps flowId="swap" />
+
+<TransactionButton flowId="stake" steps={stakeSteps} />
+<FlowSteps flowId="stake" />
+```
+
+## Parallel Flows
+
+Multiple `TransactionButton` instances can run simultaneously. Pass a unique `flowId` (or rely on the auto-generated id) and use that same id with compound components like `FlowSteps`. Each flow has its own independent state.
+
+```tsx
+import { TransactionButton, FlowSteps } from '@txkit/react'
+
+const ApproveAndSwap = () => (
+  <>
+    <TransactionButton flowId="approve" steps={approveSteps} />
+    <TransactionButton flowId="swap" steps={swapSteps} />
+
+    <FlowSteps flowId="approve" />
+    <FlowSteps flowId="swap" />
+  </>
+)
+```
+
+The `useFlowStore()` hook from `@txkit/react` exposes the global flow registry as a `Map` of `flowId` -> `FlowEntry` (flow state, steps, actions). Use it when you need to read or react to multiple flows from a single component.
+
+## Step Context
+
+Inside a step's `tx()`, `prepare()`, `onSuccess()`, or other lifecycle callback, you receive a `StepContext`:
+
+```ts
+type StepContext = {
+  results: Record<string, StepResult>
+  previousResult: StepResult | undefined
+  address: `0x${string}`
+  chainId: number
+  publicClient: PublicClient
+}
+
+type StepResult =
+  | { type: 'tx'; hash: `0x${string}`; receipt: TransactionReceipt }
+  | { type: 'sign'; signature: `0x${string}` }
+```
+
+Use `ctx.previousResult` for the immediately preceding step or `ctx.results[stepId]` to chain by id - e.g., a swap step might read the receipt of the prior approve step.
+
+## Approve + Execute Auto-Skip
+
+`approveAndExecute({ token, spender, amount, tx })` returns a two-step flow:
+`approve` then `tx`. Before running, the approve step calls
+`shouldSkip(ctx)` and reads on-chain `allowance(owner, spender)` - if the
+existing allowance already covers `amount`, the approve step is marked
+`skipped` and the flow jumps straight to `tx`. No second wallet popup, no
+wasted gas.
+
+USDT (and a handful of legacy tokens) revert when calling `approve(spender, X)`
+while a non-zero allowance is set. `approveAndExecute` detects this and
+auto-inserts a reset step (`approve(spender, 0)`) before the real approve.
+The reset is itself skipped when the current allowance is already zero.
+
+```tsx
+<TransactionButton
+  steps={approveAndExecute({
+    token: USDT_ADDRESS,
+    spender: ROUTER_ADDRESS,
+    amount: parseUnits('100', 6),
+    tx: { address: ROUTER_ADDRESS, abi: routerAbi, functionName: 'swap', args },
+  })}
+  label="Swap 100 USDT"
+/>
+```
+
+Use `multiApproveAndExecute({ approvals: [...], tx })` for flows that need
+multiple approvals (e.g. swapping two tokens for a third).
+
+## Anti-Phishing Confirmation Delay
+
+For high-value transactions, force the user to wait before the wallet popup
+opens. `safety.delayMs` shows a countdown on the button, and the user can
+cancel during the delay - the wallet is never invoked.
+
+```tsx
+<TransactionButton
+  steps={[ txStep('send', 'Send', { to: recipient, value: parseEther('10') }) ]}
+  safety={{ delayMs: 5000 }}
+  label="Send 10 ETH"
+/>
+```
+
+Pair with `safety.riskProvider` to block on red flags (Blowfish/Blockaid)
+and `safety.warnMaxApproval` (on by default) to highlight `MAX_UINT256`
+approvals at the review step.
+
+## Error Handling
+
+`onError(error, stepId)` fires for every step failure. Branch on `error.code`
+to surface different UX for user-rejected popups vs network failures vs
+contract reverts.
+
+```tsx
+<TransactionButton
+  steps={[ txStep('send', 'Send', { to, value }) ]}
+  onError={(error, stepId) => {
+    if (error.code === 'USER_REJECTED') {
+      // Soft toast - the user closed the wallet, not a failure
+      toast.info('Cancelled')
+      return
+    }
+    if (error.code === 'INSUFFICIENT_FUNDS') {
+      toast.error('Not enough balance to cover gas')
+      return
+    }
+    if (error.code === 'EXECUTION_REVERTED') {
+      toast.error(`Transaction reverted: ${error.reason ?? 'unknown'}`)
+      return
+    }
+    captureException(error, { extra: { stepId } })
+  }}
+/>
+```
+
+Common `error.code` values: `USER_REJECTED`, `INSUFFICIENT_FUNDS`,
+`EXECUTION_REVERTED`, `SIMULATION_FAILED`, `CHAIN_MISMATCH`, `TIMEOUT`,
+`REPLACED`, `NETWORK`, `UNKNOWN`.
+
+## See also
+
+- [FlowSteps](/api/flow-steps) - sibling step indicator (auto-connects via context)
+- [FlowProgress](/api/flow-progress) - sibling progress bar
+- [FlowToast](/api/flow-toast) - sibling toast notification
+- [Hooks - useTransactionFlow](/api/hooks) - the headless hook this component is built on
+- [Security model](/concepts/security) - what `safety.*` actually defends against
+
+## State Machine
+
+### Step Statuses (12)
+
+```
+pending → simulating → confirming-risk → (confirm) → signing/tx-pending → waiting → completed
+                     → simulation-failed → (retry) → simulating
+                                         → (force) → signing/tx-pending
+         signing → tx-pending → waiting → completed
+                             → error → (retry) → simulating
+         → rejected → (retry) → simulating
+         → skipped (via shouldSkip)
+         → canceled (cascade from failed step)
+```
+
+### Flow Statuses (8)
+
+`idle` | `simulating-all` | `running` | `paused` | `completed` | `error` | `rejected` | `canceled`
+
+## Safety Config
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `simulate` | `boolean` | `true` | Simulate transaction via `eth_call` + `estimateGas` before requesting a signature |
+| `delayMs` | `number` | `0` | Confirmation countdown in ms shown before sending (anti-phishing friction) |
+| `warnMaxApproval` | `boolean` | `true` | Surface a warning when an approval amount equals `MAX_UINT256` |
+| `riskProvider` | `TransactionRiskProvider \| null` | `null` | Pluggable pre-sign risk scorer (Blowfish, Blockaid, custom) |
+
+Pass a `Partial<SafetyConfig>` - missing fields fall back to the defaults above.
+
+### Risk Provider
+
+```ts
+type TransactionRiskProvider = {
+  assess: (params: {
+    to: `0x${string}`
+    data?: `0x${string}`
+    value?: bigint
+    chainId: number
+    from: `0x${string}`
+  }) => Promise<RiskResult>
+}
+
+type RiskResult = {
+  level: 'safe' | 'low' | 'medium' | 'high'
+  warnings?: string[]
+  blocked?: boolean
+}
+```
+
+```tsx
+<TransactionButton
+  steps={steps}
+  safety={{
+    delayMs: 5000,
+    riskProvider: {
+      assess: async ({ to, data, value, chainId, from }) => {
+        const result = await blowfishApi.scan({ to, data, value, chainId, from })
+        return {
+          level: result.riskLevel,
+          warnings: result.warnings,
+          blocked: result.action === 'BLOCK',
+        }
+      },
+    },
+  }}
+/>
+```
+
+## Step Options
+
+All step factories (`txStep`, `signAndSubmit`, etc.) accept a shared set of options on the step object:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `description` | `string` | Sub-label rendered below the main label in `FlowSteps` |
+| `shouldSkip` | `(ctx: StepContext) => boolean \| Promise<boolean>` | Skip at runtime (e.g. allowance already sufficient). Re-evaluated on retry |
+| `waitAfterMs` | `number` | Delay in ms after completion before starting the next step |
+| `waitForCondition` | `(ctx: StepContext, signal: AbortSignal) => Promise<void>` | Async condition to satisfy before the step is marked complete |
+| `optional` | `boolean` | Step can be skipped by the user via `skipStep()` after an error |
+| `onStart` | `(ctx: StepContext) => void` | Called when the step starts executing |
+| `onError` | `(ctx: StepContext & { error: TransactionError }) => void` | Called when the step fails |
+| `onCancel` | `(ctx: StepContext) => Promise<void> \| void` | Called when the step is canceled (e.g. cancel a CoW order on backend) |
+
+`txStep` extends with two transaction-only options:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `safety` | `Partial<SafetyConfig>` | Per-step safety overrides (defaults to the flow-level `safety` prop) |
+| `gas` | `bigint` | Per-step gas limit override |
+| `onComplete` | `(ctx: StepContext & { hash, receipt }) => void` | Called when the step receipt is mined |
+
+## Labels
+
+Override any label string by passing a `Partial<TransactionButtonLabels>` to the `labels` prop.
+
+| Key | Default | Where |
+|-----|---------|-------|
+| `send` | `'Send'` | Button - idle state (overridden by `label` prop) |
+| `simulating` | `'Simulating'` | Button - simulation in progress |
+| `confirmingRisk` | `'Review Transaction'` | Button - risk review |
+| `simulationFailed` | `'Simulation Failed'` | Button - simulation failed |
+| `approving` | `'Approving'` | Button - approve step in progress |
+| `awaitingSignature` | `'Confirm in Wallet'` | Button - waiting for wallet signature |
+| `pending` | `'Pending'` | Button - tx pending on-chain |
+| `success` | `'Confirmed'` | Button - completed |
+| `error` | `'Failed'` | Button - generic error |
+| `rejected` | `'Rejected'` | Button - user rejected in wallet |
+| `retry` | `'Try Again'` | Button - retry after error |
+| `confirm` | `'Confirm'` | Risk dialog - confirm |
+| `cancel` | `'Cancel'` | Risk dialog - cancel |
+| `forceSubmit` | `'Send Anyway'` | Button - submit despite simulation failure |
+| `viewOnExplorer` | `'View on Explorer'` | Explorer link |

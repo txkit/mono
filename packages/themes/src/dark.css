@@ -1,0 +1,131 @@
+/*
+ * txKit Design Tokens - Dark theme
+ * All overrides in OKLCH. Dark mode uses higher lightness for primary
+ * so it reads properly on dark backgrounds.
+ */
+.tx-dark {
+  /* --- Primary (txKit indigo, brighter for dark mode) --- */
+  --tx-color-primary: oklch(0.62 0.24 276);
+  --tx-color-primary-hover: oklch(0.68 0.25 276);
+  --tx-color-primary-active: oklch(0.56 0.23 276);
+  --tx-color-primary-text: oklch(1 0 0);
+  --tx-color-primary-alpha: oklch(0.62 0.24 276 / 0.15);
+  --tx-color-ring: oklch(0.62 0.24 276 / 0.5);
+
+  /* --- Backgrounds (slate-tinted dark, hue ~260) --- */
+  --tx-color-bg: oklch(0.208 0.042 263);
+  --tx-color-bg-elevated: oklch(0.279 0.041 260);
+  --tx-color-bg-secondary: oklch(0.235 0.041 262);
+  --tx-color-bg-tertiary: oklch(0.32 0.04 259);
+  --tx-color-bg-muted: oklch(0.28 0.04 260);
+
+  /* --- Text hierarchy (slate scale) --- */
+  --tx-color-text: oklch(0.968 0.007 248);
+  --tx-color-text-secondary: oklch(0.704 0.04 257);
+  --tx-color-text-tertiary: oklch(0.65 0.04 257);
+
+  /* --- Borders (slate-700/600) --- */
+  --tx-color-border: oklch(0.372 0.044 257);
+  --tx-color-border-hover: oklch(0.446 0.043 257);
+  --tx-color-border-subtle: oklch(0.32 0.044 257);
+
+  /* --- Semantic (brighter in dark) --- */
+  --tx-color-success: oklch(0.7 0.18 145);
+  --tx-color-success-text: oklch(0.18 0.06 145);
+  --tx-color-success-alpha: oklch(0.7 0.18 145 / 0.15);
+  --tx-color-success-bg: oklch(0.25 0.05 145);
+
+  --tx-color-warning: oklch(0.82 0.16 65);
+  --tx-color-warning-text: oklch(0.22 0.08 65);
+  --tx-color-warning-alpha: oklch(0.82 0.16 65 / 0.15);
+  --tx-color-warning-bg: oklch(0.28 0.05 70);
+
+  --tx-color-error: oklch(0.65 0.22 25);
+  --tx-color-error-text: oklch(1 0 0);
+  --tx-color-error-alpha: oklch(0.65 0.22 25 / 0.15);
+  --tx-color-error-bg: oklch(0.25 0.06 25);
+
+  --tx-color-info: oklch(0.72 0.17 245);
+  --tx-color-info-bg: oklch(0.25 0.04 240);
+
+  /* --- Surface overlays (modals / drawers) --- */
+  --tx-color-overlay: oklch(0 0 0 / 0.65);
+  --tx-color-shimmer: oklch(1 0 0 / 0.12);
+
+  /* --- Shadows (more pronounced on dark) --- */
+  --tx-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2), 0 1px 1px oklch(0 0 0 / 0.15);
+  --tx-shadow-md: 0 4px 12px oklch(0 0 0 / 0.3), 0 1px 2px oklch(0 0 0 / 0.2);
+  --tx-shadow-lg: 0 8px 24px oklch(0 0 0 / 0.4), 0 2px 4px oklch(0 0 0 / 0.2);
+
+  /* --- Skeleton --- */
+  --tx-skeleton-from: var(--tx-color-bg-secondary);
+  --tx-skeleton-to: var(--tx-color-bg-tertiary);
+}
+
+/* Auto-switch when the user's OS prefers dark and no explicit `.tx-light`
+ * is set on an ancestor. Stops the brief light-theme flash on SSR-rendered
+ * pages (Vocs / Next.js) before useTheme hydrates and applies the class.
+ *
+ * `:not(.tx-light)` lets any consumer who explicitly opts into light mode
+ * keep that preference; the default theme also opts into the auto-switch by
+ * receiving the dark token block here, mirroring `.tx-dark` above. */
+@media (prefers-color-scheme: dark) {
+  .tx-root:not(.tx-light) {
+    /* --- Primary (txKit indigo, brighter for dark mode) --- */
+    --tx-color-primary: oklch(0.62 0.24 276);
+    --tx-color-primary-hover: oklch(0.68 0.25 276);
+    --tx-color-primary-active: oklch(0.56 0.23 276);
+    --tx-color-primary-text: oklch(1 0 0);
+    --tx-color-primary-alpha: oklch(0.62 0.24 276 / 0.15);
+    --tx-color-ring: oklch(0.62 0.24 276 / 0.5);
+
+    /* --- Backgrounds --- */
+    --tx-color-bg: oklch(0.208 0.042 263);
+    --tx-color-bg-elevated: oklch(0.279 0.041 260);
+    --tx-color-bg-secondary: oklch(0.235 0.041 262);
+    --tx-color-bg-tertiary: oklch(0.32 0.04 259);
+    --tx-color-bg-muted: oklch(0.28 0.04 260);
+
+    /* --- Text --- */
+    --tx-color-text: oklch(0.968 0.007 248);
+    --tx-color-text-secondary: oklch(0.704 0.04 257);
+    --tx-color-text-tertiary: oklch(0.65 0.04 257);
+
+    /* --- Borders --- */
+    --tx-color-border: oklch(0.372 0.044 257);
+    --tx-color-border-hover: oklch(0.446 0.043 257);
+    --tx-color-border-subtle: oklch(0.32 0.044 257);
+
+    /* --- Semantic --- */
+    --tx-color-success: oklch(0.7 0.18 145);
+    --tx-color-success-text: oklch(0.18 0.06 145);
+    --tx-color-success-alpha: oklch(0.7 0.18 145 / 0.15);
+    --tx-color-success-bg: oklch(0.25 0.05 145);
+
+    --tx-color-warning: oklch(0.82 0.16 65);
+    --tx-color-warning-text: oklch(0.22 0.08 65);
+    --tx-color-warning-alpha: oklch(0.82 0.16 65 / 0.15);
+    --tx-color-warning-bg: oklch(0.28 0.05 70);
+
+    --tx-color-error: oklch(0.65 0.22 25);
+    --tx-color-error-text: oklch(1 0 0);
+    --tx-color-error-alpha: oklch(0.65 0.22 25 / 0.15);
+    --tx-color-error-bg: oklch(0.25 0.06 25);
+
+    --tx-color-info: oklch(0.72 0.17 245);
+    --tx-color-info-bg: oklch(0.25 0.04 240);
+
+    /* --- Surface overlays --- */
+    --tx-color-overlay: oklch(0 0 0 / 0.65);
+    --tx-color-shimmer: oklch(1 0 0 / 0.12);
+
+    /* --- Shadows --- */
+    --tx-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2), 0 1px 1px oklch(0 0 0 / 0.15);
+    --tx-shadow-md: 0 4px 12px oklch(0 0 0 / 0.3), 0 1px 2px oklch(0 0 0 / 0.2);
+    --tx-shadow-lg: 0 8px 24px oklch(0 0 0 / 0.4), 0 2px 4px oklch(0 0 0 / 0.2);
+
+    /* --- Skeleton --- */
+    --tx-skeleton-from: var(--tx-color-bg-secondary);
+    --tx-skeleton-to: var(--tx-color-bg-tertiary);
+  }
+}

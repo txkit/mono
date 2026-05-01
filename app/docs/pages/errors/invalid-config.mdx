@@ -1,0 +1,76 @@
+# InvalidConfigError
+
+> Invalid TxKitProvider configuration.
+
+## Cause
+
+Thrown when the config passed to `<TxKitProvider>` is not a valid object - missing required fields, mismatched chain ids in `transports`, or a non-callable transport.
+
+## Solution
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+
+const App = () => (
+  <TxKitProvider config={{
+    chains: [ mainnet ],
+    transports: { [mainnet.id]: http() },
+  }}>
+    {/* ... */}
+  </TxKitProvider>
+)
+```
+
+## Common Invalid Configs
+
+### Missing chains array
+
+```tsx
+// Throws InvalidConfigError
+<TxKitProvider config={{
+  transports: { [mainnet.id]: http() },
+}} />
+
+// Fix: include at least one chain
+<TxKitProvider config={{
+  chains: [ mainnet ],
+  transports: { [mainnet.id]: http() },
+}} />
+```
+
+### Mismatched chainId in transports
+
+```tsx
+// Throws InvalidConfigError
+<TxKitProvider config={{
+  chains: [ mainnet ],                   // mainnet.id = 1
+  transports: { [sepolia.id]: http() },  // sepolia.id = 11155111
+}} />
+
+// Fix: keys match chain ids
+<TxKitProvider config={{
+  chains: [ mainnet, sepolia ],
+  transports: {
+    [mainnet.id]: http(),
+    [sepolia.id]: http(),
+  },
+}} />
+```
+
+### Invalid transport function
+
+```tsx
+// Throws InvalidConfigError
+<TxKitProvider config={{
+  chains: [ mainnet ],
+  transports: { [mainnet.id]: undefined },
+}} />
+
+// Fix: pass a transport from viem (http, fallback, webSocket)
+<TxKitProvider config={{
+  chains: [ mainnet ],
+  transports: { [mainnet.id]: http() },
+}} />
+```

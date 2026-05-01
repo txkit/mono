@@ -1,0 +1,80 @@
+{
+  "name": "@txkit/core",
+  "version": "0.1.0-alpha.0",
+  "description": "Core utilities and types for txKit",
+  "license": "MIT",
+  "author": "Michael Diamond",
+  "homepage": "https://txkit.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/txkit/mono.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/txkit/mono/issues"
+  },
+  "keywords": [
+    "txkit",
+    "web3",
+    "ethereum",
+    "viem",
+    "blockchain",
+    "typescript",
+    "defi",
+    "utilities",
+    "types",
+    "errors",
+    "format",
+    "address",
+    "token",
+    "calldata",
+    "polling",
+    "evm"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "prepublishOnly": "pnpm run build",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "viem": ">=2"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.3",
+    "viem": "^2.48.4"
+  },
+  "sideEffects": false
+}

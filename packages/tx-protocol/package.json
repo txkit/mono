@@ -1,0 +1,80 @@
+{
+  "name": "@txkit/tx-protocol",
+  "version": "0.1.0-alpha.0",
+  "description": "Open protocol for prepared Web3 operations - envelope + content discriminated union, CAIP-2 chain ids, EIP-5792 aligned batches, EIP-712 signature requests. Post-quantum ready producer signatures.",
+  "license": "MIT",
+  "author": "Michael Diamond",
+  "homepage": "https://docs.txkit.dev/protocol/prepared-tx",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/txkit/mono.git",
+    "directory": "packages/tx-protocol"
+  },
+  "bugs": {
+    "url": "https://github.com/txkit/mono/issues"
+  },
+  "keywords": [
+    "txkit",
+    "web3",
+    "ethereum",
+    "evm",
+    "ai-agents",
+    "mcp",
+    "prepared-transaction",
+    "protocol",
+    "spec",
+    "typescript",
+    "zod",
+    "defi",
+    "staking",
+    "account-abstraction",
+    "erc-4337",
+    "erc-7702"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "prepublishOnly": "pnpm run build",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.1"
+  },
+  "sideEffects": false
+}

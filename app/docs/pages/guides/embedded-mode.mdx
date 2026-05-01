@@ -1,0 +1,213 @@
+# Embedded Mode
+
+Use embedded mode when you already have a `WagmiProvider` and `QueryClientProvider`. txKit reuses both - no nested wagmi state, no duplicate connectors.
+
+## When to Use Embedded vs Standalone
+
+| Situation | Mode |
+|---|---|
+| Greenfield project, no wallet kit | Standalone (default) |
+| Existing app with RainbowKit / AppKit / ConnectKit / Privy / Dynamic | Embedded |
+| Custom wagmi setup with specific connectors | Embedded |
+
+## Quick Pattern
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+// You already have these in scope from your wallet kit setup:
+import { WagmiProvider } from 'wagmi'
+import { QueryClientProvider } from '@tanstack/react-query'
+
+const App = ({ children }) => (
+  <WagmiProvider config={wagmiConfig}>
+    <QueryClientProvider client={queryClient}>
+      {/* your wallet kit provider here */}
+      <TxKitProvider embedded>
+        {children}
+      </TxKitProvider>
+    </QueryClientProvider>
+  </WagmiProvider>
+)
+```
+
+## RainbowKit
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit'
+import { WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { mainnet } from 'viem/chains'
+import '@rainbow-me/rainbowkit/styles.css'
+
+const config = getDefaultConfig({
+  appName: 'My App',
+  projectId: 'WC_PROJECT_ID',
+  chains: [ mainnet ],
+})
+const queryClient = new QueryClient()
+
+const App = ({ children }) => (
+  <WagmiProvider config={config}>
+    <QueryClientProvider client={queryClient}>
+      <RainbowKitProvider>
+        <TxKitProvider embedded config={{ theme: 'dark' }}>
+          {children}
+        </TxKitProvider>
+      </RainbowKitProvider>
+    </QueryClientProvider>
+  </WagmiProvider>
+)
+```
+
+## AppKit (formerly Web3Modal)
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+import { createAppKit } from '@reown/appkit/react'
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
+import { mainnet } from 'viem/chains'
+import { WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const wagmiAdapter = new WagmiAdapter({
+  networks: [ mainnet ],
+  projectId: 'WC_PROJECT_ID',
+})
+
+createAppKit({
+  adapters: [ wagmiAdapter ],
+  networks: [ mainnet ],
+  projectId: 'WC_PROJECT_ID',
+})
+
+const queryClient = new QueryClient()
+
+const App = ({ children }) => (
+  <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+    <QueryClientProvider client={queryClient}>
+      <TxKitProvider embedded>
+        {children}
+      </TxKitProvider>
+    </QueryClientProvider>
+  </WagmiProvider>
+)
+```
+
+## ConnectKit
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+import { ConnectKitProvider, getDefaultConfig } from 'connectkit'
+import { WagmiProvider, createConfig } from 'wagmi'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const config = createConfig(
+  getDefaultConfig({
+    chains: [ mainnet ],
+    transports: { [mainnet.id]: http() },
+    walletConnectProjectId: 'WC_PROJECT_ID',
+    appName: 'My App',
+  })
+)
+const queryClient = new QueryClient()
+
+const App = ({ children }) => (
+  <WagmiProvider config={config}>
+    <QueryClientProvider client={queryClient}>
+      <ConnectKitProvider>
+        <TxKitProvider embedded>
+          {children}
+        </TxKitProvider>
+      </ConnectKitProvider>
+    </QueryClientProvider>
+  </WagmiProvider>
+)
+```
+
+## Privy
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+import { PrivyProvider } from '@privy-io/react-auth'
+import { WagmiProvider, createConfig } from '@privy-io/wagmi'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const wagmiConfig = createConfig({
+  chains: [ mainnet ],
+  transports: { [mainnet.id]: http() },
+})
+const queryClient = new QueryClient()
+
+const App = ({ children }) => (
+  <PrivyProvider appId="YOUR_PRIVY_APP_ID">
+    <QueryClientProvider client={queryClient}>
+      <WagmiProvider config={wagmiConfig}>
+        <TxKitProvider embedded>
+          {children}
+        </TxKitProvider>
+      </WagmiProvider>
+    </QueryClientProvider>
+  </PrivyProvider>
+)
+```
+
+## Dynamic
+
+```tsx
+import { TxKitProvider } from '@txkit/react'
+import { DynamicContextProvider } from '@dynamic-labs/sdk-react-core'
+import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector'
+import { EthereumWalletConnectors } from '@dynamic-labs/ethereum'
+import { WagmiProvider, createConfig } from 'wagmi'
+import { mainnet } from 'viem/chains'
+import { http } from 'viem'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const wagmiConfig = createConfig({
+  chains: [ mainnet ],
+  transports: { [mainnet.id]: http() },
+})
+const queryClient = new QueryClient()
+
+const App = ({ children }) => (
+  <DynamicContextProvider settings={{
+    environmentId: 'YOUR_DYNAMIC_ENV_ID',
+    walletConnectors: [ EthereumWalletConnectors ],
+  }}>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <DynamicWagmiConnector>
+          <TxKitProvider embedded>
+            {children}
+          </TxKitProvider>
+        </DynamicWagmiConnector>
+      </QueryClientProvider>
+    </WagmiProvider>
+  </DynamicContextProvider>
+)
+```
+
+## Common Pitfalls
+
+- **Forgetting `QueryClientProvider`** -> embedded mode requires it OUTSIDE `<TxKitProvider>`. Throws nothing helpful; tx state hooks just fail silently.
+- **Mismatched chain IDs** -> wagmi config's `chains` must include any chain referenced by txKit components (e.g., `<TransactionButton chainId={polygon.id}>` requires `polygon` in `chains`).
+- **autoConnect conflicts** -> if both your wallet kit and wagmi config set autoConnect, the second mount wins. Configure on only one.
+- **Missing WalletConnect projectId** -> WC connector won't appear in the modal. Pass via the wallet kit's getDefaultConfig.
+
+## Detecting Embedded vs Standalone
+
+The `useTxKit()` hook returns `config.embedded: boolean`:
+
+```tsx
+import { useTxKit } from '@txkit/react'
+
+const Debug = () => {
+  const { config } = useTxKit()
+  return <p>Mode: {config.embedded ? 'embedded' : 'standalone'}</p>
+}
+```

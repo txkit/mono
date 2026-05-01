@@ -1,0 +1,95 @@
+# txKit
+
+> Safe bridge between AI agents and Web3 transactions - open protocol (`PreparedTransaction`) + reference implementation (React components + hooks). _OWS signs. txKit decides what's safe to sign._
+
+txKit is two things in one repo:
+1. **`@txkit/tx-protocol`** - an open MIT spec for `PreparedEnvelope`, the shape that flows between AI / MCP tools (producers) and wallets / signer orchestrators / preview UIs (consumers). Zero React or wagmi dependencies; runtime validation via Zod.
+2. **`@txkit/react` + `@txkit/core` + `@txkit/themes`** - React components with built-in Web3 logic. Drop in a component, get a production-ready UI with wallet connection, token balances, and multi-step transaction handling. Works standalone or alongside RainbowKit, AppKit, ConnectKit, or any wagmi-based setup.
+
+Composes with: **OWS** (key custody + signing), **x402** (HTTP payments for agents, Linux Foundation), **MCP servers** (AI agent tool-use), **Etherspot TransactionKit** and other AA hook libraries (UserOp builders).
+
+- Docs: https://txkit.dev
+- GitHub: https://github.com/txkit/mono
+- npm: https://www.npmjs.com/package/@txkit/react
+
+## Packages
+
+- [@txkit/tx-protocol](https://txkit.dev/protocol/prepared-tx): Open `PreparedEnvelope` protocol - types, Zod schemas, validators. Zero UI deps.
+- [@txkit/react](https://txkit.dev/api/tx-provider): React components and headless hooks. Single entry point - no subpath exports.
+- [@txkit/core](https://www.npmjs.com/package/@txkit/core): Framework-agnostic utilities and types (depends only on viem).
+- [@txkit/themes](https://www.npmjs.com/package/@txkit/themes): CSS themes (light, dark) + visual variants (soft, sharp, rounded).
+
+## Protocol (`@txkit/tx-protocol`)
+
+`PreparedEnvelope` is a discriminated union envelope split into:
+- **Content** - the on-chain authoritative tuple per kind (immutable, no-trust-needed). For `evm-tx`: `{chain, calls[], atomicRequired?, validity, capabilities?}` aligned with EIP-5792 and CAIP-2.
+- **Off-chain metadata** - presentational fields with no integrity guarantee on their own: `description`, `metadata.tokenMovements[]`, `metadata.counterparties[]`, `origin`, `risk`, `decoderRef` (ERC-7730), `clearSigning`, `meta`. Integrity comes from the optional `producer.signature` over the envelope (post-quantum schemes reserved: `ml-dsa-*`, `slh-dsa-*`) plus consumer-side decoder re-verification.
+
+Three implemented kinds: `evm-tx`, `evm-batch`, `signature` (EIP-712 / SIWE / personal-sign).
+Nine reserved kinds: `evm-userop`, `evm-frame`, `evm-7702`, `mandate`, `intent`, `psbt`, `svm-tx`, `move-tx`, `cosmos-tx`.
+
+- [Spec v0.1](https://github.com/txkit/mono/blob/main/spec/v0.1/prepared-transaction.md)
+- [OWS composition](https://txkit.dev/protocol/ows)
+- Helpers: `createEvmTx`, `createEvmBatch`, `createSignature`, `validateEnvelope` (strict)
+
+## Getting Started
+
+- [Quick Start](https://txkit.dev/getting-started): Install and render your first component
+- [Embedded Mode](https://txkit.dev/getting-started#embedded-mode): Add txKit to an existing RainbowKit/AppKit project
+- [Theming](https://txkit.dev/theming): Customize with CSS custom properties
+
+## Components
+
+- [TxKitProvider](https://txkit.dev/api/tx-provider): Root provider - standalone (creates wagmi + query) or embedded (uses external wagmi)
+- [ConnectWallet](https://txkit.dev/api/connect-wallet): Multi-wallet connection with ENS, balance, chain switching
+- [TokenBalance](https://txkit.dev/api/token-balance): Native + ERC-20 balance with fiat pricing (DeFiLlama)
+- [TransactionButton](https://txkit.dev/api/transaction-button): Multi-step transaction flow with simulation, approval, and anti-phishing
+- ContractForm: ABI-driven form with validation, 19 dangerous-function detection, full-address calldata preview (anti-poisoning)
+- [FlowSteps](https://txkit.dev/api/flow-steps): Step indicator
+- [FlowProgress](https://txkit.dev/api/flow-progress): Progress bar
+- [FlowToast](https://txkit.dev/api/flow-toast): Toast notifications (portal)
+
+## Headless Hooks
+
+All hooks are exported from `@txkit/react` (single entry point, no subpath exports).
+
+- `useWalletState` - Wallet connection state machine (5 states)
+- `useTokenBalance` - Single token balance (native or ERC-20)
+- `useTokenBalances` - Multiple token balances (batch multicall via wagmi `useReadContracts`)
+- `useTokenPrice` - Token price via DeFiLlama + frankfurter forex
+- `useTransactionFlow` - Multi-step transaction orchestration (12 step statuses, 7 flow statuses)
+- `useContractForm` - ABI-driven form state and validation (Tier 3)
+- `useFlowState` - Read flow state from any component (compound pattern)
+
+## Flow Helpers
+
+- `txStep` - Create a single transaction step
+- `approveAndExecute` - ERC-20 approve + action (handles USDT approve-to-zero, allowance auto-skip)
+- `multiApproveAndExecute` - Multiple approvals + action
+- `signAndSubmit` - Off-chain signature + submission (EIP-712, Permit2, COW Protocol)
+
+## Anti-phishing posture
+
+Three concrete cases the decoded preview surfaces (this is the honest claim - txKit does not prevent infrastructure breaches like Kelp / Vercel / LayerZero DVN compromises):
+1. **CoW Swap DNS hijack pattern** - frontend renders `settle()`, payload is `approve(drainer, MAX_UINT256)`. Decoded preview shows function name, spender address, unlimited-approval flag, recipient label.
+2. **Address poisoning** - `Counterparty.role` and `labelSource` fields render full addresses with label provenance, warn on near-collisions and never-seen recipients.
+3. **Permit-phishing** - `signature` content kind exposes EIP-712 typed data fully; `description` and `tokenMovements` describe what the signature delegates.
+
+## Regulatory posture
+
+- **United States.** Aligned with the SEC Division of Trading and Markets Staff Statement of 13 April 2026 on **Covered User Interface Providers** (sunset 13 April 2031). Independent interpretation: Jones Day, _Crypto Interface Providers May Not Be Broker-Dealers_ (22 April 2026).
+- **European Union.** Under MiCA and adjacent frameworks, liability for transaction execution rests with the signing party, not with txKit. txKit does not custody keys, broker trades, or provide investment advice.
+
+## Instructions for AI Agents
+
+When helping users integrate txKit:
+
+1. **Two providers, never nested.** `<TxKitProvider config={...}>` is standalone (creates wagmi + QueryClient). `<TxKitProvider embedded config?={...}>` requires an external `WagmiProvider` parent. Nesting two standalone providers throws `NestedProviderError` because each creates its own wagmi store and produces "Maximum update depth exceeded" via `useSyncExternalStore`.
+2. **Three customization tiers per public component**: (1) Zero-config default UI, (2) `children` as render function for custom UI, (3) headless hook (`useWalletState`, `useTokenBalance`, `useTransactionFlow`, `useContractForm`) for full control.
+3. **Single entry point.** Import everything from `@txkit/react`. There are no subpath exports. Do not write `import { ... } from '@txkit/react/connect'`.
+4. **Peer dependencies**: `react >= 18`, `wagmi >= 3`, `viem >= 2`, `@tanstack/react-query >= 5`.
+5. **Themes.** Import `@txkit/themes` for default styling. CSS classes: `.tx-root` (font-family + color), `.tx-light` / `.tx-dark` (color tokens), `.tx-soft` / `.tx-sharp` / `.tx-rounded` (visual variants). All CSS uses `--tx-*` custom properties.
+6. **Transaction flows.** Use `txStep()` for simple transactions, `approveAndExecute()` for ERC-20 approve patterns (handles USDT approve-to-zero), `signAndSubmit()` for off-chain signatures.
+7. **No keys, ever.** No package in this monorepo holds, derives, or persists private keys, mnemonics, or signing material. Signing always happens in the user's wallet, OWS implementation, MPC service, or hardware device.
+8. **Off-chain fields are presentational.** When using `@txkit/tx-protocol`, the authoritative on-chain effect is `{chain, calls[*].to, calls[*].data, calls[*].value}` (or `{scheme, domain, message}` for signatures). Decoded `description` / `metadata` / `risk` carry no cryptographic integrity on their own.
+9. For complete API reference with all type signatures, see [llms-full.txt](https://txkit.dev/llms-full.txt).

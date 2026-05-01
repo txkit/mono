@@ -1,0 +1,116 @@
+# FlowSteps
+
+Step indicator component for multi-step transaction flows. Automatically connects to TransactionButton's flow state through TxKitProvider context - place it anywhere in the component tree.
+
+## Quick Start
+
+```tsx
+import { TransactionButton, FlowSteps, approveAndExecute } from '@txkit/react'
+
+<FlowSteps />
+<TransactionButton
+  steps={approveAndExecute({ token, spender, amount, tx: swapTx })}
+  label="Swap"
+/>
+```
+
+## Three Tiers of Customization
+
+### Tier 1: Zero-Config
+
+```tsx
+<FlowSteps />
+```
+
+### Tier 2: Custom Render
+
+```tsx
+<FlowSteps>
+  {({ steps, currentStepIndex, completedCount, totalSteps }) => (
+    <ol>
+      {steps.map((step) => (
+        <li key={step.id} data-active={step.isCurrent}>
+          {step.label} - {step.status}
+        </li>
+      ))}
+    </ol>
+  )}
+</FlowSteps>
+```
+
+### Tier 3: Headless Hook
+
+```tsx
+import { useFlowState } from '@txkit/react'
+
+const entry = useFlowState()
+// entry?.flow.steps, entry?.flow.currentStepIndex, etc.
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | - | CSS class |
+| `children` | `(data: RenderData) => ReactNode` | - | Custom render function |
+| `data-testid` | `string` | - | Test ID for automated testing |
+| `flowId` | `string` | `'__default__'` | Flow ID to display |
+| `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | Orientation of step indicators |
+| `showCompleted` | `boolean` | `true` | Show completed steps |
+
+## Render Data
+
+```ts
+type FlowStepsRenderData = {
+  steps: Array<{
+    id: string
+    label: string
+    description?: string
+    status: StepStatus
+    isCurrent: boolean
+  }>
+  currentStepIndex: number
+  totalSteps: number
+  completedCount: number
+}
+```
+
+## Compound Pattern
+
+FlowSteps reads flow state from TxKitProvider context. It does not need to be a sibling of TransactionButton:
+
+```tsx
+<TxKitProvider config={config}>
+  <header>
+    <FlowSteps orientation="horizontal" />
+  </header>
+  <main>
+    <TransactionButton steps={steps} />
+  </main>
+</TxKitProvider>
+```
+
+For multiple parallel flows, use the `flowId` prop to match the TransactionButton's `flowId`.
+
+## Status Reference
+
+Each step has a `StepStatus`:
+
+| Status | Meaning |
+|---|---|
+| `pending` | Not started yet |
+| `skipped` | Skipped because precondition met (e.g., approval already granted) |
+| `simulating` | Pre-flight `eth_call` running |
+| `confirming-risk` | Awaiting user acknowledgement of a risk warning |
+| `simulation-failed` | `eth_call` reverted |
+| `signing` | Awaiting wallet signature |
+| `tx-pending` | Tx broadcast, awaiting receipt |
+| `waiting` | Generic wait state (e.g., between blocks) |
+| `completed` | Step finished successfully |
+| `error` | Step threw an unexpected error |
+| `rejected` | User rejected the wallet popup |
+| `canceled` | User canceled the flow |
+
+## Visual Layouts
+
+`<FlowSteps orientation="horizontal" />` (default) renders steps in a row with connecting line between indicators. `<FlowSteps orientation="vertical" />` renders steps in a column with vertical connectors - good for sidebars or modals.

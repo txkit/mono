@@ -1,0 +1,212 @@
+/* --- State Visualizer (embla carousel, single row, swipe + chevron) --- */
+
+.state-visualizer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  border-radius: var(--pg-radius-lg);
+  border: 1px solid var(--pg-border);
+  background: var(--pg-muted);
+}
+
+/* --- Mask layer (outer): soft fade at edges driven by data-can-prev/next.
+   Kept separate from the scroll viewport because mask-image on a scroll
+   container breaks scrollIntoView() in Chromium/WebKit. */
+
+.state-viz-mask {
+  --fade-left: 0px;
+  --fade-right: 0px;
+  flex: 1;
+  min-width: 0;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black var(--fade-left),
+    black calc(100% - var(--fade-right)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black var(--fade-left),
+    black calc(100% - var(--fade-right)),
+    transparent 100%
+  );
+  opacity: 0;
+  transition: --fade-left 200ms ease, --fade-right 200ms ease, opacity 180ms ease;
+}
+
+.state-visualizer[data-ready] .state-viz-mask {
+  opacity: 1;
+}
+
+.state-viz-mask[data-can-prev] {
+  --fade-left: 24px;
+}
+
+.state-viz-mask[data-can-next] {
+  --fade-right: 24px;
+}
+
+/* --- Scroll viewport (inner): native overflow-x, ref target for
+   scrollIntoView on the active pill. padding=6px 0 keeps room for the
+   3px outline so it isn't clipped. */
+
+.state-viz-embla {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px 0;
+  scrollbar-width: none;
+}
+
+.state-viz-embla::-webkit-scrollbar {
+  display: none;
+}
+
+.state-viz-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Required for embla: container must span total item width so the
+   * viewport clips real overflow. Without this the container shrinks
+   * to viewport width and embla thinks no scroll is needed. */
+  width: max-content;
+}
+
+.state-viz-item {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  flex: 0 0 auto;
+}
+
+/* --- Chevron arrows --- */
+
+.state-viz-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--pg-border);
+  border-radius: 9999px;
+  background: var(--pg-card);
+  color: var(--pg-fg);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.state-viz-arrow:hover:not(:disabled) {
+  border-color: var(--pg-border-hover);
+}
+
+.state-viz-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.state-viz-arrow:focus-visible {
+  outline: 2px solid var(--pg-primary);
+  outline-offset: 2px;
+}
+
+/* --- Pill-shaped state node (flex-shrink:0 so they don't collapse) --- */
+
+.state-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  border: 1px solid var(--pg-border);
+  background: var(--pg-bg);
+  font: inherit;
+  white-space: nowrap;
+  cursor: default;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.state-node.clickable {
+  cursor: pointer;
+}
+
+.state-node.active {
+  border-color: var(--state-color);
+  background: var(--pg-bg);
+  outline: 3px solid color-mix(in srgb, var(--state-color) 25%, transparent);
+  outline-offset: 0;
+}
+
+.state-node.past {
+  border-color: var(--pg-border);
+  background: var(--pg-bg);
+}
+
+.state-node.past:hover {
+  border-color: var(--pg-border-hover);
+}
+
+.state-node.future {
+  opacity: 0.4;
+  border-color: var(--pg-border);
+  background: var(--pg-bg);
+}
+
+.state-node.future:hover {
+  opacity: 0.7;
+  border-color: var(--pg-border-hover);
+}
+
+/* --- Dot inside the node --- */
+
+.state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: oklch(from var(--pg-muted-fg) l c h / 0.4);
+  flex-shrink: 0;
+  transition: background 200ms ease;
+}
+
+.state-node.active .state-dot,
+.state-node.past .state-dot {
+  background: var(--state-color);
+}
+
+/* --- Label --- */
+
+.state-label {
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'IBM Plex Mono', monospace;
+  text-transform: capitalize;
+  color: var(--pg-fg);
+}
+
+.state-node.active .state-label {
+  color: var(--pg-fg);
+  font-weight: 600;
+}
+
+.state-node.past .state-label,
+.state-node.future .state-label {
+  color: var(--pg-muted-fg);
+}
+
+/* --- Reduced motion --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .state-node,
+  .state-dot,
+  .state-viz-arrow {
+    transition: none;
+  }
+}
