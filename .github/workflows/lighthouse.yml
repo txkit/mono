@@ -21,7 +21,11 @@ jobs:
         target:
           - { app: docs, name: '@txkit/docs' }
           - { app: story, name: '@txkit/story' }
-        formFactor: [ desktop, mobile ]
+        # Mobile preset crashes consistently on Ubuntu CI runners — known
+        # LHCI issue with --no-sandbox + headless Chromium combinations.
+        # See lighthouse-ci issues/921. Local `pnpm exec lhci collect` works
+        # fine on macOS/Linux desktops with mobile preset; CI is the gap.
+        formFactor: [ desktop ]
     steps:
       - uses: actions/checkout@v4
 
