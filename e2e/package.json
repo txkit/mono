@@ -1,0 +1,24 @@
+{
+  "name": "txkit-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "description": "End-to-end Playwright tests for txKit. Standalone package, not part of the pnpm workspace. See README.md.",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:desktop": "playwright test --project=desktop",
+    "test:mobile": "playwright test --project=mobile",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "anvil": "./scripts/anvil-docker.sh",
+    "anvil:native": "./scripts/anvil-ci.sh",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.0",
+    "@types/node": "^22.0.0",
+    "ethers": "^6.13.0",
+    "viem": "^2.48.0",
+    "typescript": "^5.7.3"
+  }
+}
