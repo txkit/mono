@@ -1,8 +1,8 @@
 {
   "ci": {
     "collect": {
-      "startServerCommand": "pnpm --filter @txkit/docs preview --port 5173",
-      "url": [ "http://localhost:5173/" ],
+      "startServerCommand": "pnpm --filter @txkit/docs preview",
+      "url": [ "http://localhost:4173/" ],
       "numberOfRuns": 3,
       "settings": {
         "preset": "desktop",
