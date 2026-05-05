@@ -17,8 +17,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Validate the engines.node lower bound (20.18) and current LTS / latest
-        node: [ 20.18, 22, 24 ]
+        # Validate the engines.node lower bound (20.19) and current LTS / latest
+        node: [ 20.19, 22, 24 ]
     steps:
       - uses: actions/checkout@v4
 

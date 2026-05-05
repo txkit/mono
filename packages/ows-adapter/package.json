@@ -30,7 +30,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=20.18"
+    "node": ">=20.19"
   },
   "type": "module",
   "exports": {
