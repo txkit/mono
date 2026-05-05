@@ -2,12 +2,12 @@
   {
     "name": "@txkit/tx-protocol (full, with zod)",
     "path": "dist/index.js",
-    "limit": "20 KB"
+    "limit": "18 KB"
   },
   {
     "name": "@txkit/tx-protocol (without zod)",
     "path": "dist/index.js",
-    "limit": "8 KB",
+    "limit": "4 KB",
     "ignore": [ "zod" ]
   }
 ]

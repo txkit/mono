@@ -2,7 +2,7 @@
   {
     "name": "@txkit/react (full bundle, no peers)",
     "path": "dist/index.js",
-    "limit": "45 KB",
+    "limit": "40 KB",
     "ignore": [
       "react",
       "react-dom",

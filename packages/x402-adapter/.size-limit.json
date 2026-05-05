@@ -2,7 +2,7 @@
   {
     "name": "@txkit/x402-adapter",
     "path": "dist/index.js",
-    "limit": "4 KB",
+    "limit": "1 KB",
     "ignore": [ "viem", "@txkit/tx-protocol" ]
   }
 ]
