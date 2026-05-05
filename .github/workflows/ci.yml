@@ -35,6 +35,9 @@ jobs:
 
       - run: pnpm lint
 
-      - run: pnpm build
+      # Build only packages, not apps. Apps (docs/story) use Vite/Vocs that
+      # require Node 22+ (CustomEvent, fs.globSync); the packages we ship to
+      # npm support engines.node >=18.17 and that is what we validate here.
+      - run: pnpm --filter './packages/**' build
 
       - run: pnpm test
