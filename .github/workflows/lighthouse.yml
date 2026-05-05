@@ -21,10 +21,7 @@ jobs:
         target:
           - { app: docs, name: '@txkit/docs' }
           - { app: story, name: '@txkit/story' }
-        # Mobile preset crashes on Ubuntu runners (known LHCI issue with
-        # headless Chrome flags). Add chromeFlags settings + re-enable in
-        # a hardening PR.
-        formFactor: [ desktop ]
+        formFactor: [ desktop, mobile ]
     steps:
       - uses: actions/checkout@v4
 
