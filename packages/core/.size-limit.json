@@ -1,0 +1,8 @@
+[
+  {
+    "name": "@txkit/core (full)",
+    "path": "dist/index.js",
+    "limit": "15 KB",
+    "ignore": [ "viem" ]
+  }
+]

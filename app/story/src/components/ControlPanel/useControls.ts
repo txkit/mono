@@ -101,6 +101,70 @@ const getDefaults = <T extends ControlSchema>(schema: T): Record<string, Control
   return defaults
 }
 
+/** Coerce a URL search-param string into a ControlValue per the schema entry.
+ *  Returns `undefined` for invalid inputs (caller keeps the schema default). */
+const coerceUrlValue = (def: ControlDef, raw: string): ControlValue | undefined => {
+  if (def.type === 'boolean') {
+    if (/^(true|1|yes|on)$/i.test(raw)) {
+      return true
+    }
+    if (/^(false|0|no|off|)$/i.test(raw)) {
+      return false
+    }
+    return undefined
+  }
+
+  if (def.type === 'number') {
+    const parsed = Number(raw)
+    return Number.isFinite(parsed) ? parsed : undefined
+  }
+
+  if (def.type === 'state') {
+    return def.states.some((entry) => entry.id === raw) ? raw : undefined
+  }
+
+  if (def.type === 'select') {
+    return def.options.includes(raw) ? raw : undefined
+  }
+
+  if (def.type === 'string') {
+    return raw
+  }
+
+  // icon-source uses a structured object; not URL-hydratable in v0.1
+  return undefined
+}
+
+/** Read URL search params on first mount and merge into the initial values.
+ *  Story playground only; SSR-safe via typeof window check. */
+const applyUrlOverrides = <T extends ControlSchema>(
+  schema: T,
+  defaults: Record<string, ControlValue>,
+): Record<string, ControlValue> => {
+  if (typeof window === 'undefined') {
+    return defaults
+  }
+
+  const params = new URLSearchParams(window.location.search)
+  if (params.size === 0) {
+    return defaults
+  }
+
+  const next = { ...defaults }
+  for (const key of Object.keys(schema)) {
+    const raw = params.get(key)
+    if (raw === null) {
+      continue
+    }
+    const coerced = coerceUrlValue(schema[key], raw)
+    if (coerced !== undefined) {
+      next[key] = coerced
+    }
+  }
+
+  return next
+}
+
 const isValueAtDefault = (def: ControlDef, value: ControlValue): boolean => {
   if (def.type === 'icon-source') {
     return isIconSourceValue(value) && isIconSourceDefault(value)
@@ -109,7 +173,9 @@ const isValueAtDefault = (def: ControlDef, value: ControlValue): boolean => {
 }
 
 const useControls = <T extends ControlSchema>(schema: T): UseControlsReturn<T> => {
-  const [ values, setValues ] = useState<Record<string, ControlValue>>(() => getDefaults(schema))
+  const [ values, setValues ] = useState<Record<string, ControlValue>>(
+    () => applyUrlOverrides(schema, getDefaults(schema)),
+  )
 
   const setValue = useCallback((key: string, value: ControlValue) => {
     setValues((prev) => ({ ...prev, [key]: value }))

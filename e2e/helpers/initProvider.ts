@@ -25,10 +25,13 @@ type InitProviderInput = {
 }
 
 const buildProviderScript = (address: string, chainIdHex: string): string => (
+  // Placeholders appear in both the JSDoc comment block AND the actual code;
+  // String.replace with a string arg only swaps the first occurrence (in the
+  // comment), leaving the real declarations unreplaced. Use a global regex.
   providerScriptTemplate
-    .replace('__MOCK_CHAINS_JSON__', () => JSON.stringify(chains))
-    .replace('__MOCK_DEFAULT_CHAIN_ID_HEX__', () => chainIdHex)
-    .replace('__MOCK_ADDRESS__', () => address)
+    .replace(/__MOCK_CHAINS_JSON__/g, () => JSON.stringify(chains))
+    .replace(/__MOCK_DEFAULT_CHAIN_ID_HEX__/g, () => chainIdHex)
+    .replace(/__MOCK_ADDRESS__/g, () => address)
 )
 
 const exposeSigner = async (page: Page, privateKey: string): Promise<void> => {

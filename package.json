@@ -24,6 +24,8 @@
     "lint:style:fix": "eslint . --fix",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "size": "pnpm --filter \"./packages/{core,react,themes,tx-protocol,tx-decoder,ows-adapter,x402-adapter}\" exec size-limit",
+    "size:why": "pnpm --filter \"./packages/{core,react,themes,tx-protocol,tx-decoder,ows-adapter,x402-adapter}\" exec size-limit --why",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "pnpm build && changeset publish"
@@ -49,11 +51,13 @@
     "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.30.0",
     "@eslint/js": "^10.0.1",
+    "@size-limit/preset-small-lib": "^12.1.0",
     "eslint": "^10.1.0",
     "eslint-plugin-react-hooks": "^7.0.1",
     "postcss": "^8.5.8",
     "postcss-cli": "^11.0.1",
     "postcss-import": "^16.1.1",
+    "size-limit": "^12.1.0",
     "turbo": "^2.9.6",
     "typescript-eslint": "^8.57.1",
     "vitest": "^4.1.1"

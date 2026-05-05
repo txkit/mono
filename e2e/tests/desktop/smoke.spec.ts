@@ -13,7 +13,6 @@ test('story playground reachable + provider injects', async ({ page, wallet }) =
   await wallet.init({ chain: 'sepolia' })
   await page.goto('/')
 
-  // Verify our injected window.ethereum is what the page sees.
   const ethereumInfo = await page.evaluate(() => ({
     isMetaMask: (window as any).ethereum?.isMetaMask,
     selectedAddress: (window as any).ethereum?.selectedAddress,

@@ -1,0 +1,8 @@
+[
+  {
+    "name": "@txkit/themes (CSS, gzip)",
+    "path": "dist/index.css",
+    "limit": "10 KB",
+    "gzip": true
+  }
+]

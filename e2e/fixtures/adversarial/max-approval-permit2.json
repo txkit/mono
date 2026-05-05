@@ -1,0 +1,58 @@
+{
+  "version": "0.1",
+  "kind": "signature",
+  "envelope": {
+    "id": "test-max-approval-permit2",
+    "chainId": "eip155:11155111",
+    "origin": {
+      "url": "https://story.txkit.dev",
+      "verifyStatus": "verified"
+    },
+    "producer": {
+      "id": "txkit-e2e-test",
+      "name": "txKit E2E"
+    },
+    "validity": {
+      "notAfter": "2099-01-01T00:00:00.000Z"
+    }
+  },
+  "content": {
+    "signatureKind": "eip712",
+    "typedData": {
+      "domain": {
+        "name": "Permit2",
+        "chainId": 11155111,
+        "verifyingContract": "0x000000000022d473030f116ddee9f6b43ac78ba3"
+      },
+      "types": {
+        "PermitSingle": [
+          { "name": "details", "type": "PermitDetails" },
+          { "name": "spender", "type": "address" },
+          { "name": "sigDeadline", "type": "uint256" }
+        ],
+        "PermitDetails": [
+          { "name": "token", "type": "address" },
+          { "name": "amount", "type": "uint160" },
+          { "name": "expiration", "type": "uint48" },
+          { "name": "nonce", "type": "uint48" }
+        ]
+      },
+      "primaryType": "PermitSingle",
+      "message": {
+        "details": {
+          "token": "0x6b175474e89094c44da98b954eedeac495271d0f",
+          "amount": "1461501637330902918203684832716283019655932542975",
+          "expiration": "281474976710655",
+          "nonce": "0"
+        },
+        "spender": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+        "sigDeadline": "1893456000"
+      }
+    },
+    "humanReadable": {
+      "label": "Permit2 max approval",
+      "description": "Grant unlimited DAI spending to 0xdef1...eff via Permit2",
+      "isMaxAmount": true
+    }
+  }
+}

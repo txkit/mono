@@ -1,0 +1,37 @@
+{
+  "requestId": "e2e-test-warn-drain",
+  "action": "WARN",
+  "warnings": [
+    {
+      "kind": "UNLIMITED_ALLOWANCE_TO_NFTS",
+      "message": "This transaction grants unlimited approval. The approved address could drain your tokens.",
+      "severity": "WARNING"
+    }
+  ],
+  "simulationResults": {
+    "expectedStateChanges": [
+      {
+        "humanReadableDiff": "Approve unlimited DAI",
+        "rawInfo": {
+          "kind": "ERC20_APPROVAL",
+          "data": {
+            "name": "Dai Stablecoin",
+            "symbol": "DAI",
+            "decimals": 18,
+            "amount": {
+              "before": "0",
+              "after": "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+            },
+            "owner": "0x0000000000000000000000000000000000000001",
+            "spender": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
+            "contract": {
+              "address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+              "kind": "ACCOUNT"
+            }
+          }
+        }
+      }
+    ],
+    "error": null
+  }
+}

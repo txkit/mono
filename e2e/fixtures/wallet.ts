@@ -23,13 +23,14 @@ type Internal = {
 }
 
 
-const formatTestid = (id: string): string => `[data-testid="${id}"]`
-
-
 /**
- * Wallet fixture. Call `wallet.init()` BEFORE `page.goto()` so that the
- * EIP-1193 provider is injected on the first frame. After the page loads,
- * call `wallet.connect()` to drive the ConnectWallet UI through the modal.
+ * Wallet fixture. Call `wallet.init()` BEFORE `page.goto()` so the
+ * EIP-1193 provider is injected on the first frame. After the page
+ * loads, call `wallet.connect()` to drive the ConnectWallet UI.
+ *
+ * Selectors prefer roles over testids — txKit library code has no
+ * internal data-testid attributes; story playground may add wrappers
+ * with `data-testid` if a role-based selector is ambiguous.
  */
 export const setupWallet = async ({ page }: { page: Page }): Promise<WalletFixture> => {
   const internal: Internal = { address: null }
@@ -52,18 +53,26 @@ export const setupWallet = async ({ page }: { page: Page }): Promise<WalletFixtu
         throw new Error('wallet.connect(): call wallet.init() first')
       }
 
-      // Click the ConnectWallet button. Top-level testid is forwarded
-      // from the `data-testid` prop in stories; sub-buttons need their
-      // own testids (added in the data-testid audit pass).
-      await page.locator(formatTestid('connect-wallet-button')).first().click()
+      // ConnectWallet renders a button labeled "Connect Wallet" by default.
+      // Story may override the label via the `label` prop — specs that
+      // change the label should pass it explicitly via wallet.connect().
+      await page.getByRole('button', { name: /connect wallet/i }).first().click()
 
-      // Pick the first wallet in the modal. Our injected provider
-      // announces itself via EIP-6963 so it lands as a top option.
-      await page.locator(formatTestid('wallet-modal')).waitFor()
-      await page.locator(formatTestid('wallet-modal-item')).first().click()
+      // Wait for the modal dialog to appear, then click the EIP-6963
+      // provider entry. Our injected provider announces itself as
+      // "txKit E2E Wallet" so it shows up in the wallet list.
+      const modal = page.getByRole('dialog', { name: /connect wallet/i })
+      await modal.waitFor({ state: 'visible' })
 
-      // Wait for connected state to render.
-      await page.locator(formatTestid('connected-address')).waitFor({ timeout: 10_000 })
+      await modal.getByRole('button', { name: /txkit e2e wallet/i }).click()
+
+      // Connected state renders address + balance in the trigger button.
+      // We wait for the connect-wallet button label to change away from
+      // the "Connect Wallet" CTA — most reliable indicator across themes.
+      await page.waitForFunction(() => {
+        const btn = document.querySelector('button[class*="tx-cw-button"]')
+        return btn && !/connect wallet/i.test(btn.textContent || '')
+      }, { timeout: 10_000 })
     },
 
     address: () => {

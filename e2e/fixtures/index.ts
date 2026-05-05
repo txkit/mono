@@ -2,11 +2,13 @@ import { test as base, expect } from '@playwright/test'
 
 import { setupWallet, type WalletFixture } from './wallet'
 import { mockRiskProvider, type RiskMock } from './risk'
+import { setupA11y, type A11yFixture } from './a11y'
 
 
 type Fixtures = {
   wallet: WalletFixture
   risk: RiskMock
+  a11y: A11yFixture
 }
 
 
@@ -32,6 +34,9 @@ export const test = base.extend<Fixtures>({
     const mock = mockRiskProvider({ page })
     await use(mock)
     await mock.reset()
+  },
+  a11y: async ({ page }, use) => {
+    await use(setupA11y({ page }))
   },
 })
 

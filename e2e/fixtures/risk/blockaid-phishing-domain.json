@@ -1,0 +1,20 @@
+{
+  "request_id": "e2e-test-blockaid-phishing",
+  "result_type": "Malicious",
+  "reason": "phishing_domain_validation",
+  "description": "The domain associated with this transaction has been flagged as a phishing site.",
+  "features": [
+    {
+      "feature_id": "PHISHING_DOMAIN",
+      "description": "Domain matches known phishing site pattern",
+      "type": "Malicious"
+    }
+  ],
+  "simulation": {
+    "state_changes": []
+  },
+  "validation": {
+    "classification": "phishing",
+    "reason": "domain_in_phishing_database"
+  }
+}

@@ -1,0 +1,15 @@
+[
+  {
+    "name": "@txkit/react (full bundle, no peers)",
+    "path": "dist/index.js",
+    "limit": "45 KB",
+    "ignore": [
+      "react",
+      "react-dom",
+      "viem",
+      "wagmi",
+      "@tanstack/react-query",
+      "@txkit/core"
+    ]
+  }
+]

@@ -1,0 +1,37 @@
+{
+  "code": 1,
+  "message": "ok",
+  "result": {
+    "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef": {
+      "is_honeypot": "1",
+      "honeypot_with_same_creator": "0",
+      "is_open_source": "0",
+      "is_proxy": "0",
+      "is_mintable": "0",
+      "can_take_back_ownership": "0",
+      "owner_change_balance": "0",
+      "hidden_owner": "1",
+      "selfdestruct": "0",
+      "external_call": "1",
+      "buy_tax": "99",
+      "sell_tax": "99",
+      "cannot_buy": "0",
+      "cannot_sell_all": "1",
+      "slippage_modifiable": "1",
+      "is_blacklisted": "0",
+      "is_whitelisted": "0",
+      "is_anti_whale": "0",
+      "anti_whale_modifiable": "0",
+      "trading_cooldown": "0",
+      "personal_slippage_modifiable": "0",
+      "token_name": "HoneyToken",
+      "token_symbol": "HONEY",
+      "holder_count": "42",
+      "total_supply": "1000000000000000000000000",
+      "lp_holder_count": "1",
+      "lp_total_supply": "1000000000000000000",
+      "is_true_token": "0",
+      "is_airdrop_scam": "0"
+    }
+  }
+}

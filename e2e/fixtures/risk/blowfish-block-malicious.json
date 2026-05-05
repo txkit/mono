@@ -1,0 +1,19 @@
+{
+  "requestId": "e2e-test-block-malicious",
+  "action": "BLOCK",
+  "warnings": [
+    {
+      "kind": "KNOWN_MALICIOUS",
+      "message": "This transaction interacts with a known malicious contract. Do not proceed.",
+      "severity": "CRITICAL"
+    }
+  ],
+  "simulationResults": {
+    "expectedStateChanges": [],
+    "error": null
+  },
+  "validation": {
+    "classification": "malicious",
+    "description": "Known phishing contract detected"
+  }
+}

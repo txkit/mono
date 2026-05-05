@@ -1,0 +1,9 @@
+{
+  "requestId": "e2e-test-safe",
+  "action": "NONE",
+  "warnings": [],
+  "simulationResults": {
+    "expectedStateChanges": [],
+    "error": null
+  }
+}

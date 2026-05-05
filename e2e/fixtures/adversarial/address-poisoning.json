@@ -1,0 +1,48 @@
+{
+  "version": "0.1",
+  "kind": "evm-tx",
+  "envelope": {
+    "id": "test-address-poisoning",
+    "chainId": "eip155:11155111",
+    "origin": {
+      "url": "https://story.txkit.dev",
+      "verifyStatus": "verified"
+    },
+    "producer": {
+      "id": "txkit-e2e-test",
+      "name": "txKit E2E"
+    },
+    "validity": {
+      "notAfter": "2099-01-01T00:00:00.000Z"
+    }
+  },
+  "content": {
+    "to": "0x742d35cc6634c0532925a3b844bc454e4438f44e",
+    "value": "0x2386f26fc10000",
+    "data": "0x",
+    "counterparty": {
+      "address": "0x742d35cc6634c0532925a3b844bc454e4438f44e",
+      "role": "recipient",
+      "labelSource": "user-history",
+      "label": "My savings wallet",
+      "similarToRecent": {
+        "address": "0x742D35Cc6634C0532925a3b844Bc454e4438F44E",
+        "similarity": "first-and-last-4-match",
+        "receivedValueEth": "2.5",
+        "lastSeen": "2026-04-28T12:00:00.000Z"
+      }
+    },
+    "tokenMovements": [
+      {
+        "token": "0x0000000000000000000000000000000000000000",
+        "symbol": "ETH",
+        "decimals": 18,
+        "amount": "10000000000000000",
+        "from": "0x0000000000000000000000000000000000000001",
+        "to": "0x742d35cc6634c0532925a3b844bc454e4438f44e",
+        "kind": "transfer",
+        "standard": "native"
+      }
+    ]
+  }
+}

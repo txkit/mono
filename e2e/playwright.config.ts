@@ -52,6 +52,11 @@ export default defineConfig({
       testMatch: /tests\/mobile\/.*\.spec\.ts$/,
       use: { ...devices['iPhone 14'] },
     },
+    {
+      name: 'a11y',
+      testMatch: /tests\/a11y\/.*\.spec\.ts$/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
+    },
   ],
 
   webServer: process.env.E2E_BASE_URL ? undefined : [
@@ -59,14 +64,14 @@ export default defineConfig({
       command: 'pnpm --filter @txkit/story dev',
       url: 'http://localhost:5173',
       reuseExistingServer: !process.env.CI,
-      timeout: 30_000,
+      timeout: 60_000,
       cwd: '..',
     },
     {
       command: './scripts/anvil-ci.sh',
       url: 'http://localhost:8545',
       reuseExistingServer: !process.env.CI,
-      timeout: 30_000,
+      timeout: 60_000,
     },
   ],
 })

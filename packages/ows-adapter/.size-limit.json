@@ -1,0 +1,8 @@
+[
+  {
+    "name": "@txkit/ows-adapter",
+    "path": "dist/index.js",
+    "limit": "5 KB",
+    "ignore": [ "viem", "@txkit/tx-protocol" ]
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "version": "0.1",
+  "kind": "evm-batch",
+  "envelope": {
+    "id": "test-delegatecall-non-safe",
+    "chainId": "eip155:11155111",
+    "origin": {
+      "url": "https://story.txkit.dev",
+      "verifyStatus": "verified"
+    },
+    "producer": {
+      "id": "txkit-e2e-test",
+      "name": "txKit E2E"
+    },
+    "validity": {
+      "notAfter": "2099-01-01T00:00:00.000Z"
+    }
+  },
+  "content": {
+    "calls": [
+      {
+        "to": "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+        "value": "0x0",
+        "data": "0x12345678",
+        "operation": "delegatecall",
+        "label": "Unknown delegatecall target"
+      }
+    ],
+    "atomicRequired": true,
+    "risk": {
+      "action": "warn",
+      "reason": "delegatecall to non-Safe target - receiver can modify caller storage"
+    }
+  }
+}
