@@ -16,6 +16,7 @@
     "@astrojs/sitemap": "^3.7.2",
     "@txkit/themes": "workspace:*",
     "@vercel/analytics": "^1.4.1",
+    "@vercel/speed-insights": "^2.0.0",
     "@web3icons/react": "^4.1.17",
     "astro": "^6.3.0",
     "motion": "^12.23.24",

@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css'
+import Analytics from '@vercel/analytics/astro'
+import SpeedInsights from '@vercel/speed-insights/astro'
 
 type Props = {
   title?: string,
@@ -57,6 +59,11 @@ const ogImageUrl = new URL(ogImage, siteUrl).href
     <!-- Preload critical fonts (woff2 - Inter + IBM Plex Mono via Google Fonts) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- DNS prefetch for cross-domain links (GitHub, docs, npm) -->
+    <link rel="dns-prefetch" href="https://github.com" />
+    <link rel="dns-prefetch" href="https://docs.txkit.dev" />
+    <link rel="dns-prefetch" href="https://www.npmjs.com" />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap"
@@ -173,6 +180,8 @@ const ogImageUrl = new URL(ogImage, siteUrl).href
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <slot />
+    <Analytics />
+    <SpeedInsights />
   </body>
 </html>
 

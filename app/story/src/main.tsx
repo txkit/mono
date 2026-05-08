@@ -1,4 +1,7 @@
 import { createRoot } from 'react-dom/client'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
+
 import App from './App'
 import '@txkit/themes/index.css'
 import './components/ControlPanel/ControlPanel.css'
@@ -12,5 +15,9 @@ import './App.css'
 // references from getSnapshot, causing infinite re-renders with React 19 StrictMode.
 // Re-enable after wagmi ships React 19 StrictMode compatibility fix.
 createRoot(document.getElementById('root')!).render(
-  <App />,
+  <>
+    <App />
+    <Analytics />
+    <SpeedInsights />
+  </>,
 )

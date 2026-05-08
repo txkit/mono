@@ -11,6 +11,15 @@ export default defineConfig({
     dark: '/logo-dark.svg',
   },
   aiCta: false,
+  head: (
+    <>
+      <script defer src="/_vercel/insights/script.js"></script>
+      <script defer src="/_vercel/speed-insights/script.js"></script>
+      <link rel="dns-prefetch" href="https://github.com" />
+      <link rel="dns-prefetch" href="https://www.npmjs.com" />
+      <link rel="dns-prefetch" href="https://txkit.dev" />
+    </>
+  ),
   sidebar: [
     { text: 'Introduction', link: '/' },
     { text: 'Getting Started', link: '/getting-started' },
