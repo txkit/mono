@@ -1,0 +1,29 @@
+---
+import TxKitMark from '../icons/TxKitMark.astro'
+import './Header.css'
+---
+
+<header class="header" data-testid="landing-header">
+  <div class="container header__inner">
+    <a class="header__logo" href="/" aria-label="txKit home">
+      <TxKitMark size={28} />
+      <span class="header__wordmark">txKit</span>
+    </a>
+
+    <nav class="header__nav" aria-label="Primary">
+      <a class="header__link" href="https://docs.txkit.dev" target="_blank" rel="noreferrer">Docs</a>
+      <a class="header__link" href="https://github.com/txkit/mono" target="_blank" rel="noreferrer">GitHub</a>
+    </nav>
+
+    <div class="header__actions">
+      <a
+        class="header__cta header__cta--primary"
+        href="https://github.com/txkit/mono"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Star on GitHub →
+      </a>
+    </div>
+  </div>
+</header>

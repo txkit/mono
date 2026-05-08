@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://txkit.dev/logo.svg" width="64" height="64" alt="txKit" />
+  <img src="./logo.svg" width="64" height="64" alt="txKit" />
 </p>
 
 <h1 align="center">txKit</h1>
@@ -86,7 +86,7 @@ const App = () => (
 | Package | Version |
 |---------|---------|
 | `react` / `react-dom` | >= 18 |
-| `wagmi` | >= 2 |
+| `wagmi` | >= 3 |
 | `viem` | >= 2 |
 | `@tanstack/react-query` | >= 5 |
 
@@ -118,6 +118,7 @@ function SendButton() {
 
 ## Components (v0.1.0-alpha)
 
+- **TxKitProvider** - root provider, wraps your app with wagmi + TanStack Query + theme tokens (standalone or embedded mode)
 - **ConnectWallet** - multi-wallet connection with ENS, balance display, chain switching
 - **TokenBalance** - native + ERC-20 balance with fiat pricing and auto-formatting
 - **TransactionButton** - multi-step transaction flow with simulation, approval, and anti-phishing
@@ -128,7 +129,7 @@ Every component supports three customization levels:
 2. **Custom render** - `children` as render function for custom UI
 3. **Headless hooks** - full control, bring your own UI
 
-**Coming in v0.2.0:** `ContractForm` (ABI-driven form generation), `SwapWidget`, `StakingPanel`, `ApprovalManager`.
+**Coming in v0.2:** `<TxApproval />` (review-before-sign with decode + simulate + risk badges), `<AllowanceGrant />` (policy/limit grants for session keys, agent budgets, multisig spending policies), `<TxHistory />`, `<CollateralRiskBadge />`, ERC-7715 + Skyfire adapters.
 
 ## Protocol
 
@@ -201,15 +202,20 @@ pnpm lint             # Lint
 
 ```
 packages/
-  core/         - Framework-agnostic types, utilities, constants
-  react/        - React components and hooks
-  themes/       - CSS themes and visual variants
-  tx-protocol/  - Open PreparedTransaction protocol (types + zod schemas)
-    spec/v0.1/  - Canonical RFC for the protocol
-    examples/   - Runnable TypeScript examples
+  core/           - Framework-agnostic types, utilities, constants
+  react/          - React components and hooks
+  themes/         - CSS themes and visual variants
+  tx-protocol/    - Open PreparedTransaction protocol (types + zod schemas)
+    spec/v0.1/    - Canonical RFC for the protocol
+    examples/     - Runnable TypeScript examples
+  tx-decoder/     - Calldata decoder (ERC-7730 + ABI fallback)
+  ows-adapter/    - MoonPay Open Wallet Standard bridge
+  x402-adapter/   - x402 HTTP payments bridge
+  mcp-server/     - MCP server (not published, see SECURITY.md)
 app/
-  docs/         - Documentation site (Vocs)
-  story/        - Component playground (Vite)
+  docs/           - Documentation site (Vocs) - docs.txkit.dev
+  landing/        - Marketing landing (Astro) - txkit.dev
+  story/          - Component playground (Vite)
 ```
 
 ## Known limitations (v0.1.0-alpha)

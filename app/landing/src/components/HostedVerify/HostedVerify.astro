@@ -1,0 +1,47 @@
+---
+import './HostedVerify.css'
+---
+
+<section class="hosted" id="hosted-verification" data-testid="landing-hosted">
+  <div class="container">
+    <header class="hosted__header">
+      <h2 class="hosted__heading">Run verification yourself, or let us run it for you.</h2>
+    </header>
+
+    <div class="hosted__grid">
+      <article class="hosted__card hosted__card--self">
+        <span class="hosted__tag mono">Open</span>
+        <h3 class="hosted__title">Self-host</h3>
+        <p class="hosted__desc">
+          Decode and simulate against your own RPC. Full source on GitHub.
+          Apache 2.0 forever.
+        </p>
+        <ul class="hosted__list">
+          <li>Decoder registry of common contracts</li>
+          <li>Forked-state simulation via your provider</li>
+          <li>No backend dependency</li>
+        </ul>
+        <a class="hosted__link" href="https://github.com/txkit/mono">View on GitHub →</a>
+      </article>
+
+      <article class="hosted__card hosted__card--saas">
+        <span class="hosted__tag hosted__tag--accent mono">Closed beta · Q1 2027</span>
+        <h3 class="hosted__title">verify.txkit.dev</h3>
+        <p class="hosted__desc">
+          A managed verification endpoint. Simulation, decoder registry,
+          audit log, and policy engine maintained for you.
+        </p>
+        <ul class="hosted__list">
+          <li>Tenderly-grade simulation infra</li>
+          <li>Audit log + agent attribution</li>
+          <li>Policy engine (allowance, throttle, deny lists)</li>
+          <li>SLA + status page</li>
+        </ul>
+        <p class="hosted__counter mono">Closed beta. Onboarding 3 design partners.</p>
+        <a class="hosted__link" href="mailto:hello@txkit.dev?subject=txKit%20design%20partner%20interest">
+          Apply for design-partner program →
+        </a>
+      </article>
+    </div>
+  </div>
+</section>

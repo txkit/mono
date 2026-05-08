@@ -1,0 +1,95 @@
+---
+import './Components.css'
+
+const STORY_BASE = 'https://story.txkit.dev'
+
+const components = [
+  {
+    name: '<TxKitProvider />',
+    desc: 'Wraps your app with wagmi, viem, TanStack Query, and theme tokens.',
+    status: 'shipped',
+    href: `${ STORY_BASE }/#txkitprovider`,
+  },
+  {
+    name: '<ConnectWallet />',
+    desc: 'Multi-wallet picker, ENS, balance, wrong-chain auto-switch.',
+    status: 'shipped',
+    href: `${ STORY_BASE }/#connectwallet`,
+  },
+  {
+    name: '<TokenBalance />',
+    desc: 'ERC-20 balance with decimals, polling, USD equivalent.',
+    status: 'shipped',
+    href: `${ STORY_BASE }/#tokenbalance`,
+  },
+  {
+    name: '<TransactionButton />',
+    desc: 'Multi-step flow: approve, sign, wait. Compose any number of steps.',
+    status: 'shipped',
+    href: `${ STORY_BASE }/#transactionbutton`,
+  },
+  {
+    name: '<FlowSteps />',
+    desc: 'Step indicator that reads tx state from TxKitProvider context.',
+    status: 'shipped',
+    href: `${ STORY_BASE }/#flowsteps`,
+  },
+  {
+    name: '<FlowToast />',
+    desc: 'Status toast with retry, explorer link, and reduced-motion support.',
+    status: 'shipped',
+    href: `${ STORY_BASE }/#flowtoast`,
+  },
+  {
+    name: '<TxApproval />',
+    desc: 'Review modal: decoded calldata, simulation result, risk badges.',
+    status: 'v0.2',
+    href: null,
+  },
+  {
+    name: '<AllowanceGrant />',
+    desc: 'Grant a spending policy: token + destination + function + amount + period.',
+    status: 'v0.2',
+    href: null,
+  },
+]
+---
+
+<section class="components" id="components" data-testid="landing-components">
+  <div class="container">
+    <header class="components__header">
+      <h2 class="components__heading">Components</h2>
+      <p class="components__sub">
+        Compose-ready React components on top of the open spec.
+      </p>
+    </header>
+
+    <div class="components__grid">
+      { components.map((comp) => {
+        const cardContent = (
+          <>
+            <code class="components__name mono">{ comp.name }</code>
+            <p class="components__desc">{ comp.desc }</p>
+            <span class={`components__status components__status--${ comp.status }`}>
+              { comp.status === 'shipped' ? 'Open in playground →' : 'v0.2 (forthcoming)' }
+            </span>
+          </>
+        )
+
+        if (comp.href) {
+          return (
+            <a class="components__card components__card--link" href={ comp.href } target="_blank" rel="noreferrer">
+              { cardContent }
+            </a>
+          )
+        }
+
+        return (
+          <article class="components__card">
+            { cardContent }
+          </article>
+        )
+      }) }
+    </div>
+  </div>
+</section>

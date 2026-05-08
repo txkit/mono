@@ -1,0 +1,62 @@
+---
+import './DecodePreviewSimulate.css'
+
+type IconKey = 'decode' | 'preview' | 'simulate'
+
+const items: { iconKey: IconKey, title: string, description: string, code: string }[] = [
+  {
+    iconKey: 'decode',
+    title: 'Decode',
+    description: 'Calldata becomes a sentence. ABI lookups, ERC-7730 clear-signing, and a custom decoder registry.',
+    code: 'decode(envelope) ⇒\n  USDC.transfer(\n    0x742d…7E91,\n    250.00\n  )',
+  },
+  {
+    iconKey: 'preview',
+    title: 'Preview',
+    description: 'See every state change before signing. Token transfers, allowance grants, NFT moves, gas costs.',
+    code: 'preview(envelope) ⇒\n  -250.00 USDC\n  -0.00012 ETH gas\n  +allowance: 0',
+  },
+  {
+    iconKey: 'simulate',
+    title: 'Simulate',
+    description: 'Catch reverts before they cost gas. Forked-state simulation surfaces slippage and MEV exposure.',
+    code: 'simulate(envelope) ⇒\n  status: ok\n  trace: 4 calls\n  mev_risk: low',
+  },
+]
+---
+
+<section class="dps" id="how-it-works" data-testid="landing-dps">
+  <div class="container">
+    <div class="dps__grid">
+      { items.map((item) => (
+        <article class="dps__col">
+          <span class="dps__icon" aria-hidden="true">
+            { item.iconKey === 'decode' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1" />
+                <path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1" />
+              </svg>
+            ) }
+            { item.iconKey === 'preview' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            ) }
+            { item.iconKey === 'simulate' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="6" y1="3" x2="6" y2="15" />
+                <circle cx="18" cy="6" r="3" />
+                <circle cx="6" cy="18" r="3" />
+                <path d="M15 6a9 9 0 0 0-9 9" />
+              </svg>
+            ) }
+          </span>
+          <h2 class="dps__title">{ item.title }</h2>
+          <p class="dps__description">{ item.description }</p>
+          <pre class="dps__code mono">{ item.code }</pre>
+        </article>
+      )) }
+    </div>
+  </div>
+</section>

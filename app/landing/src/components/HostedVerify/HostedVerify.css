@@ -1,0 +1,122 @@
+.hosted {
+  padding: var(--txkit-space-16) 0;
+  border-top: 1px solid var(--txkit-color-border);
+}
+
+.hosted__header {
+  margin-bottom: var(--txkit-space-12);
+  max-width: 720px;
+}
+
+.hosted__heading {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.hosted__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--txkit-space-6);
+}
+
+.hosted__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--txkit-space-3);
+  padding: var(--txkit-space-8);
+  background: var(--txkit-color-bg-elevated);
+  border: 1px solid var(--txkit-color-border);
+  border-radius: var(--txkit-radius-lg);
+  position: relative;
+}
+
+.hosted__card--saas {
+  border-color: rgba(67, 56, 202, 0.4);
+}
+
+.hosted__tag {
+  align-self: flex-start;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--txkit-color-text-tertiary);
+  border: 1px solid var(--txkit-color-border-strong);
+  padding: 4px 10px;
+  border-radius: var(--txkit-radius-pill);
+}
+
+.hosted__tag--accent {
+  color: var(--txkit-color-primary);
+  border-color: rgba(67, 56, 202, 0.4);
+  background: rgba(67, 56, 202, 0.06);
+}
+
+.hosted__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0;
+  font-family: var(--txkit-font-mono);
+}
+
+.hosted__desc {
+  font-size: 0.9375rem;
+  color: var(--txkit-color-text-secondary);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.hosted__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--txkit-space-2);
+}
+
+.hosted__list li {
+  font-size: 0.875rem;
+  color: var(--txkit-color-text-secondary);
+  padding-left: var(--txkit-space-4);
+  position: relative;
+}
+
+.hosted__list li::before {
+  content: '+';
+  position: absolute;
+  left: 0;
+  color: var(--txkit-color-primary);
+  font-family: var(--txkit-font-mono);
+}
+
+.hosted__counter {
+  font-size: 0.8125rem;
+  color: var(--txkit-color-text-tertiary);
+  margin: var(--txkit-space-2) 0 0;
+  letter-spacing: -0.01em;
+}
+
+.hosted__link {
+  margin-top: var(--txkit-space-2);
+  font-size: 0.9375rem;
+  color: var(--txkit-color-text);
+  border-bottom: 1px solid var(--txkit-color-border-strong);
+  padding-bottom: 2px;
+  align-self: flex-start;
+  transition: border-color var(--txkit-duration-fast) var(--txkit-easing);
+}
+
+.hosted__link:hover {
+  border-bottom-color: var(--txkit-color-primary);
+}
+
+@media (max-width: 720px) {
+  .hosted__grid {
+    grid-template-columns: 1fr;
+  }
+}

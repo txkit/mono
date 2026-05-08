@@ -1,0 +1,150 @@
+/* txKit landing global styles - dark default + restrained palette per CLAUDE.md.
+   Re-uses CSS variables from @txkit/themes where applicable, plus landing-only
+   tokens for hero choreography that aren't part of the component library. */
+
+
+:root {
+  /* Brand palette (mirrors @txkit/themes intent, kept local for SSG) */
+  --txkit-color-primary: #4338CA;
+  --txkit-color-primary-hover: #3730A3;
+  --txkit-color-violet: #7C3AED;
+  --txkit-color-lime: #84CC16;
+  --txkit-color-amber: #F59E0B;
+  --txkit-color-red: #EF4444;
+
+  /* Surface */
+  --txkit-color-bg: #0A0A0F;
+  --txkit-color-bg-elevated: #0F0F14;
+  --txkit-color-bg-subtle: rgba(255, 255, 255, 0.02);
+
+  /* Text */
+  --txkit-color-text: #FFFFFF;
+  --txkit-color-text-secondary: #94A3B8;
+  --txkit-color-text-tertiary: #64748B;
+
+  /* Borders */
+  --txkit-color-border: rgba(255, 255, 255, 0.06);
+  --txkit-color-border-strong: rgba(255, 255, 255, 0.12);
+
+  /* Type */
+  --txkit-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --txkit-font-mono: 'IBM Plex Mono', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Spacing scale */
+  --txkit-space-1: 0.25rem;
+  --txkit-space-2: 0.5rem;
+  --txkit-space-3: 0.75rem;
+  --txkit-space-4: 1rem;
+  --txkit-space-6: 1.5rem;
+  --txkit-space-8: 2rem;
+  --txkit-space-12: 3rem;
+  --txkit-space-16: 4rem;
+  --txkit-space-24: 6rem;
+
+  /* Radius */
+  --txkit-radius-sm: 4px;
+  --txkit-radius-md: 8px;
+  --txkit-radius-lg: 12px;
+  --txkit-radius-pill: 9999px;
+
+  /* Motion */
+  --txkit-easing: cubic-bezier(0.16, 1, 0.3, 1);
+  --txkit-duration-fast: 150ms;
+  --txkit-duration-base: 250ms;
+  --txkit-duration-slow: 400ms;
+
+  /* Z-index */
+  --txkit-z-header: 100;
+  --txkit-z-modal: 1000;
+
+  /* Layout */
+  --txkit-content-max: 1200px;
+  --txkit-header-height: 64px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--txkit-color-bg);
+  color: var(--txkit-color-text);
+  color-scheme: dark;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--txkit-font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  color: inherit;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--txkit-color-primary);
+  outline-offset: 2px;
+  border-radius: var(--txkit-radius-sm);
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: var(--txkit-content-max);
+  margin: 0 auto;
+  padding: 0 var(--txkit-space-6);
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 var(--txkit-space-4);
+  }
+}
+
+/* Mono numerics */
+.mono {
+  font-family: var(--txkit-font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Reduced motion - skill rule from CLAUDE.md */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

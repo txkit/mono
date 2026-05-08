@@ -1,0 +1,45 @@
+---
+import './DualTrack.css'
+
+const today = [
+  { label: 'dApp developers', desc: 'Drop in TxApproval, SwapApproval, BridgeApproval' },
+  { label: 'DAOs and multisigs', desc: 'Decode + preview before Safe co-signers vote' },
+  { label: 'DeFi frontends', desc: 'CollateralRiskBadge, allowance hygiene, slippage' },
+  { label: 'Wallets', desc: 'Drop-in transaction review surface' },
+]
+
+const agentEra = [
+  { label: 'AI agents', desc: 'Propose tx with PreparedEnvelope + agentContext' },
+  { label: 'Per-agent allowances', desc: 'Token + destination + function + amount + period' },
+  { label: 'Stablecoin payments', desc: 'x402 (Coinbase), Skyfire, Lightspark Grid' },
+  { label: 'ERC-7715', desc: 'Scoped wallet capabilities + permission contexts' },
+]
+---
+
+<section class="dual-track" id="who-its-for" data-testid="landing-dual-track">
+  <div class="container dual-track__inner">
+    <div class="dual-track__col">
+      <h2 class="dual-track__heading">Useful today</h2>
+      <ul class="dual-track__list">
+        { today.map((item) => (
+          <li class="dual-track__item">
+            <span class="dual-track__label">{ item.label }</span>
+            <span class="dual-track__desc">{ item.desc }</span>
+          </li>
+        )) }
+      </ul>
+    </div>
+
+    <div class="dual-track__col">
+      <h2 class="dual-track__heading dual-track__heading--accent">Built for the agent era</h2>
+      <ul class="dual-track__list">
+        { agentEra.map((item) => (
+          <li class="dual-track__item">
+            <span class="dual-track__label">{ item.label }</span>
+            <span class="dual-track__desc">{ item.desc }</span>
+          </li>
+        )) }
+      </ul>
+    </div>
+  </div>
+</section>

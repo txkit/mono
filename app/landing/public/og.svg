@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4338CA" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#0A0A0F" stop-opacity="1"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0A0A0F"/>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g transform="translate(80, 80)">
+    <rect width="56" height="56" rx="12" fill="#4338CA"/>
+    <text x="28" y="40" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-weight="700" font-size="28" fill="#FFF" letter-spacing="-0.04em">tx</text>
+    <text x="80" y="36" font-family="'IBM Plex Mono',monospace" font-weight="700" font-size="28" fill="#FFF">txKit</text>
+  </g>
+  <text x="80" y="320" font-family="Inter,system-ui,sans-serif" font-weight="600" font-size="84" fill="#FFF" letter-spacing="-0.03em">Verify before</text>
+  <text x="80" y="410" font-family="Inter,system-ui,sans-serif" font-weight="600" font-size="84" fill="#FFF" letter-spacing="-0.03em">you sign.</text>
+  <text x="80" y="490" font-family="Inter,system-ui,sans-serif" font-weight="400" font-size="26" fill="#94A3B8">Decode, preview, and simulate any Web3 transaction.</text>
+  <text x="80" y="528" font-family="Inter,system-ui,sans-serif" font-weight="400" font-size="26" fill="#94A3B8">An open standard for transaction safety.</text>
+  <text x="80" y="580" font-family="'IBM Plex Mono',monospace" font-weight="500" font-size="20" fill="#64748B">txkit.dev · open spec · Apache 2.0</text>
+</svg>

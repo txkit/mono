@@ -17,7 +17,7 @@
 
 ---
 
-> **v0.1.0-alpha** - core primitives and transaction flow are stable. `ContractForm` is deferred to v0.1.0.
+> **v0.1.0-alpha** - core primitives and transaction flow are stable. v0.2 adds `<TxApproval />` (review-before-sign), `<AllowanceGrant />`, and `<TxHistory />`.
 
 ## Features
 
@@ -36,7 +36,7 @@
 npm install @txkit/react @txkit/themes
 ```
 
-Peer dependencies: `react >= 18`, `wagmi >= 2`, `viem >= 2`, `@tanstack/react-query >= 5`.
+Peer dependencies: `react >= 18`, `wagmi >= 3`, `viem >= 2`, `@tanstack/react-query >= 5`.
 
 ## Quick Start
 

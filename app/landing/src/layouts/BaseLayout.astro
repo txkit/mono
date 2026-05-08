@@ -1,0 +1,183 @@
+---
+import '../styles/global.css'
+
+type Props = {
+  title?: string,
+  description?: string,
+  canonical?: string,
+  ogImage?: string,
+}
+
+const {
+  title = 'txKit - Verify before you sign',
+  description = 'Decode, preview, and simulate any Web3 transaction before it leaves the wallet. An open standard for transaction safety, built for the agent era, useful today for every dApp, multisig, and DAO.',
+  canonical = Astro.url.href,
+  ogImage = '/og.svg',
+} = Astro.props
+
+const siteUrl = 'https://txkit.dev'
+const ogImageUrl = new URL(ogImage, siteUrl).href
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#0A0A0F" />
+    <meta name="color-scheme" content="dark" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="txKit" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@mikediamond_x" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Preload critical fonts (woff2 - Inter + IBM Plex Mono via Google Fonts) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap"
+    />
+
+    <!-- JSON-LD structured data (graph: Organization + WebSite + SoftwareApplication + FAQPage) -->
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Organization',
+          '@id': `${ siteUrl }/#organization`,
+          name: 'txKit',
+          url: siteUrl,
+          logo: {
+            '@type': 'ImageObject',
+            url: `${ siteUrl }/favicon.svg`,
+            width: 32,
+            height: 32,
+          },
+          sameAs: [
+            'https://github.com/txkit/mono',
+            'https://www.npmjs.com/org/txkit',
+            'https://x.com/mikediamond_x',
+          ],
+          founder: {
+            '@type': 'Person',
+            name: 'Michael Diamond',
+            url: 'https://x.com/mikediamond_x',
+          },
+        },
+        {
+          '@type': 'WebSite',
+          '@id': `${ siteUrl }/#website`,
+          url: siteUrl,
+          name: 'txKit',
+          description,
+          publisher: { '@id': `${ siteUrl }/#organization` },
+          inLanguage: 'en',
+        },
+        {
+          '@type': 'SoftwareApplication',
+          '@id': `${ siteUrl }/#software`,
+          name: 'txKit',
+          applicationCategory: 'DeveloperApplication',
+          operatingSystem: 'Web, Node.js',
+          url: siteUrl,
+          description,
+          softwareVersion: '0.1.0',
+          programmingLanguage: [ 'TypeScript', 'JavaScript' ],
+          codeRepository: 'https://github.com/txkit/mono',
+          license: 'https://www.apache.org/licenses/LICENSE-2.0',
+          author: { '@id': `${ siteUrl }/#organization` },
+          offers: [
+            {
+              '@type': 'Offer',
+              name: 'Open SDK',
+              price: '0',
+              priceCurrency: 'USD',
+              description: 'Apache 2.0 SDK and protocol spec, self-hosted forever.',
+            },
+          ],
+          dateModified: '2026-05-07',
+        },
+        {
+          '@type': 'FAQPage',
+          '@id': `${ siteUrl }/#faq`,
+          mainEntity: [
+            {
+              '@type': 'Question',
+              name: 'What is txKit?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'txKit is an open transaction-safety primitive for Web3. It decodes, previews, and simulates any transaction before it is signed. Apache 2.0 SDK plus an optional hosted verification SaaS.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Does txKit hold private keys?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'No. txKit never holds keys. It sits on the pre-signing layer between transaction producers (AI agents, dApp UI, multisig coordinators) and signers (wallets, OWS, hardware devices). The user always signs in their own wallet.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'How is txKit different from RainbowKit or Web3Modal?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'RainbowKit and Web3Modal handle wallet connection. txKit handles what happens after connection: decoding calldata, simulating outcomes, surfacing risk, and coordinating multi-step transaction flows. txKit works alongside any wallet connector.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'What standards does txKit implement?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'CAIP-2 chain identifiers, EIP-5792 batched calls, EIP-712 typed-data signatures, ERC-7730 clear signing, and ERC-7715 wallet capabilities. The PreparedTx envelope is an open spec.',
+              },
+            },
+            {
+              '@type': 'Question',
+              name: 'Is txKit free?',
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: 'Yes. All @txkit/* npm packages are Apache 2.0 forever. A hosted verification service (verify.txkit.dev) is in closed beta and will be metered when generally available.',
+              },
+            },
+          ],
+        },
+      ],
+    })} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style>
+  body {
+    background: var(--txkit-color-bg);
+    color: var(--txkit-color-text);
+  }
+</style>

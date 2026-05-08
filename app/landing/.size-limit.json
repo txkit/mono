@@ -1,0 +1,38 @@
+[
+  {
+    "name": "landing - CSS",
+    "path": "dist/_assets/index.*.css",
+    "limit": "10 KB",
+    "gzip": true
+  },
+  {
+    "name": "landing - initial JS",
+    "path": "dist/_assets/index.*.js",
+    "limit": "5 KB",
+    "gzip": true
+  },
+  {
+    "name": "landing - hero island bundle",
+    "path": "dist/_assets/HeroDiagram.*.js",
+    "limit": "55 KB",
+    "gzip": true
+  },
+  {
+    "name": "landing - logo wall island bundle",
+    "path": "dist/_assets/LogoWall.*.js",
+    "limit": "60 KB",
+    "gzip": true
+  },
+  {
+    "name": "landing - shared motion runtime",
+    "path": "dist/_assets/use-reduced-motion.*.js",
+    "limit": "45 KB",
+    "gzip": true
+  },
+  {
+    "name": "landing - React client runtime",
+    "path": "dist/_assets/client.*.js",
+    "limit": "65 KB",
+    "gzip": true
+  }
+]

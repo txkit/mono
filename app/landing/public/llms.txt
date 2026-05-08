@@ -1,0 +1,41 @@
+# txKit
+
+> Open transaction-safety primitive for Web3. Decode, preview, and simulate any
+> transaction before it's signed. An open standard built for the agent era,
+> useful today for every dApp, multisig, and DAO.
+
+txKit is open-core: the SDK and protocol spec are Apache 2.0; verification is
+offered as a hosted SaaS at verify.txkit.dev. txKit never holds keys - it sits
+on the pre-signing layer between transaction producers (AI agents, dApp UI,
+multisig coordinators) and signers (wallets, OWS endpoints, hardware devices).
+
+## Core packages
+
+- `@txkit/tx-protocol` - PreparedEnvelope discriminated union spec, CAIP-2,
+  EIP-5792 batches, EIP-712 signatures, ERC-7730 clear signing, ERC-7715 wallet
+  capabilities. 3 implemented kinds (evm-tx, evm-batch, signature) + 9 reserved.
+- `@txkit/core` - framework-agnostic types and utilities.
+- `@txkit/react` - React components (TxKitProvider, ConnectWallet, TokenBalance,
+  TransactionButton, FlowSteps).
+- `@txkit/themes` - CSS variable tokens and visual variants.
+- `@txkit/tx-decoder` - calldata decoder registry.
+- `@txkit/ows-adapter` - integration with OWS sign endpoints.
+- `@txkit/x402-adapter` - integration with Coinbase x402 agent payments.
+
+## Documentation
+
+- Spec: https://docs.txkit.dev/protocol/prepared-tx
+- Components: https://docs.txkit.dev/components
+- Examples: https://docs.txkit.dev/examples
+- GitHub: https://github.com/txkit/mono
+
+## Positioning
+
+- Useful today for: dApp developers, DAOs and multisigs, DeFi frontends, wallets
+- Built for the agent era: AI agents proposing on-chain actions, per-agent
+  allowance grants, stablecoin payment flows (x402, Skyfire), ERC-7715 scoped
+  capabilities
+
+## License
+
+Apache 2.0 on all published packages.

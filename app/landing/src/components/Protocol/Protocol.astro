@@ -1,0 +1,39 @@
+---
+import LogoWall from '../LogoWall/LogoWall.astro'
+import './Protocol.css'
+
+const standards = [ 'CAIP-2', 'EIP-5792', 'EIP-712', 'ERC-7730', 'ERC-7715' ]
+---
+
+<section class="protocol" id="protocol" data-testid="landing-protocol">
+  <div class="container">
+    <div class="protocol__copy">
+      <h2 class="protocol__title">PreparedTx is an open standard.</h2>
+      <p class="protocol__sub">Any wallet, any dApp, any agent.</p>
+
+      <div class="protocol__standards mono">
+        { standards.map((std, idx) => (
+          <>
+            <span class="protocol__std">{ std }</span>
+            { idx < standards.length - 1 && <span class="protocol__sep" aria-hidden="true">·</span> }
+          </>
+        )) }
+      </div>
+
+      <p class="protocol__counts">
+        12 transaction kinds · 3 implemented + 9 reserved · open SDK in Apache 2.0
+      </p>
+
+      <a class="protocol__link" href="https://docs.txkit.dev/protocol/prepared-tx">
+        Read the spec →
+      </a>
+    </div>
+
+    <div class="protocol__wall">
+      <p class="protocol__wall-caption mono">
+        Verification primitives the protocols you already use.
+      </p>
+      <LogoWall />
+    </div>
+  </div>
+</section>

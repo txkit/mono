@@ -1,0 +1,92 @@
+---
+import './CodeExample.css'
+---
+
+<section class="code-example" id="example" data-testid="landing-code-example">
+  <div class="container code-example__inner">
+    <div class="code-example__code">
+      <div class="code-example__chrome">
+        <span class="code-example__dot"></span>
+        <span class="code-example__dot"></span>
+        <span class="code-example__dot"></span>
+        <span class="code-example__filename mono">verify-tx.tsx</span>
+      </div>
+      <pre class="code-example__pre mono"><code><span class="tok-kw">import</span> <span class="tok-fn">{`{ TxKitProvider, TxApproval }`}</span> <span class="tok-kw">from</span> <span class="tok-str">'@txkit/react'</span>
+<span class="tok-kw">import</span> <span class="tok-fn">{`{ verify }`}</span> <span class="tok-kw">from</span> <span class="tok-str">'@txkit/sdk'</span>
+<span class="tok-kw">import</span> <span class="tok-str">'@txkit/themes/dark.css'</span>
+
+<span class="tok-kw">const</span> result = <span class="tok-kw">await</span> <span class="tok-fn">verify</span>(preparedTx, &#123; apiKey &#125;)
+
+&lt;<span class="tok-tag">TxKitProvider</span> <span class="tok-attr">config</span>=&#123;config&#125;&gt;
+  &lt;<span class="tok-tag">TxApproval</span>
+    <span class="tok-attr">envelope</span>=&#123;preparedTx&#125;
+    <span class="tok-attr">verification</span>=&#123;result&#125;
+    <span class="tok-attr">onApprove</span>=&#123;(receipt) =&gt; <span class="tok-fn">console.log</span>(receipt)&#125;
+  /&gt;
+&lt;/<span class="tok-tag">TxKitProvider</span>&gt;<span class="code-example__caret" aria-hidden="true">▌</span></code></pre>
+    </div>
+
+    <aside class="code-example__preview" aria-label="TxApproval preview">
+      <div class="tx-mock" role="img" aria-label="TxApproval modal mockup">
+        <header class="tx-mock__header">
+          <div class="tx-mock__heading">
+            <span class="tx-mock__function mono">transfer</span>
+            <span class="tx-mock__signature mono">USDC · ERC-20</span>
+          </div>
+          <span class="tx-mock__chain">
+            <span class="tx-mock__chain-dot" aria-hidden="true"></span>
+            Ethereum
+          </span>
+        </header>
+
+        <dl class="tx-mock__rows">
+          <div class="tx-mock__row">
+            <dt class="tx-mock__label mono">Recipient</dt>
+            <dd class="tx-mock__value mono">0x742d…7E91</dd>
+          </div>
+          <div class="tx-mock__row">
+            <dt class="tx-mock__label mono">Amount</dt>
+            <dd class="tx-mock__value tx-mock__value--strong mono">250.00 USDC</dd>
+          </div>
+          <div class="tx-mock__row">
+            <dt class="tx-mock__label mono">Gas (sim)</dt>
+            <dd class="tx-mock__value mono">0.00012 ETH · ~$0.42</dd>
+          </div>
+        </dl>
+
+        <ul class="tx-mock__badges">
+          <li class="tx-mock__badge tx-mock__badge--ok">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+            Verified contract
+          </li>
+          <li class="tx-mock__badge tx-mock__badge--ok">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+            Known recipient
+          </li>
+          <li class="tx-mock__badge tx-mock__badge--warn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            First-time interaction
+          </li>
+        </ul>
+
+        <button class="tx-mock__sign" type="button">
+          Sign in your wallet
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </aside>
+  </div>
+</section>

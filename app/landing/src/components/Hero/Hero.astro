@@ -1,0 +1,83 @@
+---
+import HeroDiagram from './HeroDiagram'
+import './Hero.css'
+---
+
+<section class="hero" id="hero" data-testid="landing-hero">
+  <div class="container hero__inner">
+    <div class="hero__copy">
+      <span class="hero__pill mono">v0.1 · open spec · Apache 2.0</span>
+
+      <h1 class="hero__title">Verify before you sign.</h1>
+
+      <p class="hero__sub">
+        Decode, preview, and simulate any Web3 transaction before it leaves the wallet.
+        An open standard for transaction safety, built for the agent era, useful today
+        for every dApp, multisig, and DAO.
+      </p>
+
+      <div class="hero__ctas">
+        <a class="hero__cta hero__cta--primary" href="https://docs.txkit.dev/protocol/prepared-tx">
+          Read the spec →
+        </a>
+        <button
+          class="hero__cta hero__cta--ghost mono"
+          type="button"
+          data-copy="npm i @txkit/react"
+          aria-label="Copy npm install command"
+        >
+          <span class="hero__cta-text">npm i @txkit/react</span>
+          <span class="hero__cta-icon hero__cta-icon--copy" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+          </span>
+          <span class="hero__cta-icon hero__cta-icon--check" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <p class="hero__credibility mono">
+        <span>7 packages on npm</span>
+        <span class="hero__credibility-sep">·</span>
+        <span>Built on viem + wagmi</span>
+        <span class="hero__credibility-sep">·</span>
+        <span>Open spec</span>
+      </p>
+    </div>
+
+    <div class="hero__visual">
+      <HeroDiagram client:load />
+    </div>
+  </div>
+</section>
+
+<script>
+  // Copy-to-clipboard for npm install button.
+  // Vanilla TS so it stays out of the React island bundle.
+  const copyButtons = document.querySelectorAll<HTMLButtonElement>('[data-copy]')
+
+  copyButtons.forEach((button) => {
+    button.addEventListener('click', async () => {
+      const text = button.dataset.copy
+
+      if (!text) {
+        return
+      }
+
+      try {
+        await navigator.clipboard.writeText(text)
+        button.classList.add('hero__cta--copied')
+        setTimeout(() => {
+          button.classList.remove('hero__cta--copied')
+        }, 1600)
+      } catch {
+        // clipboard API unavailable - silent fail, no user-facing error
+      }
+    })
+  })
+</script>

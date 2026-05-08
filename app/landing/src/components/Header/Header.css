@@ -1,0 +1,112 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--txkit-z-header);
+  width: 100%;
+  height: var(--txkit-header-height);
+  background: rgba(10, 10, 15, 0.72);
+  border-bottom: 1px solid var(--txkit-color-border);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+}
+
+.header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  gap: var(--txkit-space-6);
+}
+
+.header__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--txkit-space-3);
+  min-height: 44px;
+  padding: var(--txkit-space-2);
+  margin: calc(var(--txkit-space-2) * -1);
+}
+
+.header__wordmark {
+  font-family: var(--txkit-font-mono);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--txkit-space-1);
+  flex: 1;
+  justify-content: center;
+}
+
+.header__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--txkit-space-3);
+  font-size: 0.875rem;
+  color: var(--txkit-color-text-secondary);
+  transition: color var(--txkit-duration-fast) var(--txkit-easing);
+}
+
+.header__link:hover {
+  color: var(--txkit-color-text);
+}
+
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--txkit-space-2);
+}
+
+.header__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 var(--txkit-space-4);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--txkit-radius-pill);
+  transition:
+    background var(--txkit-duration-fast) var(--txkit-easing),
+    color var(--txkit-duration-fast) var(--txkit-easing),
+    border-color var(--txkit-duration-fast) var(--txkit-easing);
+}
+
+.header__cta--ghost {
+  color: var(--txkit-color-text-secondary);
+}
+
+.header__cta--ghost:hover {
+  color: var(--txkit-color-text);
+  background: var(--txkit-color-bg-subtle);
+}
+
+.header__cta--primary {
+  background: var(--txkit-color-primary);
+  color: #FFFFFF;
+}
+
+.header__cta--primary:hover {
+  background: var(--txkit-color-primary-hover);
+}
+
+@media (max-width: 900px) {
+  .header__nav {
+    display: none;
+  }
+
+  .header__inner {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .header__cta--ghost {
+    display: none;
+  }
+}
