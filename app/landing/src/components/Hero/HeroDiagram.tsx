@@ -185,7 +185,7 @@ const HeroDiagram = () => {
           // at target.y - 16 and label baseline at target.y + 14.
           const iconX = target.x - iconSize / 2
           const iconY = target.y - 16
-          const labelY = target.y + 14
+          const labelY = target.y + 18
 
           return (
             <g key={ `node-${ node.id }` }>

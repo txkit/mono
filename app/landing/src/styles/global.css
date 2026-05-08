@@ -7,6 +7,8 @@
   /* Brand palette (mirrors @txkit/themes intent, kept local for SSG) */
   --txkit-color-primary: #4338CA;
   --txkit-color-primary-hover: #3730A3;
+  /* Lifted indigo for borders / non-text UI - 3.46:1 on bg, passes WCAG AA */
+  --txkit-color-primary-border: #5C4FE3;
   --txkit-color-violet: #7C3AED;
   --txkit-color-lime: #84CC16;
   --txkit-color-amber: #F59E0B;
@@ -17,10 +19,10 @@
   --txkit-color-bg-elevated: #0F0F14;
   --txkit-color-bg-subtle: rgba(255, 255, 255, 0.02);
 
-  /* Text */
+  /* Text - all pass WCAG AA on bg #0A0A0F */
   --txkit-color-text: #FFFFFF;
   --txkit-color-text-secondary: #94A3B8;
-  --txkit-color-text-tertiary: #64748B;
+  --txkit-color-text-tertiary: #7F8DA0;
 
   /* Borders */
   --txkit-color-border: rgba(255, 255, 255, 0.06);
@@ -128,6 +130,28 @@ svg {
   .container {
     padding: 0 var(--txkit-space-4);
   }
+}
+
+/* Skip-link for keyboard users (WCAG 2.4.1 Bypass Blocks) */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: var(--txkit-z-modal);
+  padding: var(--txkit-space-3) var(--txkit-space-4);
+  background: var(--txkit-color-primary);
+  color: #FFFFFF;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom-right-radius: var(--txkit-radius-md);
+  transform: translateY(-100%);
+  transition: transform var(--txkit-duration-fast) var(--txkit-easing);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 2px solid var(--txkit-color-primary-border);
+  outline-offset: 2px;
 }
 
 /* Mono numerics */

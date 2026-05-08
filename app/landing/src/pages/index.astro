@@ -7,20 +7,21 @@ import CodeExample from '../components/CodeExample/CodeExample.astro'
 import DualTrack from '../components/DualTrack/DualTrack.astro'
 import Protocol from '../components/Protocol/Protocol.astro'
 import Components from '../components/Components/Components.astro'
-import HostedVerify from '../components/HostedVerify/HostedVerify.astro'
 import Footer from '../components/Footer/Footer.astro'
+
+// HostedVerify section hidden until hosted beta is closer to ship.
+// Component file kept at app/landing/src/components/HostedVerify/ for revival.
 ---
 
 <BaseLayout>
   <Header />
-  <main>
+  <main id="main">
     <Hero />
     <DecodePreviewSimulate />
     <CodeExample />
     <DualTrack />
     <Protocol />
     <Components />
-    <HostedVerify />
   </main>
   <Footer />
 </BaseLayout>

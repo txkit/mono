@@ -3,26 +3,29 @@ import WalletPhantom from '@web3icons/react/icons/wallets/WalletPhantom'
 import WalletRabby from '@web3icons/react/icons/wallets/WalletRabby'
 import WalletSafe from '@web3icons/react/icons/wallets/WalletSafe'
 import WalletCoinbase from '@web3icons/react/icons/wallets/WalletCoinbase'
-import WalletWalletConnect from '@web3icons/react/icons/wallets/WalletWalletConnect'
+import WalletRainbow from '@web3icons/react/icons/wallets/WalletRainbow'
 import NetworkSui from '@web3icons/react/icons/networks/NetworkSui'
 import NetworkArbitrumOne from '@web3icons/react/icons/networks/NetworkArbitrumOne'
-import NetworkBase from '@web3icons/react/icons/networks/NetworkBase'
+import NetworkPolygon from '@web3icons/react/icons/networks/NetworkPolygon'
 import NetworkOptimism from '@web3icons/react/icons/networks/NetworkOptimism'
 import NetworkEthereum from '@web3icons/react/icons/networks/NetworkEthereum'
 import TokenAAVE from '@web3icons/react/icons/tokens/TokenAAVE'
+import ExchangeUniswap from '@web3icons/react/icons/exchanges/ExchangeUniswap'
+import Exchange1inch from '@web3icons/react/icons/exchanges/Exchange1inch'
+import ExchangeCowswap from '@web3icons/react/icons/exchanges/ExchangeCowswap'
+import ExchangeHyperliquid from '@web3icons/react/icons/exchanges/ExchangeHyperliquid'
 
 
-// 16-slot logo wall - mix of real Web3 brand SVGs from @web3icons/react +
-// abstract tiles for brands not in the icon set (Morpho, LI.FI, Crossmint,
-// x402). Tiles preserve visual rhythm so the wall reads as one coherent
-// integration grid.
+// 16-slot logo wall, all real brand SVGs from @web3icons/react.
+// Brands not in the icon set (Morpho, LI.FI, Crossmint, x402) are
+// replaced with same-category integration anchors that ARE shipped
+// (DEX/aggregator/MEV-aware/perp). Wall reads as one coherent grid
+// of recognizable Web3 marks.
 
 type Tile = {
   id: string,
   label: string,
-  Icon?: React.ComponentType<{ size?: number, variant?: 'mono' | 'branded' }>,
-  initial?: string,
-  brandColor?: string,
+  Icon: React.ComponentType<{ size?: number, variant?: 'mono' | 'branded' }>,
 }
 
 const TILES: Tile[] = [
@@ -31,17 +34,17 @@ const TILES: Tile[] = [
   { id: 'rabby', label: 'Rabby', Icon: WalletRabby },
   { id: 'safe', label: 'Safe', Icon: WalletSafe },
   { id: 'coinbase', label: 'Coinbase', Icon: WalletCoinbase },
-  { id: 'walletconnect', label: 'Reown', Icon: WalletWalletConnect },
+  { id: 'rainbow', label: 'Rainbow', Icon: WalletRainbow },
   { id: 'sui', label: 'Sui / Mysten', Icon: NetworkSui },
   { id: 'arbitrum', label: 'Arbitrum', Icon: NetworkArbitrumOne },
-  { id: 'base', label: 'Base', Icon: NetworkBase },
+  { id: 'polygon', label: 'Polygon', Icon: NetworkPolygon },
   { id: 'optimism', label: 'Optimism', Icon: NetworkOptimism },
   { id: 'ethereum', label: 'Ethereum', Icon: NetworkEthereum },
   { id: 'aave', label: 'Aave', Icon: TokenAAVE },
-  { id: 'morpho', label: 'Morpho', initial: 'M', brandColor: '#3B82F6' },
-  { id: 'lifi', label: 'LI.FI', initial: 'L', brandColor: '#FF7B7C' },
-  { id: 'crossmint', label: 'Crossmint', initial: 'C', brandColor: '#00FFB7' },
-  { id: 'x402', label: 'x402', initial: 'x', brandColor: '#0052FF' },
+  { id: 'uniswap', label: 'Uniswap', Icon: ExchangeUniswap },
+  { id: '1inch', label: '1inch', Icon: Exchange1inch },
+  { id: 'cowswap', label: 'CowSwap', Icon: ExchangeCowswap },
+  { id: 'hyperliquid', label: 'Hyperliquid', Icon: ExchangeHyperliquid },
 ]
 
 const ICON_SIZE = 32
@@ -56,16 +59,7 @@ const LogoWall = () => (
         role="listitem"
         title={ tile.label }
       >
-        { tile.Icon ? (
-          <tile.Icon size={ ICON_SIZE } variant="branded" />
-        ) : (
-          <span
-            className="logo-wall__initial"
-            style={{ backgroundColor: tile.brandColor }}
-          >
-            { tile.initial }
-          </span>
-        ) }
+        <tile.Icon size={ ICON_SIZE } variant="branded" />
       </div>
     )) }
   </div>

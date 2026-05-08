@@ -10,6 +10,9 @@ node_modules
 # next.js
 .next/
 
+# astro
+.astro/
+
 # misc
 .DS_Store
 

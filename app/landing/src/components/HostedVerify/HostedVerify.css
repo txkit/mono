@@ -34,7 +34,7 @@
 }
 
 .hosted__card--saas {
-  border-color: rgba(67, 56, 202, 0.4);
+  border-color: var(--txkit-color-primary-border);
 }
 
 .hosted__tag {

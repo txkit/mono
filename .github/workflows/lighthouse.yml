@@ -21,6 +21,7 @@ jobs:
         target:
           - { app: docs, name: '@txkit/docs' }
           - { app: story, name: '@txkit/story' }
+          - { app: landing, name: '@txkit/landing' }
         # Mobile preset crashes consistently on Ubuntu CI runners — known
         # LHCI issue with --no-sandbox + headless Chromium combinations.
         # See lighthouse-ci issues/921. Local `pnpm exec lhci collect` works
