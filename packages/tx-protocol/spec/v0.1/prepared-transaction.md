@@ -39,8 +39,7 @@ Neither layer is mandatory in v0.1. Both are recommended. Wallets MAY treat miss
 
 ```typescript
 interface BaseEnvelope<K extends string, C> {
-  $schema: string                 // "https://txkit.dev/schemas/v0.1/envelope.json"
-  version: '0.1'
+  $schema: string                 // "https://txkit.dev/schemas/v0.1/envelope.json" - version contract
   kind: K                         // discriminator; see §3
   id?: string                     // idempotency, 4096 chars max (EIP-5792 convention)
   issuedAt: string                // RFC3339 UTC
@@ -55,11 +54,13 @@ interface BaseEnvelope<K extends string, C> {
 }
 ```
 
+The `$schema` URL is the version contract per ERC `Prepared Transaction Envelope`. Envelopes do not carry a separate `version` field; the URL path identifies the spec version.
+
 ### 2.1 Required vs recommended
 
 | Field | Required | Notes |
 |---|---|---|
-| `$schema`, `version`, `kind`, `issuedAt`, `content` | yes | |
+| `$schema`, `kind`, `issuedAt`, `content` | yes | |
 | `content` kind-specific required sub-fields | yes | see per-kind §6 |
 | `id` | no | wallets MAY assign if producer omits; required for `wallet_getCallsStatus` |
 | `expiresAt` | no | if present, MUST equal `content.validity.notAfter` for tx kinds |
@@ -105,10 +106,11 @@ interface Producer {
   signature?: ProducerSignature
 }
 
+// Open string per the ERC. Implementations SHOULD support secp256k1, ed25519,
+// and p256. Other schemes (including future post-quantum algorithms) MAY be
+// used without revising this type.
 type SignatureScheme =
   | 'secp256k1' | 'ed25519' | 'p256'
-  | 'ml-dsa-44' | 'ml-dsa-65' | 'ml-dsa-87'     // PQ reserved (NIST FIPS 204)
-  | 'slh-dsa-sha2-128s'                          // PQ reserved (NIST FIPS 205)
   | string                                        // open for future schemes
 
 interface ProducerSignature {
@@ -260,8 +262,16 @@ This closes the blind-signing gap for Permit, Permit2, CoW orders, UniswapX Dutc
 interface RiskAssessment {
   action: 'ALLOW' | 'WARN' | 'BLOCK'
   score?: number                                 // 0-100
-  warnings: Array<{ code, severity, message }>
-  scanners?: Array<{ provider, verdict, url? }>
+  warnings: Array<{
+    code: string
+    severity: 'low' | 'medium' | 'high' | 'critical'
+    message: string
+  }>
+  scanners?: Array<{
+    provider: string
+    verdict: 'ALLOW' | 'WARN' | 'BLOCK'
+    url?: string
+  }>
 }
 ```
 
@@ -274,7 +284,7 @@ interface Capabilities {
   atomicRequired?: boolean                              // EIP-5792
   paymasterService?: { url: string; sponsor?: Address } // ERC-4337 paymaster hint
   permissions?: { context: Hex; type: string; expiry? } // ERC-7715 session
-  requiresAccountType?: 'eoa' | 'smart-account-7702' | 'erc-4337'
+  requiresAccountType?: 'eoa' | 'delegated-eoa' | 'erc-4337'
   [k: string]: unknown                                  // open for vendors; MUST use 'x-' prefix
 }
 ```

@@ -1,6 +1,6 @@
 {
   "name": "@txkit/tx-protocol",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.2",
   "description": "Open protocol for prepared Web3 operations - envelope + content discriminated union, CAIP-2 chain ids, EIP-5792 aligned batches, EIP-712 signature requests. Post-quantum ready producer signatures.",
   "license": "MIT",
   "author": "Michael Diamond",

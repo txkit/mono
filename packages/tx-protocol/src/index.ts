@@ -3,13 +3,11 @@ export {
   IMPLEMENTED_KINDS,
   RESERVED_KINDS,
   SPEC_SCHEMA_URL,
-  SPEC_VERSION,
 } from './types'
 export type {
   ImplementedKind,
   Kind,
   ReservedKind,
-  SpecVersion,
   ActionType,
   BaseEnvelope,
   Caip2Chain,

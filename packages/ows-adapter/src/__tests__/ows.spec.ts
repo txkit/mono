@@ -147,7 +147,7 @@ describe('toOwsSignAndSend', () => {
     })
     envelope.risk = {
       action: 'WARN',
-      warnings: [{ code: 'unbounded-approval', severity: 'WARN', message: 'MAX approval' }],
+      warnings: [{ code: 'unbounded-approval', severity: 'high', message: 'MAX approval' }],
     }
 
     const payload = toOwsSignAndSend(envelope)

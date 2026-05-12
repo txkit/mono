@@ -1,5 +1,29 @@
 # @txkit/tx-protocol
 
+## [0.1.0-alpha.2] - 2026-05-11
+
+Aligns the reference implementation with the ERC `Prepared Transaction Envelope` body draft (Phase 3 complete, ready for Phase 4 red-team). Five breaking changes follow.
+
+### Breaking changes
+
+- **Drop `version` field from `BaseEnvelope`.** The `$schema` URL is the version contract per ERC §1.2: envelopes MUST NOT carry a separate `version` field. `SPEC_VERSION` constant and `SpecVersion` type removed from exports. `SPEC_SCHEMA_URL` retained as the canonical version identifier.
+- **Drop reserved post-quantum signature schemes from `SignatureScheme`.** `'ml-dsa-44' | 'ml-dsa-65' | 'ml-dsa-87' | 'slh-dsa-sha2-128s'` literals removed. The type remains an open string per ERC §3.2: implementations MAY use any scheme by agreement between producer and consumer, including future post-quantum algorithms, without revising this type.
+- **Rename `'smart-account-7702'` → `'delegated-eoa'` in `RequiredAccountType`.** Removes the explicit EIP-7702 callout from the normative enum per ERC review decision H3. Same semantic (an EOA with installed code), neutral naming.
+- **Close `RiskWarning.severity` enum to four lowercase values.** Was `'INFO' | 'WARN' | 'CRITICAL'`. Now `'low' | 'medium' | 'high' | 'critical'`, matching ERC §7 (CVSS-style severity ladder). Policy engines now have a fixed vocabulary across vendors.
+- **Constrain `ScannerVerdict.verdict` to a closed enum.** Was `string`. Now `'ALLOW' | 'WARN' | 'BLOCK'`, matching `RiskAssessment.action` and ERC §7. Scanner verdicts share the same three-valued action language as the overall risk verdict.
+
+### Spec sync
+
+Canonical spec at `packages/tx-protocol/spec/v0.1/prepared-transaction.md` synced with the same five changes (drop `version`, drop PQ enums, rename account type, close severity, close verdict).
+
+### Migration
+
+Producers that emitted `version: '0.1'` MUST stop including the field. Consumers MAY accept old envelopes with the field for one release cycle by ignoring it. Producers using PQ scheme literals MUST switch to the open-string form; consumers MUST NOT reject envelopes solely because the scheme is not one of the recognised three values (§3.2). Producers using `'smart-account-7702'` MUST rename to `'delegated-eoa'`. Producers emitting `RiskWarning` MUST use lowercase severity values from the new four-value enum. Producers emitting `ScannerVerdict.verdict` MUST use one of `'ALLOW' | 'WARN' | 'BLOCK'`.
+
+### Reference
+
+ERC body draft is complete in private wiki (`projects/txkit-erc-draft/erc-draft_prepared_tx_envelope.md`). Will be submitted to `ethereum/ERCs` in Phase 6 after Phase 4 red-team (security + standards-process agents) and Phase 5 pre-Magicians outreach.
+
 ## [0.1.0-alpha.0] - 2026-04-29
 
 Initial alpha release. Defines the `PreparedEnvelope` shape for agent-to-wallet

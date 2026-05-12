@@ -14,10 +14,6 @@
               "type": "string",
               "format": "uri"
             },
-            "version": {
-              "type": "string",
-              "const": "0.1"
-            },
             "id": {
               "type": "string",
               "maxLength": 4096
@@ -131,9 +127,10 @@
                       "severity": {
                         "type": "string",
                         "enum": [
-                          "INFO",
-                          "WARN",
-                          "CRITICAL"
+                          "low",
+                          "medium",
+                          "high",
+                          "critical"
                         ]
                       },
                       "message": {
@@ -160,7 +157,11 @@
                       },
                       "verdict": {
                         "type": "string",
-                        "minLength": 1
+                        "enum": [
+                          "ALLOW",
+                          "WARN",
+                          "BLOCK"
+                        ]
                       },
                       "url": {
                         "type": "string"
@@ -229,7 +230,7 @@
                   "type": "string",
                   "enum": [
                     "eoa",
-                    "smart-account-7702",
+                    "delegated-eoa",
                     "erc-4337"
                   ]
                 }
@@ -603,7 +604,6 @@
           },
           "required": [
             "$schema",
-            "version",
             "issuedAt",
             "kind",
             "content"
@@ -615,9 +615,6 @@
           "properties": {
             "$schema": {
               "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/$schema"
-            },
-            "version": {
-              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/version"
             },
             "id": {
               "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/id"
@@ -656,7 +653,6 @@
           },
           "required": [
             "$schema",
-            "version",
             "issuedAt",
             "kind",
             "content"
@@ -668,9 +664,6 @@
           "properties": {
             "$schema": {
               "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/$schema"
-            },
-            "version": {
-              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/version"
             },
             "id": {
               "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/id"
@@ -805,7 +798,6 @@
           },
           "required": [
             "$schema",
-            "version",
             "issuedAt",
             "kind",
             "content"
