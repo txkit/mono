@@ -2,7 +2,6 @@ import { z } from 'zod'
 import {
   IMPLEMENTED_KINDS,
   RESERVED_KINDS,
-  SPEC_VERSION,
 } from './types'
 import type {
   ActionType,
@@ -99,13 +98,13 @@ export const originSchema: z.ZodType<Origin> = z.object({
 
 export const riskWarningSchema: z.ZodType<RiskWarning> = z.object({
   code: z.string().min(1),
-  severity: z.enum([ 'INFO', 'WARN', 'CRITICAL' ]),
+  severity: z.enum([ 'low', 'medium', 'high', 'critical' ]),
   message: z.string().min(1),
 })
 
 export const scannerVerdictSchema: z.ZodType<ScannerVerdict> = z.object({
   provider: z.string().min(1),
-  verdict: z.string().min(1),
+  verdict: z.enum([ 'ALLOW', 'WARN', 'BLOCK' ]),
   url: z.string().optional(),
 })
 
@@ -132,7 +131,7 @@ export const capabilitiesSchema = z
     atomicRequired: z.boolean().optional(),
     paymasterService: paymasterServiceSchema.optional(),
     permissions: permissionsSchema.optional(),
-    requiresAccountType: z.enum([ 'eoa', 'smart-account-7702', 'erc-4337' ]).optional(),
+    requiresAccountType: z.enum([ 'eoa', 'delegated-eoa', 'erc-4337' ]).optional(),
   })
   .catchall(z.unknown()) satisfies z.ZodType<Capabilities>
 
@@ -322,7 +321,6 @@ export const signatureContentSchema = z.object({
 
 const baseEnvelopeFields = {
   $schema: z.string().url(),
-  version: z.literal(SPEC_VERSION),
   id: z.string().max(4096).optional(),
   issuedAt: rfc3339,
   expiresAt: rfc3339.optional(),

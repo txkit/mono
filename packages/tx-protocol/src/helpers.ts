@@ -1,4 +1,4 @@
-import { SPEC_SCHEMA_URL, SPEC_VERSION } from './types'
+import { SPEC_SCHEMA_URL } from './types'
 import type {
   EvmBatchEnvelope,
   EvmTxContent,
@@ -39,7 +39,6 @@ export const createEvmTx = (
   envelope: EnvelopeCommon = {},
 ): EvmTxEnvelope => ({
   $schema: SPEC_SCHEMA_URL,
-  version: SPEC_VERSION,
   kind: 'evm-tx',
   id: envelope.id,
   issuedAt: envelope.issuedAt ?? rfc3339Now(),
@@ -57,7 +56,6 @@ export const createEvmBatch = (
   envelope: EnvelopeCommon = {},
 ): EvmBatchEnvelope => ({
   $schema: SPEC_SCHEMA_URL,
-  version: SPEC_VERSION,
   kind: 'evm-batch',
   id: envelope.id,
   issuedAt: envelope.issuedAt ?? rfc3339Now(),
@@ -75,7 +73,6 @@ export const createSignature = (
   envelope: EnvelopeCommon = {},
 ): SignatureEnvelope => ({
   $schema: SPEC_SCHEMA_URL,
-  version: SPEC_VERSION,
   kind: 'signature',
   id: envelope.id,
   issuedAt: envelope.issuedAt ?? rfc3339Now(),

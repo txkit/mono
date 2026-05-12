@@ -1,9 +1,11 @@
 /* ======================================================================
- * Spec version
+ * Spec schema URL (version contract)
+ *
+ * The $schema URL is the version contract per the ERC. Envelopes do not
+ * carry a separate `version` field - the URL path identifies the spec
+ * version that an envelope conforms to.
  * ==================================================================== */
 
-export const SPEC_VERSION = '0.1' as const
-export type SpecVersion = typeof SPEC_VERSION
 export const SPEC_SCHEMA_URL = 'https://txkit.dev/schemas/v0.1/envelope.json' as const
 
 /* ======================================================================
@@ -54,14 +56,13 @@ export type Producer = {
   signature?: ProducerSignature
 }
 
+// Scheme is an open string per the ERC (§3.2). Implementations SHOULD
+// support secp256k1, ed25519, and p256; other schemes (including future
+// post-quantum algorithms) MAY be added without revising this type.
 export type SignatureScheme =
   | 'secp256k1'
   | 'ed25519'
   | 'p256'
-  | 'ml-dsa-44'
-  | 'ml-dsa-65'
-  | 'ml-dsa-87'
-  | 'slh-dsa-sha2-128s'
   | (string & {})
 
 export type ProducerSignature = {
@@ -79,13 +80,13 @@ export type Origin = {
 
 export type RiskWarning = {
   code: string
-  severity: 'INFO' | 'WARN' | 'CRITICAL'
+  severity: 'low' | 'medium' | 'high' | 'critical'
   message: string
 }
 
 export type ScannerVerdict = {
   provider: string
-  verdict: string
+  verdict: 'ALLOW' | 'WARN' | 'BLOCK'
   url?: string
 }
 
@@ -107,7 +108,7 @@ export type PaymasterService = {
   sponsor?: HexAddress
 }
 
-export type RequiredAccountType = 'eoa' | 'smart-account-7702' | 'erc-4337'
+export type RequiredAccountType = 'eoa' | 'delegated-eoa' | 'erc-4337'
 
 export type Capabilities = {
   atomicRequired?: boolean
@@ -119,7 +120,6 @@ export type Capabilities = {
 
 export type BaseEnvelope<K extends string, C> = {
   $schema: string
-  version: SpecVersion
   kind: K
   id?: string
   issuedAt: string

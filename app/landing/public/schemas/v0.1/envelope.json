@@ -1,0 +1,810 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema#",
+  "$id": "https://txkit.dev/schemas/v0.1/envelope.json",
+  "title": "PreparedTransaction Envelope v0.1",
+  "description": "Off-chain envelope for prepared-but-not-yet-signed transactions, batches, and signature requests. Reference implementation for the Ethereum ERC \"Prepared Transaction Envelope\" specification.",
+  "$ref": "#/definitions/PreparedEnvelope",
+  "definitions": {
+    "PreparedEnvelope": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "$schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "id": {
+              "type": "string",
+              "maxLength": 4096
+            },
+            "issuedAt": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+            },
+            "expiresAt": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/issuedAt"
+            },
+            "nonce": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]*$"
+            },
+            "producer": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "name": {
+                  "type": "string"
+                },
+                "signature": {
+                  "type": "object",
+                  "properties": {
+                    "scheme": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "publicKey": {
+                      "type": "string"
+                    },
+                    "signature": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "coverage": {
+                      "type": "string",
+                      "enum": [
+                        "envelope",
+                        "content"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "scheme",
+                    "signature",
+                    "coverage"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "additionalProperties": false
+            },
+            "origin": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "verifyStatus": {
+                  "type": "string",
+                  "enum": [
+                    "VERIFIED",
+                    "UNVERIFIED",
+                    "MISMATCH"
+                  ]
+                },
+                "attestation": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url",
+                "verifyStatus"
+              ],
+              "additionalProperties": false
+            },
+            "risk": {
+              "type": "object",
+              "properties": {
+                "action": {
+                  "type": "string",
+                  "enum": [
+                    "ALLOW",
+                    "WARN",
+                    "BLOCK"
+                  ]
+                },
+                "score": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "warnings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "severity": {
+                        "type": "string",
+                        "enum": [
+                          "low",
+                          "medium",
+                          "high",
+                          "critical"
+                        ]
+                      },
+                      "message": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "severity",
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "scanners": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "provider": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "verdict": {
+                        "type": "string",
+                        "enum": [
+                          "ALLOW",
+                          "WARN",
+                          "BLOCK"
+                        ]
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "provider",
+                      "verdict"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "action",
+                "warnings"
+              ],
+              "additionalProperties": false
+            },
+            "capabilities": {
+              "type": "object",
+              "properties": {
+                "atomicRequired": {
+                  "type": "boolean"
+                },
+                "paymasterService": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "sponsor": {
+                      "type": "string",
+                      "pattern": "^0x[0-9a-fA-F]{40}$"
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ],
+                  "additionalProperties": false
+                },
+                "permissions": {
+                  "type": "object",
+                  "properties": {
+                    "context": {
+                      "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/nonce"
+                    },
+                    "type": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "expiry": {
+                      "type": "integer",
+                      "exclusiveMinimum": true,
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "context",
+                    "type"
+                  ],
+                  "additionalProperties": false
+                },
+                "requiresAccountType": {
+                  "type": "string",
+                  "enum": [
+                    "eoa",
+                    "delegated-eoa",
+                    "erc-4337"
+                  ]
+                }
+              },
+              "additionalProperties": {}
+            },
+            "meta": {
+              "type": "object",
+              "additionalProperties": {}
+            },
+            "kind": {
+              "type": "string",
+              "const": "evm-tx"
+            },
+            "content": {
+              "type": "object",
+              "properties": {
+                "chain": {
+                  "type": "string",
+                  "pattern": "^[-a-z0-9]{3,8}:[-a-zA-Z0-9]{1,41}$"
+                },
+                "chainId": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "minimum": 0
+                },
+                "from": {
+                  "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities/properties/paymasterService/properties/sponsor"
+                },
+                "calls": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "to": {
+                        "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities/properties/paymasterService/properties/sponsor"
+                      },
+                      "value": {
+                        "type": "string",
+                        "pattern": "^0x([0-9a-fA-F]+|0)$"
+                      },
+                      "data": {
+                        "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/nonce"
+                      },
+                      "operation": {
+                        "type": "string",
+                        "enum": [
+                          "call",
+                          "delegatecall"
+                        ]
+                      },
+                      "capabilities": {
+                        "type": "object",
+                        "additionalProperties": {}
+                      }
+                    },
+                    "required": [
+                      "to"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 1
+                },
+                "validity": {
+                  "type": "object",
+                  "properties": {
+                    "notBefore": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "notAfter": {
+                      "type": "integer",
+                      "exclusiveMinimum": true,
+                      "minimum": 0
+                    },
+                    "nonceKind": {
+                      "type": "string",
+                      "enum": [
+                        "sequential",
+                        "durable",
+                        "bitmap"
+                      ]
+                    },
+                    "blockhashRecency": {
+                      "type": "object",
+                      "properties": {
+                        "maxAge": {
+                          "type": "integer",
+                          "exclusiveMinimum": true,
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "maxAge"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "notAfter"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": {
+                  "type": "object",
+                  "properties": {
+                    "short": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "long": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string",
+                      "enum": [
+                        "transfer",
+                        "approve",
+                        "permit",
+                        "revoke-approval",
+                        "swap",
+                        "stake",
+                        "unstake",
+                        "claim",
+                        "restake",
+                        "mint",
+                        "burn",
+                        "deposit",
+                        "withdraw",
+                        "delegate",
+                        "bridge",
+                        "admin-op",
+                        "other"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "short",
+                    "action"
+                  ],
+                  "additionalProperties": false
+                },
+                "metadata": {
+                  "type": "object",
+                  "properties": {
+                    "protocol": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "tokenMovements": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "token": {
+                            "anyOf": [
+                              {
+                                "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities/properties/paymasterService/properties/sponsor"
+                              },
+                              {
+                                "type": "string",
+                                "const": "native"
+                              }
+                            ]
+                          },
+                          "standard": {
+                            "type": "string",
+                            "enum": [
+                              "erc20",
+                              "erc721",
+                              "erc1155",
+                              "native"
+                            ]
+                          },
+                          "symbol": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "decimals": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 77
+                          },
+                          "amount": {
+                            "type": "string",
+                            "pattern": "^-?(0|[1-9]\\d*)$"
+                          },
+                          "tokenId": {
+                            "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/metadata/properties/tokenMovements/items/properties/amount"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "transfer",
+                              "approve",
+                              "permit",
+                              "mint",
+                              "burn",
+                              "revoke"
+                            ]
+                          },
+                          "isUnlimited": {
+                            "type": "boolean"
+                          },
+                          "from": {
+                            "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities/properties/paymasterService/properties/sponsor"
+                          },
+                          "to": {
+                            "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities/properties/paymasterService/properties/sponsor"
+                          },
+                          "usdValue": {
+                            "type": "number",
+                            "minimum": 0
+                          }
+                        },
+                        "required": [
+                          "token",
+                          "standard",
+                          "symbol",
+                          "decimals",
+                          "amount",
+                          "kind",
+                          "from",
+                          "to"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "counterparties": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "address": {
+                            "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities/properties/paymasterService/properties/sponsor"
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "recipient",
+                              "spender",
+                              "swap-venue",
+                              "pool",
+                              "bridge",
+                              "admin",
+                              "unknown"
+                            ]
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "labelSource": {
+                            "type": "string",
+                            "enum": [
+                              "contact_book",
+                              "protocol_directory",
+                              "recent_interaction",
+                              "untrusted"
+                            ]
+                          },
+                          "similarityWarning": {
+                            "type": "object",
+                            "properties": {
+                              "similarTo": {
+                                "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities/properties/paymasterService/properties/sponsor"
+                              },
+                              "distance": {
+                                "type": "integer",
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "similarTo",
+                              "distance"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "address",
+                          "role"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "feeBreakdown": {
+                      "type": "object",
+                      "properties": {
+                        "serviceFee": {
+                          "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/metadata/properties/tokenMovements/items/properties/amount"
+                        },
+                        "slippageCost": {
+                          "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/metadata/properties/tokenMovements/items/properties/amount"
+                        },
+                        "protocolFee": {
+                          "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/metadata/properties/tokenMovements/items/properties/amount"
+                        },
+                        "total": {
+                          "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/metadata/properties/tokenMovements/items/properties/amount"
+                        },
+                        "denomination": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "native"
+                            },
+                            {
+                              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities/properties/paymasterService/properties/sponsor"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "total",
+                        "denomination"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "estimation": {
+                      "type": "object",
+                      "properties": {
+                        "effectivePrice": {
+                          "type": "string"
+                        },
+                        "minOutputAmount": {
+                          "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/metadata/properties/tokenMovements/items/properties/amount"
+                        },
+                        "maxInputAmount": {
+                          "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/metadata/properties/tokenMovements/items/properties/amount"
+                        },
+                        "expiration": {
+                          "type": "integer",
+                          "exclusiveMinimum": true,
+                          "minimum": 0
+                        },
+                        "quoteTimestamp": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "estimatedGas": {
+                      "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/metadata/properties/tokenMovements/items/properties/amount"
+                    }
+                  },
+                  "required": [
+                    "protocol",
+                    "tokenMovements",
+                    "counterparties"
+                  ],
+                  "additionalProperties": false
+                },
+                "decoderRef": {
+                  "type": "string"
+                },
+                "clearSigning": {
+                  "type": "object",
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "chain",
+                "calls",
+                "validity",
+                "description",
+                "metadata"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "$schema",
+            "issuedAt",
+            "kind",
+            "content"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "$schema": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/$schema"
+            },
+            "id": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/id"
+            },
+            "issuedAt": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/issuedAt"
+            },
+            "expiresAt": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/expiresAt"
+            },
+            "nonce": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/nonce"
+            },
+            "producer": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/producer"
+            },
+            "origin": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/origin"
+            },
+            "risk": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/risk"
+            },
+            "capabilities": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities"
+            },
+            "meta": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/meta"
+            },
+            "kind": {
+              "type": "string",
+              "const": "evm-batch"
+            },
+            "content": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content"
+            }
+          },
+          "required": [
+            "$schema",
+            "issuedAt",
+            "kind",
+            "content"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "$schema": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/$schema"
+            },
+            "id": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/id"
+            },
+            "issuedAt": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/issuedAt"
+            },
+            "expiresAt": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/expiresAt"
+            },
+            "nonce": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/nonce"
+            },
+            "producer": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/producer"
+            },
+            "origin": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/origin"
+            },
+            "risk": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/risk"
+            },
+            "capabilities": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities"
+            },
+            "meta": {
+              "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/meta"
+            },
+            "kind": {
+              "type": "string",
+              "const": "signature"
+            },
+            "content": {
+              "type": "object",
+              "properties": {
+                "chain": {
+                  "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/chain"
+                },
+                "chainId": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "minimum": 0
+                },
+                "from": {
+                  "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities/properties/paymasterService/properties/sponsor"
+                },
+                "scheme": {
+                  "type": "string",
+                  "enum": [
+                    "eip-712",
+                    "personal-sign",
+                    "siwe"
+                  ]
+                },
+                "domain": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    },
+                    "chainId": {
+                      "type": "integer",
+                      "exclusiveMinimum": true,
+                      "minimum": 0
+                    },
+                    "verifyingContract": {
+                      "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/capabilities/properties/paymasterService/properties/sponsor"
+                    },
+                    "salt": {
+                      "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/nonce"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "types": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "type": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "type"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "primaryType": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "object",
+                  "additionalProperties": {}
+                },
+                "messageText": {
+                  "type": "string"
+                },
+                "description": {
+                  "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/description"
+                },
+                "metadata": {
+                  "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/metadata"
+                },
+                "validity": {
+                  "$ref": "#/definitions/PreparedEnvelope/anyOf/0/properties/content/properties/validity"
+                },
+                "erc6492": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "chain",
+                "scheme",
+                "description"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "$schema",
+            "issuedAt",
+            "kind",
+            "content"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

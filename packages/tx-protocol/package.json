@@ -1,6 +1,6 @@
 {
   "name": "@txkit/tx-protocol",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.2",
   "description": "Open protocol for prepared Web3 operations - envelope + content discriminated union, CAIP-2 chain ids, EIP-5792 aligned batches, EIP-712 signature requests. Post-quantum ready producer signatures.",
   "license": "MIT",
   "author": "Michael Diamond",
@@ -66,15 +66,18 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "gen:schema": "tsx scripts/generate-schema.ts"
   },
   "dependencies": {
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "tsup": "^8.4.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.3",
-    "vitest": "^4.1.1"
+    "vitest": "^4.1.1",
+    "zod-to-json-schema": "^3.25.2"
   },
   "sideEffects": false
 }

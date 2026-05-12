@@ -4,7 +4,6 @@ import {
   IMPLEMENTED_KINDS,
   RESERVED_KINDS,
   SPEC_SCHEMA_URL,
-  SPEC_VERSION,
   createEvmBatch,
   createEvmTx,
   createSignature,
@@ -75,10 +74,10 @@ describe('envelope + evm-tx validation', () => {
     }
   })
 
-  it('populates $schema, version and issuedAt via createEvmTx', () => {
+  it('populates $schema and issuedAt via createEvmTx (no version field per spec)', () => {
     const env = evmTx()
     expect(env.$schema).toBe(SPEC_SCHEMA_URL)
-    expect(env.version).toBe(SPEC_VERSION)
+    expect((env as Record<string, unknown>).version).toBeUndefined()
     expect(typeof env.issuedAt).toBe('string')
   })
 
@@ -285,7 +284,7 @@ describe('origin + risk + capabilities', () => {
       risk: {
         action: 'WARN',
         warnings: [
-          { code: 'NEW_COUNTERPARTY', severity: 'INFO', message: 'first interaction' },
+          { code: 'NEW_COUNTERPARTY', severity: 'low', message: 'first interaction' },
         ],
       },
       capabilities: { atomicRequired: true, paymasterService: { url: 'https://pm.example' } },
@@ -308,7 +307,7 @@ describe('serialize / deserialize', () => {
   })
 
   it('deserialize throws on invalid JSON shape', () => {
-    expect(() => deserialize('{"version":"0.2","kind":"evm-tx"}')).toThrow(/deserialize:/)
+    expect(() => deserialize('{"kind":"evm-tx"}')).toThrow(/deserialize:/)
   })
 })
 
