@@ -1,6 +1,9 @@
 ---
 import TxKitMark from '../icons/TxKitMark.astro'
 import './Header.css'
+
+const path = Astro.url.pathname
+const isBlogActive = path === '/blog/' || path.startsWith('/blog/')
 ---
 
 <header class="header" data-testid="landing-header">
@@ -11,7 +14,11 @@ import './Header.css'
     </a>
 
     <nav class="header__nav" aria-label="Primary">
-      <a class="header__link" href="/blog/">Blog</a>
+      <a
+        class:list={[ 'header__link', isBlogActive && 'header__link--active' ]}
+        href="/blog/"
+        aria-current={isBlogActive ? 'page' : undefined}
+      >Blog</a>
       <a class="header__link" href="https://docs.txkit.dev" target="_blank" rel="noreferrer">Docs</a>
       <a class="header__link" href="https://github.com/txkit/mono" target="_blank" rel="noreferrer">GitHub</a>
     </nav>

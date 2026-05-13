@@ -15,13 +15,7 @@ const action = `https://buttondown.com/api/emails/embed-subscribe/${ buttondownU
     Notes on Web3 transaction safety, AI agents, and stablecoin treasury UX. No spam, unsubscribe anytime.
   </p>
 
-  <form
-    class="newsletter__form"
-    action={action}
-    method="post"
-    target="popupwindow"
-    onsubmit="window.open('https://buttondown.com/mikediamond', 'popupwindow')"
-  >
+  <form class="newsletter__form" action={action} method="post">
     <label class="newsletter__label" for="newsletter-email">
       Email address
     </label>
@@ -41,6 +35,9 @@ const action = `https://buttondown.com/api/emails/embed-subscribe/${ buttondownU
       </button>
     </div>
     <input type="hidden" value="1" name="embed" />
+    <p class="newsletter__fineprint">
+      Double opt-in - confirm via email after submit.
+    </p>
   </form>
 </aside>
 
@@ -104,9 +101,9 @@ const action = `https://buttondown.com/api/emails/embed-subscribe/${ buttondownU
   }
 
   .newsletter__input:focus-visible {
-    outline: 2px solid var(--txkit-color-primary);
-    outline-offset: 1px;
-    border-color: var(--txkit-color-primary);
+    outline: 2px solid var(--txkit-color-primary-border);
+    outline-offset: 2px;
+    border-color: var(--txkit-color-primary-border);
   }
 
   .newsletter__button {
@@ -129,6 +126,12 @@ const action = `https://buttondown.com/api/emails/embed-subscribe/${ buttondownU
   .newsletter__button:focus-visible {
     outline: 2px solid var(--txkit-color-primary-border);
     outline-offset: 2px;
+  }
+
+  .newsletter__fineprint {
+    margin: 0.75rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--txkit-color-text-tertiary);
   }
 
   @media (max-width: 640px) {

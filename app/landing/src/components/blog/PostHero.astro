@@ -7,6 +7,7 @@ type Props = {
   pubDate: Date,
   updatedDate?: Date,
   minutesRead?: number,
+  tags?: string[],
   heroImage?: string,
   heroAlt?: string,
 }
@@ -17,6 +18,7 @@ const {
   pubDate,
   updatedDate,
   minutesRead,
+  tags = [],
   heroImage,
   heroAlt,
 } = Astro.props
@@ -32,6 +34,14 @@ const {
     minutesRead={minutesRead}
     showAuthor={true}
   />
+
+  { tags.length > 0 && (
+    <ul class="post-hero__tags mono" aria-label="Tags">
+      { tags.map((tag) => (
+        <li class="post-hero__tag">{ tag }</li>
+      )) }
+    </ul>
+  ) }
 
   { heroImage && heroAlt && (
     <figure class="post-hero__figure">
@@ -59,6 +69,25 @@ const {
     font-size: 1.125rem;
     line-height: 1.55;
     color: var(--txkit-color-text-secondary);
+  }
+
+  .post-hero__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .post-hero__tag {
+    padding: 0.2rem 0.55rem;
+    background: var(--txkit-color-bg-elevated);
+    border: 1px solid var(--txkit-color-border);
+    border-radius: var(--txkit-radius-pill);
+    font-size: 0.75rem;
+    color: var(--txkit-color-text-tertiary);
+    letter-spacing: 0.02em;
   }
 
   .post-hero__figure {

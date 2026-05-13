@@ -43,6 +43,7 @@
 }
 
 .header__link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -54,6 +55,21 @@
 
 .header__link:hover {
   color: var(--txkit-color-text);
+}
+
+.header__link--active {
+  color: var(--txkit-color-text);
+}
+
+.header__link--active::after {
+  content: '';
+  position: absolute;
+  bottom: 10px;
+  left: var(--txkit-space-3);
+  right: var(--txkit-space-3);
+  height: 2px;
+  background: var(--txkit-color-primary-border);
+  border-radius: 1px;
 }
 
 .header__actions {

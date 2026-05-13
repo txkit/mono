@@ -52,6 +52,12 @@ const pageDescription = 'Notes on Web3 transaction safety, AI agents, and stable
           )) }
         </div>
       ) }
+
+      { posts.length > 0 && (
+        <p class="blog-index__rss-line">
+          Follow new posts via <a href="/blog/rss.xml">RSS</a>.
+        </p>
+      ) }
     </div>
   </main>
 
@@ -105,6 +111,22 @@ const pageDescription = 'Notes on Web3 transaction safety, AI agents, and stable
 
   .blog-index__list {
     border-top: 1px solid var(--txkit-color-border);
+  }
+
+  .blog-index__rss-line {
+    margin: 3rem 0 0;
+    padding-top: 2rem;
+    border-top: 1px solid var(--txkit-color-border);
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--txkit-color-text-tertiary);
+  }
+
+  .blog-index__rss-line a {
+    color: var(--txkit-color-text-secondary);
+    text-decoration: underline;
+    text-decoration-color: var(--txkit-color-primary-border);
+    text-underline-offset: 0.2em;
   }
 
   @media (max-width: 640px) {

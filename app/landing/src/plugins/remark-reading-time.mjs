@@ -1,14 +1,26 @@
-import getReadingTime from 'reading-time'
-import { toString } from 'mdast-util-to-string'
+// Remark plugin - inject minutesRead into frontmatter at build time.
+// DIY (no reading-time npm dep): WPM = 220 (closer to engineer reading
+// of technical prose), minimum 1 minute. Walks mdast tree, sums text
+// nodes, divides by WPM.
 
+const WORDS_PER_MINUTE = 220
 
-// Remark plugin - injects minutesRead into frontmatter at build time.
-// Astro-specific: writes to data.astro.frontmatter, accessible as
-// entry.data.minutesRead when minutesRead is in the collection schema.
+const collectText = (node, accumulator) => {
+  if (node.value && typeof node.value === 'string') {
+    accumulator.push(node.value)
+  }
+  if (Array.isArray(node.children)) {
+    node.children.forEach((child) => collectText(child, accumulator))
+  }
+}
+
 
 export const remarkReadingTime = () => (tree, { data }) => {
-  const textOnPage = toString(tree)
-  const readingTime = getReadingTime(textOnPage)
+  const parts = []
+  collectText(tree, parts)
 
-  data.astro.frontmatter.minutesRead = Math.max(1, Math.ceil(readingTime.minutes))
+  const wordCount = parts.join(' ').trim().split(/\s+/).filter(Boolean).length
+  const minutes = Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE))
+
+  data.astro.frontmatter.minutesRead = minutes
 }

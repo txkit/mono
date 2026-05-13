@@ -3,7 +3,6 @@ import BaseLayout from './BaseLayout.astro'
 import Header from '../components/Header/Header.astro'
 import Footer from '../components/Footer/Footer.astro'
 import PostHero from '../components/blog/PostHero.astro'
-import NewsletterSignup from '../components/blog/NewsletterSignup.astro'
 import '../styles/prose.css'
 
 type Props = {
@@ -37,7 +36,6 @@ const ogImageUrl = new URL(ogImage, siteUrl).href
 const pageTitle = `${ title } - txKit Blog`
 
 const blogPostingJsonLd = {
-  '@context': 'https://schema.org',
   '@type': 'BlogPosting',
   '@id': `${ canonical }#article`,
   mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
@@ -63,6 +61,7 @@ const blogPostingJsonLd = {
   canonical={canonical}
   ogImage={ogImage}
   ogType="article"
+  extraGraphNodes={[ blogPostingJsonLd ]}
 >
   <Fragment slot="head-extra">
     <meta property="article:published_time" content={pubDate.toISOString()} />
@@ -74,19 +73,23 @@ const blogPostingJsonLd = {
       <meta property="article:tag" content={tag} />
     )) }
     <link rel="alternate" type="application/rss+xml" title="txKit Blog" href="/blog/rss.xml" />
-    <script type="application/ld+json" is:inline set:html={JSON.stringify(blogPostingJsonLd)} />
   </Fragment>
 
   <Header />
 
   <main id="main" class="blog-post">
     <article class="blog-post__article">
+      <a class="blog-post__back" href="/blog/" rel="prev">
+        <span aria-hidden="true">←</span> All posts
+      </a>
+
       <PostHero
         title={title}
         description={description}
         pubDate={pubDate}
         updatedDate={updatedDate}
         minutesRead={minutesRead}
+        tags={tags}
         heroImage={heroImage}
         heroAlt={heroAlt}
       />
@@ -95,9 +98,11 @@ const blogPostingJsonLd = {
         <slot />
       </div>
 
-      <div class="blog-post__footer">
-        <NewsletterSignup />
-      </div>
+      <footer class="blog-post__footer">
+        <p class="blog-post__followup">
+          Found this useful? Follow new posts via <a href="/blog/rss.xml">RSS</a>, or on <a href="https://x.com/mikediamond_x" rel="noreferrer">X</a>.
+        </p>
+      </footer>
     </article>
   </main>
 
@@ -115,6 +120,27 @@ const blogPostingJsonLd = {
     max-width: 720px;
   }
 
+  .blog-post__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 2rem;
+    min-height: 44px;
+    font-size: 0.875rem;
+    color: var(--txkit-color-text-tertiary);
+    transition: color var(--txkit-duration-fast) var(--txkit-easing);
+  }
+
+  .blog-post__back:hover {
+    color: var(--txkit-color-text);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blog-post__back {
+      transition: none;
+    }
+  }
+
   .blog-post__body {
     margin-top: 2.5rem;
   }
@@ -123,6 +149,31 @@ const blogPostingJsonLd = {
     margin-top: 4rem;
     padding-top: 3rem;
     border-top: 1px solid var(--txkit-color-border);
+  }
+
+  .blog-post__followup {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--txkit-color-text-tertiary);
+    text-align: center;
+  }
+
+  .blog-post__followup a {
+    color: var(--txkit-color-text-secondary);
+    text-decoration: underline;
+    text-decoration-color: var(--txkit-color-primary-border);
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--txkit-duration-fast) var(--txkit-easing);
+  }
+
+  .blog-post__followup a:hover {
+    text-decoration-color: var(--txkit-color-text);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blog-post__followup a {
+      transition: none;
+    }
   }
 
   @media (max-width: 640px) {

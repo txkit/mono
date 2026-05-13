@@ -2,6 +2,7 @@
 import '../styles/global.css'
 import Analytics from '@vercel/analytics/astro'
 import SpeedInsights from '@vercel/speed-insights/astro'
+import { ClientRouter } from 'astro:transitions'
 
 type Props = {
   title?: string,
@@ -9,6 +10,7 @@ type Props = {
   canonical?: string,
   ogImage?: string,
   ogType?: 'website' | 'article',
+  extraGraphNodes?: Record<string, unknown>[],
 }
 
 const {
@@ -17,10 +19,120 @@ const {
   canonical = Astro.url.href,
   ogImage = '/og.svg',
   ogType = 'website',
+  extraGraphNodes = [],
 } = Astro.props
 
 const siteUrl = 'https://txkit.dev'
 const ogImageUrl = new URL(ogImage, siteUrl).href
+
+const baseGraphNodes = [
+  {
+    '@type': 'Organization',
+    '@id': `${ siteUrl }/#organization`,
+    name: 'txKit',
+    url: siteUrl,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${ siteUrl }/favicon.svg`,
+      width: 32,
+      height: 32,
+    },
+    sameAs: [
+      'https://github.com/txkit/mono',
+      'https://www.npmjs.com/org/txkit',
+      'https://x.com/mikediamond_x',
+    ],
+    founder: {
+      '@type': 'Person',
+      name: 'Michael Diamond',
+      url: 'https://x.com/mikediamond_x',
+    },
+  },
+  {
+    '@type': 'WebSite',
+    '@id': `${ siteUrl }/#website`,
+    url: siteUrl,
+    name: 'txKit',
+    description,
+    publisher: { '@id': `${ siteUrl }/#organization` },
+    inLanguage: 'en',
+  },
+  {
+    '@type': 'SoftwareApplication',
+    '@id': `${ siteUrl }/#software`,
+    name: 'txKit',
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'Web, Node.js',
+    url: siteUrl,
+    description,
+    softwareVersion: '0.1.0',
+    programmingLanguage: [ 'TypeScript', 'JavaScript' ],
+    codeRepository: 'https://github.com/txkit/mono',
+    license: 'https://www.apache.org/licenses/LICENSE-2.0',
+    author: { '@id': `${ siteUrl }/#organization` },
+    offers: [
+      {
+        '@type': 'Offer',
+        name: 'Open SDK',
+        price: '0',
+        priceCurrency: 'USD',
+        description: 'Apache 2.0 SDK and protocol spec, self-hosted forever.',
+      },
+    ],
+    dateModified: '2026-05-07',
+  },
+  {
+    '@type': 'FAQPage',
+    '@id': `${ siteUrl }/#faq`,
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'What is txKit?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'txKit is an open transaction-safety primitive for Web3. It decodes, previews, and simulates any transaction before it is signed. Apache 2.0 SDK plus an optional hosted verification SaaS.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Does txKit hold private keys?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'No. txKit never holds keys. It sits on the pre-signing layer between transaction producers (AI agents, dApp UI, multisig coordinators) and signers (wallets, OWS, hardware devices). The user always signs in their own wallet.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'How is txKit different from RainbowKit or Web3Modal?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'RainbowKit and Web3Modal handle wallet connection. txKit handles what happens after connection: decoding calldata, simulating outcomes, surfacing risk, and coordinating multi-step transaction flows. txKit works alongside any wallet connector.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'What standards does txKit implement?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'CAIP-2 chain identifiers, EIP-5792 batched calls, EIP-712 typed-data signatures, ERC-7730 clear signing, and ERC-7715 wallet capabilities. The PreparedTx envelope is an open spec.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Is txKit free?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes. All @txkit/* npm packages are Apache 2.0 forever. A hosted verification service (verify.txkit.dev) is in closed beta and will be metered when generally available.',
+        },
+      },
+    ],
+  },
+]
+
+const jsonLdGraph = {
+  '@context': 'https://schema.org',
+  '@graph': [ ...baseGraphNodes, ...extraGraphNodes ],
+}
 ---
 
 <!doctype html>
@@ -71,115 +183,12 @@ const ogImageUrl = new URL(ogImage, siteUrl).href
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap"
     />
 
-    <!-- JSON-LD structured data (graph: Organization + WebSite + SoftwareApplication + FAQPage) -->
-    <script type="application/ld+json" is:inline set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@graph': [
-        {
-          '@type': 'Organization',
-          '@id': `${ siteUrl }/#organization`,
-          name: 'txKit',
-          url: siteUrl,
-          logo: {
-            '@type': 'ImageObject',
-            url: `${ siteUrl }/favicon.svg`,
-            width: 32,
-            height: 32,
-          },
-          sameAs: [
-            'https://github.com/txkit/mono',
-            'https://www.npmjs.com/org/txkit',
-            'https://x.com/mikediamond_x',
-          ],
-          founder: {
-            '@type': 'Person',
-            name: 'Michael Diamond',
-            url: 'https://x.com/mikediamond_x',
-          },
-        },
-        {
-          '@type': 'WebSite',
-          '@id': `${ siteUrl }/#website`,
-          url: siteUrl,
-          name: 'txKit',
-          description,
-          publisher: { '@id': `${ siteUrl }/#organization` },
-          inLanguage: 'en',
-        },
-        {
-          '@type': 'SoftwareApplication',
-          '@id': `${ siteUrl }/#software`,
-          name: 'txKit',
-          applicationCategory: 'DeveloperApplication',
-          operatingSystem: 'Web, Node.js',
-          url: siteUrl,
-          description,
-          softwareVersion: '0.1.0',
-          programmingLanguage: [ 'TypeScript', 'JavaScript' ],
-          codeRepository: 'https://github.com/txkit/mono',
-          license: 'https://www.apache.org/licenses/LICENSE-2.0',
-          author: { '@id': `${ siteUrl }/#organization` },
-          offers: [
-            {
-              '@type': 'Offer',
-              name: 'Open SDK',
-              price: '0',
-              priceCurrency: 'USD',
-              description: 'Apache 2.0 SDK and protocol spec, self-hosted forever.',
-            },
-          ],
-          dateModified: '2026-05-07',
-        },
-        {
-          '@type': 'FAQPage',
-          '@id': `${ siteUrl }/#faq`,
-          mainEntity: [
-            {
-              '@type': 'Question',
-              name: 'What is txKit?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'txKit is an open transaction-safety primitive for Web3. It decodes, previews, and simulates any transaction before it is signed. Apache 2.0 SDK plus an optional hosted verification SaaS.',
-              },
-            },
-            {
-              '@type': 'Question',
-              name: 'Does txKit hold private keys?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'No. txKit never holds keys. It sits on the pre-signing layer between transaction producers (AI agents, dApp UI, multisig coordinators) and signers (wallets, OWS, hardware devices). The user always signs in their own wallet.',
-              },
-            },
-            {
-              '@type': 'Question',
-              name: 'How is txKit different from RainbowKit or Web3Modal?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'RainbowKit and Web3Modal handle wallet connection. txKit handles what happens after connection: decoding calldata, simulating outcomes, surfacing risk, and coordinating multi-step transaction flows. txKit works alongside any wallet connector.',
-              },
-            },
-            {
-              '@type': 'Question',
-              name: 'What standards does txKit implement?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'CAIP-2 chain identifiers, EIP-5792 batched calls, EIP-712 typed-data signatures, ERC-7730 clear signing, and ERC-7715 wallet capabilities. The PreparedTx envelope is an open spec.',
-              },
-            },
-            {
-              '@type': 'Question',
-              name: 'Is txKit free?',
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: 'Yes. All @txkit/* npm packages are Apache 2.0 forever. A hosted verification service (verify.txkit.dev) is in closed beta and will be metered when generally available.',
-              },
-            },
-          ],
-        },
-      ],
-    })} />
+    <!-- JSON-LD structured data graph (Organization + WebSite + SoftwareApplication + FAQPage + page-specific nodes) -->
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLdGraph)} />
 
     <slot name="head-extra" />
+
+    <ClientRouter />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
