@@ -1,0 +1,109 @@
+---
+type Variant = 'info' | 'warning' | 'tip' | 'note'
+
+type Props = {
+  variant?: Variant,
+  title?: string,
+}
+
+const {
+  variant = 'note',
+  title,
+} = Astro.props
+
+const variantConfig = {
+  info: { label: 'Info', icon: 'i' },
+  warning: { label: 'Warning', icon: '!' },
+  tip: { label: 'Tip', icon: '+' },
+  note: { label: 'Note', icon: '·' },
+}
+
+const config = variantConfig[variant]
+const displayTitle = title || config.label
+---
+
+<aside class={`callout callout--${ variant }`} role="note" aria-label={displayTitle}>
+  <div class="callout__header">
+    <span class="callout__icon mono" aria-hidden="true">{ config.icon }</span>
+    <strong class="callout__title">{ displayTitle }</strong>
+  </div>
+  <div class="callout__body">
+    <slot />
+  </div>
+</aside>
+
+<style>
+  .callout {
+    margin: 1.5em 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--txkit-color-border);
+    border-left-width: 3px;
+    border-radius: var(--txkit-radius-sm);
+    background: var(--txkit-color-bg-elevated);
+  }
+
+  .callout--info {
+    border-left-color: var(--txkit-color-primary-border);
+  }
+
+  .callout--warning {
+    border-left-color: var(--txkit-color-amber);
+  }
+
+  .callout--tip {
+    border-left-color: var(--txkit-color-lime);
+  }
+
+  .callout--note {
+    border-left-color: var(--txkit-color-text-tertiary);
+  }
+
+  .callout__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .callout__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: var(--txkit-color-bg);
+    color: var(--txkit-color-text);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .callout--warning .callout__icon {
+    color: var(--txkit-color-amber);
+  }
+
+  .callout--tip .callout__icon {
+    color: var(--txkit-color-lime);
+  }
+
+  .callout--info .callout__icon {
+    color: var(--txkit-color-primary-border);
+  }
+
+  .callout__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--txkit-color-text);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .callout__body :global(p:first-child) {
+    margin-top: 0;
+  }
+
+  .callout__body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+</style>

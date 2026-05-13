@@ -29,6 +29,14 @@ multisig coordinators) and signers (wallets, OWS endpoints, hardware devices).
 - Examples: https://docs.txkit.dev/examples
 - GitHub: https://github.com/txkit/mono
 
+## Notebook
+
+- Blog index: https://txkit.dev/blog/
+- RSS feed: https://txkit.dev/blog/rss.xml
+- Long-form notes on Web3 transaction safety, AI agents, stablecoin treasury UX,
+  and the design reasoning behind the txKit components and PreparedTransaction
+  Envelope spec. Posts 1-2 times per month.
+
 ## Positioning
 
 - Useful today for: dApp developers, DAOs and multisigs, DeFi frontends, wallets

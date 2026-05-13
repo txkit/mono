@@ -1,0 +1,37 @@
+---
+title: "Notes on what we're building"
+description: "A short introduction to this notebook - long-form thinking on Web3 transaction safety, AI agents, and stablecoin treasury UX."
+pubDate: 2026-05-13
+draft: false
+tags:
+  - meta
+---
+
+import Callout from '../../../components/blog/mdx/Callout.astro'
+
+The txKit landing answers **what** and **why** in ten seconds. The docs answer **how**. Neither covers the **so what** - the reasoning behind the design, the tradeoffs we picked, the patterns we want the field to adopt.
+
+That's what this notebook is for.
+
+## What to expect
+
+- Long-form thinking on transaction safety primitives (1500-2500 words per post)
+- Worked examples with live component demos embedded inline via MDX
+- Pre-prints of ERC drafts before formal submission to Magicians
+- Post-mortems on patterns that did not work
+
+No ad copy. No release announcements. Just notes from the build process.
+
+<Callout variant="info" title="Cadence">
+  Posts go out 1-2 times per month. Subscribe at the bottom of any post, or via RSS.
+</Callout>
+
+## Why an owned notebook
+
+A few rules drove the platform decision:
+
+1. **SEO compounds under txkit.dev.** Posts on Substack or Medium rank under those platforms, not the domain we want recognized. Long-form thinking should accrue to the same brand surface as the product.
+2. **No vendor lock-in.** Content lives in git as MDX. Migration cost: zero.
+3. **Live demos.** Markdown alone cannot embed working component previews. MDX can. When we discuss the design of `<AllowanceGrant />` or `<TxApproval />`, the post can show the component itself - not a screenshot.
+
+If you spot an error in any post, the repo is [public](https://github.com/txkit/mono) - PRs welcome.

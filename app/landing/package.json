@@ -8,20 +8,23 @@
     "build": "astro build",
     "preview": "astro preview --host",
     "typecheck": "astro check",
-    "lint": "eslint src --ext .ts,.tsx,.astro"
+    "lint": "eslint src --ext .ts,.tsx"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/mdx": "^5.0.4",
     "@astrojs/react": "^5.0.4",
-    "@astrojs/sitemap": "^3.7.2",
+    "@astrojs/rss": "^4.0.18",
     "@txkit/themes": "workspace:*",
     "@vercel/analytics": "^1.4.1",
     "@vercel/speed-insights": "^2.0.0",
     "@web3icons/react": "^4.1.17",
     "astro": "^6.3.0",
+    "mdast-util-to-string": "^4.0.0",
     "motion": "^12.23.24",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "reading-time": "^1.5.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

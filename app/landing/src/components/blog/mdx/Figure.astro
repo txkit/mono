@@ -1,0 +1,56 @@
+---
+type Props = {
+  src: string,
+  alt: string,
+  caption?: string,
+  attribution?: string,
+}
+
+const {
+  src,
+  alt,
+  caption,
+  attribution,
+} = Astro.props
+---
+
+<figure class="figure">
+  <img src={src} alt={alt} loading="lazy" decoding="async" />
+  { (caption || attribution) && (
+    <figcaption>
+      { caption }
+      { attribution && (
+        <span class="figure__attribution">
+          { caption ? ' - ' : '' }{ attribution }
+        </span>
+      ) }
+    </figcaption>
+  ) }
+</figure>
+
+<style>
+  .figure {
+    margin: 2em 0;
+  }
+
+  .figure img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--txkit-radius-md);
+    border: 1px solid var(--txkit-color-border);
+  }
+
+  .figure figcaption {
+    margin-top: 0.75em;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--txkit-color-text-tertiary);
+    text-align: center;
+  }
+
+  .figure__attribution {
+    font-style: italic;
+    color: var(--txkit-color-text-tertiary);
+    opacity: 0.8;
+  }
+</style>

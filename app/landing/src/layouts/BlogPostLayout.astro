@@ -1,0 +1,137 @@
+---
+import BaseLayout from './BaseLayout.astro'
+import Header from '../components/Header/Header.astro'
+import Footer from '../components/Footer/Footer.astro'
+import PostHero from '../components/blog/PostHero.astro'
+import NewsletterSignup from '../components/blog/NewsletterSignup.astro'
+import '../styles/prose.css'
+
+type Props = {
+  title: string,
+  description: string,
+  pubDate: Date,
+  updatedDate?: Date,
+  tags?: string[],
+  heroImage?: string,
+  heroAlt?: string,
+  minutesRead?: number,
+  slug: string,
+}
+
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  tags = [],
+  heroImage,
+  heroAlt,
+  minutesRead,
+  slug,
+} = Astro.props
+
+const siteUrl = 'https://txkit.dev'
+const canonical = `${ siteUrl }/blog/${ slug }/`
+const ogImage = heroImage || '/og.svg'
+const ogImageUrl = new URL(ogImage, siteUrl).href
+const pageTitle = `${ title } - txKit Blog`
+
+const blogPostingJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  '@id': `${ canonical }#article`,
+  mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+  headline: title,
+  description,
+  datePublished: pubDate.toISOString(),
+  dateModified: (updatedDate || pubDate).toISOString(),
+  author: {
+    '@type': 'Person',
+    name: 'Michael Diamond',
+    url: `${ siteUrl }/`,
+  },
+  publisher: { '@id': `${ siteUrl }/#organization` },
+  image: ogImageUrl,
+  keywords: tags.join(', '),
+  inLanguage: 'en',
+}
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={description}
+  canonical={canonical}
+  ogImage={ogImage}
+  ogType="article"
+>
+  <Fragment slot="head-extra">
+    <meta property="article:published_time" content={pubDate.toISOString()} />
+    { updatedDate && (
+      <meta property="article:modified_time" content={updatedDate.toISOString()} />
+    ) }
+    <meta property="article:author" content="Michael Diamond" />
+    { tags.map((tag) => (
+      <meta property="article:tag" content={tag} />
+    )) }
+    <link rel="alternate" type="application/rss+xml" title="txKit Blog" href="/blog/rss.xml" />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(blogPostingJsonLd)} />
+  </Fragment>
+
+  <Header />
+
+  <main id="main" class="blog-post">
+    <article class="blog-post__article">
+      <PostHero
+        title={title}
+        description={description}
+        pubDate={pubDate}
+        updatedDate={updatedDate}
+        minutesRead={minutesRead}
+        heroImage={heroImage}
+        heroAlt={heroAlt}
+      />
+
+      <div class="prose blog-post__body">
+        <slot />
+      </div>
+
+      <div class="blog-post__footer">
+        <NewsletterSignup />
+      </div>
+    </article>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .blog-post {
+    padding: 4rem 0 6rem;
+  }
+
+  .blog-post__article {
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    max-width: 720px;
+  }
+
+  .blog-post__body {
+    margin-top: 2.5rem;
+  }
+
+  .blog-post__footer {
+    margin-top: 4rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--txkit-color-border);
+  }
+
+  @media (max-width: 640px) {
+    .blog-post {
+      padding: 2rem 0 4rem;
+    }
+
+    .blog-post__article {
+      padding: 0 1rem;
+    }
+  }
+</style>

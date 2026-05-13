@@ -1,5 +1,8 @@
 import { defineConfig } from 'astro/config'
 import react from '@astrojs/react'
+import mdx from '@astrojs/mdx'
+
+import { remarkReadingTime } from './src/plugins/remark-reading-time.mjs'
 
 
 // Astro config for txKit landing (txkit.dev).
@@ -13,7 +16,15 @@ export default defineConfig({
   output: 'static',
   integrations: [
     react(),
+    mdx(),
   ],
+  markdown: {
+    shikiConfig: {
+      theme: 'github-dark-dimmed',
+      wrap: true,
+    },
+    remarkPlugins: [ remarkReadingTime ],
+  },
   build: {
     inlineStylesheets: 'auto',
     assets: '_assets',

@@ -1,0 +1,123 @@
+---
+import { getCollection } from 'astro:content'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import Header from '../../components/Header/Header.astro'
+import Footer from '../../components/Footer/Footer.astro'
+import PostCard from '../../components/blog/PostCard.astro'
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft)
+
+const posts = allPosts.sort(
+  (postA, postB) => postB.data.pubDate.valueOf() - postA.data.pubDate.valueOf(),
+)
+
+const pageTitle = 'Blog - txKit'
+const pageDescription = 'Notes on Web3 transaction safety, AI agents, and stablecoin treasury UX. Long-form thinking from the team building txKit.'
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={pageDescription}
+  canonical="https://txkit.dev/blog/"
+>
+  <Fragment slot="head-extra">
+    <link rel="alternate" type="application/rss+xml" title="txKit Blog" href="/blog/rss.xml" />
+  </Fragment>
+
+  <Header />
+
+  <main id="main" class="blog-index">
+    <div class="blog-index__inner">
+      <header class="blog-index__header">
+        <h1 class="blog-index__title">Blog</h1>
+        <p class="blog-index__description">
+          Notes on Web3 transaction safety, AI agents, and stablecoin treasury UX.
+        </p>
+      </header>
+
+      { posts.length === 0 ? (
+        <div class="blog-index__empty">
+          <p>First post coming soon. <a href="/blog/rss.xml">Subscribe via RSS</a> to be notified.</p>
+        </div>
+      ) : (
+        <div class="blog-index__list" role="feed" aria-busy="false" aria-label="Blog posts">
+          { posts.map((post) => (
+            <PostCard
+              title={post.data.title}
+              description={post.data.description}
+              pubDate={post.data.pubDate}
+              minutesRead={post.data.minutesRead}
+              slug={post.id}
+            />
+          )) }
+        </div>
+      ) }
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .blog-index {
+    padding: 4rem 0 6rem;
+  }
+
+  .blog-index__inner {
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    max-width: 760px;
+  }
+
+  .blog-index__header {
+    margin-bottom: 3rem;
+  }
+
+  .blog-index__title {
+    margin: 0 0 0.75rem;
+    font-size: clamp(2rem, 5vw, 2.75rem);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+    color: var(--txkit-color-text);
+  }
+
+  .blog-index__description {
+    margin: 0;
+    font-size: 1.125rem;
+    line-height: 1.55;
+    color: var(--txkit-color-text-secondary);
+    max-width: 60ch;
+  }
+
+  .blog-index__empty {
+    padding: 3rem 0;
+    color: var(--txkit-color-text-secondary);
+    font-size: 1rem;
+  }
+
+  .blog-index__empty a {
+    color: var(--txkit-color-text);
+    text-decoration: underline;
+    text-decoration-color: var(--txkit-color-primary-border);
+    text-underline-offset: 0.2em;
+  }
+
+  .blog-index__list {
+    border-top: 1px solid var(--txkit-color-border);
+  }
+
+  @media (max-width: 640px) {
+    .blog-index {
+      padding: 2rem 0 4rem;
+    }
+
+    .blog-index__inner {
+      padding: 0 1rem;
+    }
+
+    .blog-index__header {
+      margin-bottom: 2rem;
+    }
+  }
+</style>

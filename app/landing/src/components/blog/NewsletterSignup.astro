@@ -1,0 +1,151 @@
+---
+// Buttondown static form - zero JS, POST to embed endpoint.
+// Username placeholder 'mikediamond' - confirm registration before launch.
+// If username changes, swap action URL only.
+
+const buttondownUsername = 'mikediamond'
+const action = `https://buttondown.com/api/emails/embed-subscribe/${ buttondownUsername }`
+---
+
+<aside class="newsletter" aria-labelledby="newsletter-title">
+  <h2 class="newsletter__title" id="newsletter-title">
+    Subscribe for new posts
+  </h2>
+  <p class="newsletter__description">
+    Notes on Web3 transaction safety, AI agents, and stablecoin treasury UX. No spam, unsubscribe anytime.
+  </p>
+
+  <form
+    class="newsletter__form"
+    action={action}
+    method="post"
+    target="popupwindow"
+    onsubmit="window.open('https://buttondown.com/mikediamond', 'popupwindow')"
+  >
+    <label class="newsletter__label" for="newsletter-email">
+      Email address
+    </label>
+    <div class="newsletter__row">
+      <input
+        class="newsletter__input"
+        type="email"
+        name="email"
+        id="newsletter-email"
+        placeholder="you@domain.com"
+        required
+        aria-required="true"
+        autocomplete="email"
+      />
+      <button class="newsletter__button" type="submit">
+        Subscribe
+      </button>
+    </div>
+    <input type="hidden" value="1" name="embed" />
+  </form>
+</aside>
+
+<style>
+  .newsletter {
+    padding: 2rem;
+    background: var(--txkit-color-bg-elevated);
+    border: 1px solid var(--txkit-color-border);
+    border-radius: var(--txkit-radius-md);
+  }
+
+  .newsletter__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--txkit-color-text);
+  }
+
+  .newsletter__description {
+    margin: 0 0 1.25rem;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--txkit-color-text-secondary);
+  }
+
+  .newsletter__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .newsletter__row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .newsletter__input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem 1rem;
+    min-height: 44px;
+    background: var(--txkit-color-bg);
+    border: 1px solid var(--txkit-color-border-strong);
+    border-radius: var(--txkit-radius-sm);
+    color: var(--txkit-color-text);
+    font-family: var(--txkit-font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    transition: border-color var(--txkit-duration-fast) var(--txkit-easing);
+  }
+
+  .newsletter__input::placeholder {
+    color: var(--txkit-color-text-tertiary);
+  }
+
+  .newsletter__input:focus-visible {
+    outline: 2px solid var(--txkit-color-primary);
+    outline-offset: 1px;
+    border-color: var(--txkit-color-primary);
+  }
+
+  .newsletter__button {
+    padding: 0.75rem 1.25rem;
+    min-height: 44px;
+    background: var(--txkit-color-primary);
+    color: #FFFFFF;
+    border-radius: var(--txkit-radius-sm);
+    font-family: var(--txkit-font-sans);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.5;
+    transition: background var(--txkit-duration-fast) var(--txkit-easing);
+  }
+
+  .newsletter__button:hover {
+    background: var(--txkit-color-primary-hover);
+  }
+
+  .newsletter__button:focus-visible {
+    outline: 2px solid var(--txkit-color-primary-border);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 640px) {
+    .newsletter {
+      padding: 1.5rem;
+    }
+
+    .newsletter__input,
+    .newsletter__button {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .newsletter__input,
+    .newsletter__button {
+      transition: none;
+    }
+  }
+</style>

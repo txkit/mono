@@ -1,0 +1,80 @@
+---
+import PostMeta from './PostMeta.astro'
+
+type Props = {
+  title: string,
+  description: string,
+  pubDate: Date,
+  updatedDate?: Date,
+  minutesRead?: number,
+  heroImage?: string,
+  heroAlt?: string,
+}
+
+const {
+  title,
+  description,
+  pubDate,
+  updatedDate,
+  minutesRead,
+  heroImage,
+  heroAlt,
+} = Astro.props
+---
+
+<header class="post-hero">
+  <h1 class="post-hero__title">{ title }</h1>
+  <p class="post-hero__description">{ description }</p>
+
+  <PostMeta
+    pubDate={pubDate}
+    updatedDate={updatedDate}
+    minutesRead={minutesRead}
+    showAuthor={true}
+  />
+
+  { heroImage && heroAlt && (
+    <figure class="post-hero__figure">
+      <img src={heroImage} alt={heroAlt} loading="eager" decoding="async" />
+    </figure>
+  ) }
+</header>
+
+<style>
+  .post-hero {
+    margin-bottom: 2rem;
+  }
+
+  .post-hero__title {
+    margin: 0 0 1rem;
+    font-size: clamp(2rem, 5vw, 2.75rem);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+    color: var(--txkit-color-text);
+  }
+
+  .post-hero__description {
+    margin: 0 0 1.5rem;
+    font-size: 1.125rem;
+    line-height: 1.55;
+    color: var(--txkit-color-text-secondary);
+  }
+
+  .post-hero__figure {
+    margin: 2.5rem 0 0;
+  }
+
+  .post-hero__figure img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--txkit-radius-md);
+    border: 1px solid var(--txkit-color-border);
+  }
+
+  @media (max-width: 640px) {
+    .post-hero__description {
+      font-size: 1rem;
+    }
+  }
+</style>

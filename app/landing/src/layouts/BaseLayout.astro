@@ -8,6 +8,7 @@ type Props = {
   description?: string,
   canonical?: string,
   ogImage?: string,
+  ogType?: 'website' | 'article',
 }
 
 const {
@@ -15,6 +16,7 @@ const {
   description = 'Decode, preview, and simulate any Web3 transaction before it leaves the wallet. An open standard for transaction safety, built for the agent era, useful today for every dApp, multisig, and DAO.',
   canonical = Astro.url.href,
   ogImage = '/og.svg',
+  ogType = 'website',
 } = Astro.props
 
 const siteUrl = 'https://txkit.dev'
@@ -40,7 +42,7 @@ const ogImageUrl = new URL(ogImage, siteUrl).href
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
     <!-- Open Graph -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content="txKit" />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={title} />
@@ -176,6 +178,8 @@ const ogImageUrl = new URL(ogImage, siteUrl).href
         },
       ],
     })} />
+
+    <slot name="head-extra" />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>

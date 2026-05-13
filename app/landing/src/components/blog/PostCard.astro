@@ -1,0 +1,88 @@
+---
+import PostMeta from './PostMeta.astro'
+
+type Props = {
+  title: string,
+  description: string,
+  pubDate: Date,
+  minutesRead?: number,
+  slug: string,
+}
+
+const {
+  title,
+  description,
+  pubDate,
+  minutesRead,
+  slug,
+} = Astro.props
+
+const href = `/blog/${ slug }/`
+---
+
+<article class="post-card">
+  <a class="post-card__link" href={href} aria-labelledby={`post-${ slug }-title`}>
+    <h2 class="post-card__title" id={`post-${ slug }-title`}>{ title }</h2>
+    <p class="post-card__description">{ description }</p>
+    <PostMeta pubDate={pubDate} minutesRead={minutesRead} />
+  </a>
+</article>
+
+<style>
+  .post-card {
+    border-bottom: 1px solid var(--txkit-color-border);
+  }
+
+  .post-card:last-child {
+    border-bottom: 0;
+  }
+
+  .post-card__link {
+    display: block;
+    padding: 2rem 0;
+    min-height: 44px;
+    transition: opacity var(--txkit-duration-fast) var(--txkit-easing);
+  }
+
+  .post-card__link:hover .post-card__title {
+    color: var(--txkit-color-primary-border);
+  }
+
+  .post-card__link:focus-visible {
+    outline-offset: 4px;
+  }
+
+  .post-card__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    font-weight: 600;
+    color: var(--txkit-color-text);
+    transition: color var(--txkit-duration-fast) var(--txkit-easing);
+  }
+
+  .post-card__description {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--txkit-color-text-secondary);
+  }
+
+  @media (max-width: 640px) {
+    .post-card__link {
+      padding: 1.5rem 0;
+    }
+
+    .post-card__title {
+      font-size: 1.25rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .post-card__link,
+    .post-card__title {
+      transition: none;
+    }
+  }
+</style>
