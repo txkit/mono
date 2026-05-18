@@ -2,7 +2,7 @@
   "name": "@txkit/ows-adapter",
   "version": "0.1.0-alpha.0",
   "description": "Bridge MoonPay Open Wallet Standard (OWS) and PreparedTransaction. Convert PreparedEnvelope to OWS signAndSend payloads with policy-engine annotations. _OWS signs. txKit decides what's safe to sign._",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Michael Diamond",
   "homepage": "https://docs.txkit.dev/protocol/ows",
   "repository": {

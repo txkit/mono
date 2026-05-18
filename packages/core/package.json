@@ -2,7 +2,7 @@
   "name": "@txkit/core",
   "version": "0.1.0-alpha.0",
   "description": "Core utilities and types for txKit",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Michael Diamond",
   "homepage": "https://txkit.dev",
   "repository": {

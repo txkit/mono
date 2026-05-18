@@ -2,7 +2,7 @@
   "name": "@txkit/react",
   "version": "0.1.0-alpha.0",
   "description": "React components for Web3 - connect, transact, display",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Michael Diamond",
   "homepage": "https://txkit.dev",
   "repository": {
