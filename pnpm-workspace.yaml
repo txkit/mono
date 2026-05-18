@@ -1,3 +1,5 @@
 packages:
   - 'app/*'
   - 'packages/*'
+  # mcp-server is closed and hosted-only - excluded from the public workspace
+  - '!packages/mcp-server'

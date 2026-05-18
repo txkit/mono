@@ -67,3 +67,6 @@ CLAUDE.md
 
 # Local-only video recording (see /recording/README.md)
 /recording/
+
+# Closed package - hosted-only, not part of the public repo (see strategic pivot 2026-05-05)
+/packages/mcp-server/
