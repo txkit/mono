@@ -1,6 +1,6 @@
 {
   "name": "@txkit/core",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.3",
   "description": "Core utilities and types for txKit",
   "license": "Apache-2.0",
   "author": "Michael Diamond",

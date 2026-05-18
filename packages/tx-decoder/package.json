@@ -1,6 +1,6 @@
 {
   "name": "@txkit/tx-decoder",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.3",
   "description": "Decode raw EVM calldata into PreparedTransaction clearSigning trees. ERC-7730 registry loader, ABI-based fallback decoder. Zero React or wagmi deps.",
   "license": "Apache-2.0",
   "author": "Michael Diamond",

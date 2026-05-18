@@ -1,6 +1,6 @@
 {
   "name": "@txkit/themes",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.3",
   "description": "CSS themes for txKit components",
   "license": "Apache-2.0",
   "author": "Michael Diamond",

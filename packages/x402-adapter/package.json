@@ -1,6 +1,6 @@
 {
   "name": "@txkit/x402-adapter",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.3",
   "description": "Bridge x402 HTTP payments (Linux Foundation, since 2 Apr 2026) and PreparedTransaction. Attach payment proofs to envelopes; extract payment context from envelopes. Zero React or wagmi deps.",
   "license": "Apache-2.0",
   "author": "Michael Diamond",

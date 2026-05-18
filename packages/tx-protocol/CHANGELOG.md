@@ -1,10 +1,10 @@
 # @txkit/tx-protocol
 
-## [Unreleased]
+## [0.1.0-alpha.3] - 2026-05-18
 
 ### Changed
 
-- **License changed from MIT to Apache-2.0.** Aligns the reference implementation with the txKit open-core licensing decided in the 2026-05-05 strategic pivot: the open distribution layer is Apache-2.0. Versions through `0.1.0-alpha.2` published on npm remain under MIT; this and all later versions are Apache-2.0.
+- **License changed from MIT to Apache-2.0.** Aligns the reference implementation with the txKit open-core licensing decided in the 2026-05-05 strategic pivot: the open distribution layer is Apache-2.0. The `0.1.0-alpha.0` and `0.1.0-alpha.1` versions on npm remain MIT; `0.1.0-alpha.3` and later are Apache-2.0. (`0.1.0-alpha.2` was bumped in-repo but never published.)
 
 ## [0.1.0-alpha.2] - 2026-05-11
 
