@@ -31,14 +31,16 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Typecheck, lint and build cover only the packages. The apps
-      # (landing/docs/story) use Astro/Vite/Vocs that need Node 22+ (astro
-      # check, CustomEvent, fs.globSync), so they are not part of this
-      # Node-matrix validation of the publishable packages.
+      # Build, typecheck and lint cover only the packages, not the apps.
+      # The apps (landing/docs/story) use Astro/Vite/Vocs that need Node
+      # 22+ (astro check, CustomEvent, fs.globSync), so they are not part
+      # of this Node-matrix validation of the publishable packages.
+      # Build runs first so cross-package typecheck and lint resolve
+      # @txkit/* imports against the built dist/ type declarations.
+      - run: pnpm --filter './packages/**' build
+
       - run: pnpm --filter './packages/**' typecheck
 
       - run: pnpm --filter './packages/**' lint
-
-      - run: pnpm --filter './packages/**' build
 
       - run: pnpm test
