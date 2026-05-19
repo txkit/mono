@@ -67,4 +67,4 @@ Visit [txkit.dev](https://txkit.dev) for the full theming guide.
 
 ## License
 
-[MIT](./LICENSE)
+[Apache-2.0](./LICENSE)

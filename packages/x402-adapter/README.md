@@ -63,4 +63,4 @@ Skeleton. Surface stable, will track x402 spec evolution as the working group sh
 
 ## License
 
-[MIT](./LICENSE)
+[Apache-2.0](./LICENSE)

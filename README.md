@@ -55,8 +55,6 @@ txKit is two things:
 | [`@txkit/ows-adapter`](./packages/ows-adapter) | Bridge MoonPay Open Wallet Standard <-> PreparedTransaction | [![npm](https://img.shields.io/npm/v/@txkit/ows-adapter.svg)](https://www.npmjs.com/package/@txkit/ows-adapter) |
 | [`@txkit/x402-adapter`](./packages/x402-adapter) | Bridge x402 HTTP payments (Linux Foundation, 2 Apr 2026) <-> PreparedTransaction | [![npm](https://img.shields.io/npm/v/@txkit/x402-adapter.svg)](https://www.npmjs.com/package/@txkit/x402-adapter) |
 
-The repo also hosts [`packages/mcp-server`](./packages/mcp-server) - a hardened JSON-RPC MCP server. It is intentionally **not published** to npm (see [SECURITY.md](./SECURITY.md)) and is consumed by cloning the repo or vendoring the source.
-
 ## Quick Start
 
 ```bash
@@ -168,7 +166,7 @@ txKit is a **decode / preview / risk** layer. It sits between agents that produc
 
 ### Why open protocol (not a service)
 
-`@txkit/tx-protocol` is an **open MIT spec + reference implementation**. There is no escrow, no per-tx fee, no proprietary verification SaaS in the signing path. The shape lives in your repo, your bundler, your audit. This is the deliberate trade-off vs closed verification services: composability and zero vendor lock-in over end-to-end SLA.
+`@txkit/tx-protocol` is an **open Apache-2.0 spec + reference implementation**. There is no escrow, no per-tx fee, no proprietary verification SaaS in the signing path. The shape lives in your repo, your bundler, your audit. This is the deliberate trade-off vs closed verification services: composability and zero vendor lock-in over end-to-end SLA.
 
 ### Regulatory posture (US Covered UI Provider, EU MiCA)
 
@@ -211,7 +209,6 @@ packages/
   tx-decoder/     - Calldata decoder (ERC-7730 + ABI fallback)
   ows-adapter/    - MoonPay Open Wallet Standard bridge
   x402-adapter/   - x402 HTTP payments bridge
-  mcp-server/     - MCP server (not published, see SECURITY.md)
 app/
   docs/           - Documentation site (Vocs) - docs.txkit.dev
   landing/        - Marketing landing (Astro) - txkit.dev

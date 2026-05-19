@@ -30,9 +30,9 @@ packages/
   tx-decoder/    - Decode raw EVM calldata into clearSigning trees
   ows-adapter/   - Bridge MoonPay Open Wallet Standard <-> PreparedTransaction
   x402-adapter/  - Bridge x402 HTTP payments <-> PreparedTransaction
-  mcp-server/    - Hardened MCP server (unpublished, see SECURITY.md)
 app/
   docs/          - Documentation site (Vocs)
+  landing/       - Marketing landing (Astro)
   story/         - Component playground (Vite)
 ```
 

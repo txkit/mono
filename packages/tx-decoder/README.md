@@ -76,4 +76,4 @@ Skeleton. Implementation lands progressively as JSON registry entries are popula
 
 ## License
 
-[MIT](./LICENSE)
+[Apache-2.0](./LICENSE)

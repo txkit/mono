@@ -80,4 +80,4 @@ Skeleton with single-call and batch translation. Roadmap:
 
 ## License
 
-[MIT](./LICENSE)
+[Apache-2.0](./LICENSE)

@@ -91,7 +91,7 @@ See [`examples/stakewise-deposit.ts`](./examples/stakewise-deposit.ts), [`exampl
 
 ## Spec reference
 
-Canonical spec: [`spec/v0.1/prepared-transaction.md`](./spec/v0.1/prepared-transaction.md). The `version` field in every envelope pins it to the spec version.
+Canonical spec: [`spec/v0.1/prepared-transaction.md`](./spec/v0.1/prepared-transaction.md). The `$schema` field in every envelope pins it to the spec version.
 
 ## API
 
@@ -103,7 +103,7 @@ createEvmBatch(content: EvmTxContent, envelope?): EvmBatchEnvelope    // calls.l
 createSignature(content: SignatureContent, envelope?): SignatureEnvelope
 ```
 
-Each pre-fills `$schema`, `version`, `kind`, `issuedAt`, and derives `expiresAt` from `content.validity.notAfter` when not overridden.
+Each pre-fills `$schema`, `kind`, `issuedAt`, and derives `expiresAt` from `content.validity.notAfter` when not overridden.
 
 ### Validation
 
@@ -165,12 +165,12 @@ Exposed: `preparedEnvelopeSchema` (discriminated union over `kind`), `evmTxEnvel
 
 ## Versioning
 
-- v0.1 is a draft. Breaking changes bump the `version` field to `0.2`. Additive fields within the same version are non-breaking.
+- v0.1 is a draft. Breaking changes bump the `$schema` spec version to `0.2`. Additive fields within the same version are non-breaking.
 - npm package follows semver for code-level changes (additions, bugfixes).
 
 ## License
 
-MIT. See [LICENSE](./LICENSE).
+Apache-2.0. See [LICENSE](./LICENSE).
 
 ## See also
 

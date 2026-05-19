@@ -23,7 +23,6 @@ body:
         - "@txkit/tx-decoder"
         - "@txkit/ows-adapter"
         - "@txkit/x402-adapter"
-        - "@txkit/mcp-server"
         - New package
         - Not sure
     validations:

@@ -77,4 +77,4 @@ Visit [txkit.dev](https://txkit.dev) for full documentation.
 
 ## License
 
-[MIT](./LICENSE)
+[Apache-2.0](./LICENSE)
