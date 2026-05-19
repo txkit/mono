@@ -31,13 +31,14 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm typecheck
+      # Typecheck, lint and build cover only the packages. The apps
+      # (landing/docs/story) use Astro/Vite/Vocs that need Node 22+ (astro
+      # check, CustomEvent, fs.globSync), so they are not part of this
+      # Node-matrix validation of the publishable packages.
+      - run: pnpm --filter './packages/**' typecheck
 
-      - run: pnpm lint
+      - run: pnpm --filter './packages/**' lint
 
-      # Build only packages, not apps. Apps (docs/story) use Vite/Vocs that
-      # require Node 22+ (CustomEvent, fs.globSync); the packages we ship to
-      # npm support engines.node >=18.17 and that is what we validate here.
       - run: pnpm --filter './packages/**' build
 
       - run: pnpm test

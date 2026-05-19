@@ -25,6 +25,7 @@ export default tseslint.config(
       'app/docs/.vocs/**',
       'app/story/dist/**',
       'pnpm-lock.yaml',
+      '**/env.d.ts',  // Astro/Vite-generated, contains a triple-slash reference
       '**/*.js',
       '**/*.cjs',
     ],
