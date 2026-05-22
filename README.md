@@ -20,6 +20,14 @@
   <img src="https://img.shields.io/badge/TypeScript-5.9-blue.svg" alt="TypeScript" />
 </p>
 
+<p align="center">
+  <a href="https://github.com/ethereum/ERCs/pull/1753"><img src="https://img.shields.io/badge/ERC--8265-Draft%20PR%20%231753-success.svg" alt="ERC-8265 PR" /></a>
+  <a href="https://ethereum-magicians.org/t/prepared-transaction-envelope-off-chain-producer-to-wallet-handoff/28557"><img src="https://img.shields.io/badge/Ethereum%20Magicians-thread%2028557-blue.svg" alt="Magicians thread 28557" /></a>
+  <a href="https://builder.ensgrants.xyz/grants/367"><img src="https://img.shields.io/badge/ENS%20Public%20Goods-grant%20%23367-purple.svg" alt="ENS PG #367" /></a>
+</p>
+
+> Reference implementation of [**ERC-8265 Prepared Transaction Envelope**](https://github.com/ethereum/ERCs/pull/1753) - a proposed open standard for pre-execution transaction validation between AI agents, MCP tools, and wallets. Apache-2.0 SDK shipped, ERC draft open in `ethereum/ERCs` (CI green), public discussion live on [Ethereum Magicians](https://ethereum-magicians.org/t/prepared-transaction-envelope-off-chain-producer-to-wallet-handoff/28557).
+
 ---
 
 > **v0.1.0-alpha** - published under the `alpha` npm tag while we refine the public surface. API may shift before v1.0.
@@ -42,6 +50,20 @@ txKit is two things:
 - **Composes, doesn't replace.** Embedded mode runs alongside your existing wagmi / RainbowKit / AppKit / ConnectKit / Privy setup - no duplicate providers.
 - **WCAG 2.1 AA.** Focus management, keyboard nav, reduced-motion fallbacks, screen-reader announcements baked in.
 - **Tiny.** 2-7 kB JS gzip per component. Tree-shaken on import.
+
+## Arbitrum London Buildathon
+
+Live submission to the [Arbitrum Open House London Buildathon](https://arbitrum-london.hackquest.io/) (deadline 14 June 2026). Multi-chain deployment surface:
+
+| Chain | CAIP-2 | Role |
+|-------|--------|------|
+| Arbitrum Sepolia | `eip155:421614` | Primary L2 testbed |
+| Robinhood Chain testnet | `eip155:46630` | Financial-grade L2 on Arbitrum Orbit, RWA-focused |
+| Ethereum Mainnet / Sepolia | `eip155:1` / `eip155:11155111` | Reference + ENS resolution |
+
+**Why pre-execution safety, why now.** The FCA + Bank of England [joint tokenization framework](https://www.pymnts.com/blockchain/2026/uk-regulators-unveil-blueprint-for-asset-tokenization-in-wholesale-markets/) (18 May 2026) and MiCA Phase 2 obligations on CASPs push agent-driven RWA workflows toward verifiable, audit-ready transaction routing. txKit decodes the envelope before signature - intent, allowance bounds, recipient allowlist, MEV risk - so agents and wallets approve or reject on the decoded picture, not the calldata bytes. Post-execution analysis catches losses after settlement; on tokenized stocks, ETFs, and on-chain bonds, settlement is final.
+
+Live agent demo: [`examples/arbitrum-london/`](./examples/arbitrum-london/) - x402 producer + EIP-7702 signer + `TransactionButton` flow on Arbitrum Sepolia and Robinhood Chain testnet.
 
 ## Packages
 
@@ -138,7 +160,14 @@ Every component supports three customization levels:
 v0.1 covers three kinds today: `evm-tx` (single EVM transaction), `evm-batch` (EIP-5792 atomic batch), `signature` (EIP-712 / SIWE / personal-sign). Nine more are reserved: `evm-userop`, `evm-frame`, `evm-7702`, `mandate`, `intent`, `psbt`, `svm-tx`, `move-tx`, `cosmos-tx`.
 
 - [**Spec v0.1**](./packages/tx-protocol/spec/v0.1/prepared-transaction.md) - canonical RFC
-- [**Examples**](./packages/tx-protocol/examples/) - StakeWise deposit, Uniswap Permit2 + swap, Safe delegatecall warning
+- [**Examples**](./packages/tx-protocol/examples/) - 4 runnable TypeScript scenarios:
+
+| Example | Pattern |
+|---------|---------|
+| [`stakewise-deposit.ts`](./packages/tx-protocol/examples/stakewise-deposit.ts) | Single EVM call (`evm-tx`) with attack-defense fields for protocol UI |
+| [`uniswap-permit2-swap.ts`](./packages/tx-protocol/examples/uniswap-permit2-swap.ts) | EIP-5792 atomic batch (`evm-batch`) with Permit2 approval |
+| [`safe-delegatecall-warning.ts`](./packages/tx-protocol/examples/safe-delegatecall-warning.ts) | Safe wallet delegatecall risk warning + decoded trace |
+| [`multicall-batch.ts`](./packages/tx-protocol/examples/multicall-batch.ts) | Multicall-bait detection via attack-defense flags |
 - [**OWS composition**](./app/docs/pages/protocol/ows.mdx) - how this composes with MoonPay Open Wallet Standard
 
 ```ts
@@ -236,6 +265,12 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines.
 ## Documentation
 
 Visit [txkit.dev](https://txkit.dev) for full documentation.
+
+## Recognition
+
+- **Standard**: [ERC-8265 Prepared Transaction Envelope](https://github.com/ethereum/ERCs/pull/1753) - draft PR open in `ethereum/ERCs` since 13 May 2026 (CI green). Public discussion on [Ethereum Magicians thread 28557](https://ethereum-magicians.org/t/prepared-transaction-envelope-off-chain-producer-to-wallet-handoff/28557).
+- **Public goods funding**: ENS [Public Goods Builder Grant #367](https://builder.ensgrants.xyz/grants/367) submitted 19 May 2026 (Stage 1, 2 ETH, `@txkit/tx-decoder` track). Drips + Optimism RetroPGF receivers configured in [`FUNDING.json`](./FUNDING.json).
+- **Standards engagement**: Ethereum Foundation [Trillion Dollar Security Initiative](https://trilliondollarsecurity.org/) outreach 20 May 2026 - inquiry on funding pathways for pre-execution safety primitives.
 
 ## License
 
