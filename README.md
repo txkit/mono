@@ -23,7 +23,6 @@
 <p align="center">
   <a href="https://github.com/ethereum/ERCs/pull/1753"><img src="https://img.shields.io/badge/ERC--8265-Draft%20PR%20%231753-success.svg" alt="ERC-8265 PR" /></a>
   <a href="https://ethereum-magicians.org/t/erc-8265-prepared-transaction-envelope/28557"><img src="https://img.shields.io/badge/Ethereum%20Magicians-thread%2028557-blue.svg" alt="Magicians thread 28557" /></a>
-  <a href="https://builder.ensgrants.xyz/grants/367"><img src="https://img.shields.io/badge/ENS%20Public%20Goods-grant%20%23367-purple.svg" alt="ENS PG #367" /></a>
 </p>
 
 > Reference implementation of [**ERC-8265 Prepared Transaction Envelope**](https://github.com/ethereum/ERCs/pull/1753) - a proposed open standard for pre-execution transaction validation between AI agents, MCP tools, and wallets. Apache-2.0 SDK shipped, ERC draft open in `ethereum/ERCs` (CI green), public discussion live on [Ethereum Magicians](https://ethereum-magicians.org/t/erc-8265-prepared-transaction-envelope/28557).
@@ -269,7 +268,7 @@ Visit [txkit.dev](https://txkit.dev) for full documentation.
 ## Recognition
 
 - **Standard**: [ERC-8265 Prepared Transaction Envelope](https://github.com/ethereum/ERCs/pull/1753) - draft PR open in `ethereum/ERCs` since 13 May 2026 (CI green). Public discussion on [Ethereum Magicians thread 28557](https://ethereum-magicians.org/t/erc-8265-prepared-transaction-envelope/28557).
-- **Public goods funding**: ENS [Public Goods Builder Grant #367](https://builder.ensgrants.xyz/grants/367) submitted 19 May 2026 (Stage 1, 2 ETH, `@txkit/tx-decoder` track). Drips + Optimism RetroPGF receivers configured in [`FUNDING.json`](./FUNDING.json).
+- **Public goods funding**: Drips + Optimism RetroPGF receivers configured in [`FUNDING.json`](./FUNDING.json).
 - **Standards engagement**: Ethereum Foundation [Trillion Dollar Security Initiative](https://trilliondollarsecurity.org/) outreach 20 May 2026 - inquiry on funding pathways for pre-execution safety primitives.
 
 ## License
