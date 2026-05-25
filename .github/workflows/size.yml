@@ -13,7 +13,7 @@ jobs:
     name: size-limit per package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # size-limit-action diffs against the base branch, needs full history
           fetch-depth: 0
