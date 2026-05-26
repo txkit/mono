@@ -1,0 +1,227 @@
+[
+  {
+    "chain": "eip155:1",
+    "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+    "label": "Permit2",
+    "abi": [
+      {
+        "type": "function",
+        "name": "permit",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "owner", "type": "address" },
+          {
+            "name": "permitSingle",
+            "type": "tuple",
+            "components": [
+              {
+                "name": "details",
+                "type": "tuple",
+                "components": [
+                  { "name": "token", "type": "address" },
+                  { "name": "amount", "type": "uint160" },
+                  { "name": "expiration", "type": "uint48" },
+                  { "name": "nonce", "type": "uint48" }
+                ]
+              },
+              { "name": "spender", "type": "address" },
+              { "name": "sigDeadline", "type": "uint256" }
+            ]
+          },
+          { "name": "signature", "type": "bytes" }
+        ],
+        "outputs": []
+      }
+    ],
+    "clearSigning": {
+      "permit": {
+        "title": "Permit2 single approval",
+        "fields": {
+          "owner": "Token owner",
+          "permitSingle": "Permit details (token / amount / expiration / nonce / spender / sigDeadline)",
+          "signature": "EIP-712 signature"
+        }
+      }
+    }
+  },
+  {
+    "chain": "eip155:42161",
+    "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+    "label": "Permit2",
+    "abi": [
+      {
+        "type": "function",
+        "name": "permit",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "owner", "type": "address" },
+          {
+            "name": "permitSingle",
+            "type": "tuple",
+            "components": [
+              {
+                "name": "details",
+                "type": "tuple",
+                "components": [
+                  { "name": "token", "type": "address" },
+                  { "name": "amount", "type": "uint160" },
+                  { "name": "expiration", "type": "uint48" },
+                  { "name": "nonce", "type": "uint48" }
+                ]
+              },
+              { "name": "spender", "type": "address" },
+              { "name": "sigDeadline", "type": "uint256" }
+            ]
+          },
+          { "name": "signature", "type": "bytes" }
+        ],
+        "outputs": []
+      }
+    ],
+    "clearSigning": {
+      "permit": {
+        "title": "Permit2 single approval (Arbitrum)",
+        "fields": {
+          "owner": "Token owner",
+          "permitSingle": "Permit details",
+          "signature": "EIP-712 signature"
+        }
+      }
+    }
+  },
+  {
+    "chain": "eip155:8453",
+    "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+    "label": "Permit2",
+    "abi": [
+      {
+        "type": "function",
+        "name": "permit",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "owner", "type": "address" },
+          {
+            "name": "permitSingle",
+            "type": "tuple",
+            "components": [
+              {
+                "name": "details",
+                "type": "tuple",
+                "components": [
+                  { "name": "token", "type": "address" },
+                  { "name": "amount", "type": "uint160" },
+                  { "name": "expiration", "type": "uint48" },
+                  { "name": "nonce", "type": "uint48" }
+                ]
+              },
+              { "name": "spender", "type": "address" },
+              { "name": "sigDeadline", "type": "uint256" }
+            ]
+          },
+          { "name": "signature", "type": "bytes" }
+        ],
+        "outputs": []
+      }
+    ],
+    "clearSigning": {
+      "permit": {
+        "title": "Permit2 single approval (Base)",
+        "fields": {
+          "owner": "Token owner",
+          "permitSingle": "Permit details",
+          "signature": "EIP-712 signature"
+        }
+      }
+    }
+  },
+  {
+    "chain": "eip155:10",
+    "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+    "label": "Permit2",
+    "abi": [
+      {
+        "type": "function",
+        "name": "permit",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "owner", "type": "address" },
+          {
+            "name": "permitSingle",
+            "type": "tuple",
+            "components": [
+              {
+                "name": "details",
+                "type": "tuple",
+                "components": [
+                  { "name": "token", "type": "address" },
+                  { "name": "amount", "type": "uint160" },
+                  { "name": "expiration", "type": "uint48" },
+                  { "name": "nonce", "type": "uint48" }
+                ]
+              },
+              { "name": "spender", "type": "address" },
+              { "name": "sigDeadline", "type": "uint256" }
+            ]
+          },
+          { "name": "signature", "type": "bytes" }
+        ],
+        "outputs": []
+      }
+    ],
+    "clearSigning": {
+      "permit": {
+        "title": "Permit2 single approval (Optimism)",
+        "fields": {
+          "owner": "Token owner",
+          "permitSingle": "Permit details",
+          "signature": "EIP-712 signature"
+        }
+      }
+    }
+  },
+  {
+    "chain": "eip155:137",
+    "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+    "label": "Permit2",
+    "abi": [
+      {
+        "type": "function",
+        "name": "permit",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "owner", "type": "address" },
+          {
+            "name": "permitSingle",
+            "type": "tuple",
+            "components": [
+              {
+                "name": "details",
+                "type": "tuple",
+                "components": [
+                  { "name": "token", "type": "address" },
+                  { "name": "amount", "type": "uint160" },
+                  { "name": "expiration", "type": "uint48" },
+                  { "name": "nonce", "type": "uint48" }
+                ]
+              },
+              { "name": "spender", "type": "address" },
+              { "name": "sigDeadline", "type": "uint256" }
+            ]
+          },
+          { "name": "signature", "type": "bytes" }
+        ],
+        "outputs": []
+      }
+    ],
+    "clearSigning": {
+      "permit": {
+        "title": "Permit2 single approval (Polygon)",
+        "fields": {
+          "owner": "Token owner",
+          "permitSingle": "Permit details",
+          "signature": "EIP-712 signature"
+        }
+      }
+    }
+  }
+]

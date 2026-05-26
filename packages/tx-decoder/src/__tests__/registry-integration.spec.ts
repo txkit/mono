@@ -1,3 +1,4 @@
+import { encodeFunctionData } from 'viem'
 import { describe, expect, it } from 'vitest'
 
 import { decodeCall } from '../decode'
@@ -86,5 +87,88 @@ describe('BUILTIN_REGISTRY - ERC-20', () => {
     expect(result.functionName).toBe('approve')
     expect(result.args[0]?.name).toBe('spender')
     expect(result.args[1]?.value).toBe(115792089237316195423570985008687907853269984665640564039457584007913129639935n)
+  })
+})
+
+
+describe('BUILTIN_REGISTRY - Permit2', () => {
+  // Round-trip encode via viem ensures the JSON ABI tuple shape is correct.
+  const permitAbi = [
+    {
+      type: 'function',
+      name: 'permit',
+      stateMutability: 'nonpayable',
+      inputs: [
+        { name: 'owner', type: 'address' },
+        {
+          name: 'permitSingle',
+          type: 'tuple',
+          components: [
+            {
+              name: 'details',
+              type: 'tuple',
+              components: [
+                { name: 'token', type: 'address' },
+                { name: 'amount', type: 'uint160' },
+                { name: 'expiration', type: 'uint48' },
+                { name: 'nonce', type: 'uint48' },
+              ],
+            },
+            { name: 'spender', type: 'address' },
+            { name: 'sigDeadline', type: 'uint256' },
+          ],
+        },
+        { name: 'signature', type: 'bytes' },
+      ],
+      outputs: [],
+    },
+  ] as const
+
+  const samplePermitCalldata = encodeFunctionData({
+    abi: permitAbi,
+    functionName: 'permit',
+    args: [
+      '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+      {
+        details: {
+          token: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+          amount: 1000000000n,
+          expiration: 1735689600,
+          nonce: 0,
+        },
+        spender: '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45',
+        sigDeadline: 1735689600n,
+      },
+      '0x',
+    ],
+  })
+
+  it('decodes Permit2 permit on mainnet', async () => {
+    const result = await decodeCall(
+      {
+        call: { to: '0x000000000022D473030F116dDEE9F6B43aC78BA3', data: samplePermitCalldata },
+        chain: 'eip155:1',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('permit')
+    expect(result.args[0]?.name).toBe('owner')
+    expect((result.clearSigning as { title?: string } | undefined)?.title).toContain('Permit2')
+  })
+
+  it('resolves the same Permit2 deployment on Arbitrum', async () => {
+    const result = await decodeCall(
+      {
+        call: { to: '0x000000000022D473030F116dDEE9F6B43aC78BA3', data: samplePermitCalldata },
+        chain: 'eip155:42161',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('permit')
+    expect((result.clearSigning as { title?: string } | undefined)?.title).toContain('Arbitrum')
   })
 })
