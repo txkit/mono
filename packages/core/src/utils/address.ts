@@ -29,6 +29,8 @@ const EXPLORERS: Record<number, string> = {
   84532: 'https://sepolia.basescan.org',
   421614: 'https://sepolia.arbiscan.io',
   80002: 'https://amoy.polygonscan.com',
+  // Robinhood Chain testnet (Arbitrum Orbit L2) - per Buildathon scenario C
+  46630: 'https://explorer.testnet.chain.robinhood.com',
 }
 
 /** Build a block explorer URL for a given chain, hash, and type */
