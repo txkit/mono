@@ -1,0 +1,20 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "@txkit/docs": "0.1.0",
+    "@txkit/landing": "0.1.0",
+    "@txkit/story": "0.1.0",
+    "@txkit/example-arbitrum-london": "0.0.0",
+    "@txkit/core": "0.1.0-alpha.3",
+    "@txkit/ows-adapter": "0.1.0-alpha.3",
+    "@txkit/react": "0.1.0-alpha.3",
+    "@txkit/themes": "0.1.0-alpha.3",
+    "@txkit/tx-decoder": "0.1.0-alpha.3",
+    "@txkit/tx-protocol": "0.1.0-alpha.3",
+    "@txkit/x402-adapter": "0.1.0-alpha.3"
+  },
+  "changesets": [
+    "decoder-registry-mvp"
+  ]
+}
