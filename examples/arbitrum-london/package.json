@@ -1,0 +1,10 @@
+{
+  "name": "@txkit/example-arbitrum-london",
+  "version": "0.0.0",
+  "private": true,
+  "description": "txKit Arbitrum London Buildathon demo - Pendle yield swap (scenario A) + x402 RWA agent on Robinhood Chain (scenario C). Next.js app scaffold pending - run `pnpm create next-app@15 .` to generate.",
+  "scripts": {
+    "build:contracts": "cd contracts && forge build",
+    "test:contracts": "cd contracts && forge test"
+  }
+}
