@@ -278,3 +278,86 @@ describe('BUILTIN_REGISTRY - Uniswap V3 SwapRouter02', () => {
     expect(result.args[0]?.value).toBe(9999999999n)
   })
 })
+
+
+describe('BUILTIN_REGISTRY - Aave V3 Pool', () => {
+  const supplyAbi = [
+    {
+      type: 'function',
+      name: 'supply',
+      stateMutability: 'nonpayable',
+      inputs: [
+        { name: 'asset', type: 'address' },
+        { name: 'amount', type: 'uint256' },
+        { name: 'onBehalfOf', type: 'address' },
+        { name: 'referralCode', type: 'uint16' },
+      ],
+      outputs: [],
+    },
+  ] as const
+
+  const withdrawAbi = [
+    {
+      type: 'function',
+      name: 'withdraw',
+      stateMutability: 'nonpayable',
+      inputs: [
+        { name: 'asset', type: 'address' },
+        { name: 'amount', type: 'uint256' },
+        { name: 'to', type: 'address' },
+      ],
+      outputs: [{ name: '', type: 'uint256' }],
+    },
+  ] as const
+
+  it('decodes supply on mainnet Aave V3 Pool', async () => {
+    const data = encodeFunctionData({
+      abi: supplyAbi,
+      functionName: 'supply',
+      args: [
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        1000_000000n,
+        '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+        0,
+      ],
+    })
+
+    const result = await decodeCall(
+      {
+        call: { to: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2', data },
+        chain: 'eip155:1',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('supply')
+    expect(result.args[0]?.name).toBe('asset')
+    expect(result.args[1]?.value).toBe(1000_000000n)
+    expect((result.clearSigning as { title?: string } | undefined)?.title).toContain('supply')
+  })
+
+  it('decodes withdraw on Arbitrum Aave V3 Pool (shared address with Optimism/Polygon)', async () => {
+    const data = encodeFunctionData({
+      abi: withdrawAbi,
+      functionName: 'withdraw',
+      args: [
+        '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        500_000000n,
+        '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+      ],
+    })
+
+    const result = await decodeCall(
+      {
+        call: { to: '0x794a61358D6845594F94dc1DB02A252b5b4814aD', data },
+        chain: 'eip155:42161',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('withdraw')
+    expect((result.clearSigning as { title?: string } | undefined)?.title).toContain('Arbitrum')
+  })
+})

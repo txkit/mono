@@ -1,0 +1,88 @@
+[
+  {
+    "chain": "eip155:1",
+    "address": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2",
+    "label": "Aave V3 Pool",
+    "abi": [
+      {
+        "type": "function",
+        "name": "supply",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "asset", "type": "address" },
+          { "name": "amount", "type": "uint256" },
+          { "name": "onBehalfOf", "type": "address" },
+          { "name": "referralCode", "type": "uint16" }
+        ],
+        "outputs": []
+      },
+      {
+        "type": "function",
+        "name": "withdraw",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "asset", "type": "address" },
+          { "name": "amount", "type": "uint256" },
+          { "name": "to", "type": "address" }
+        ],
+        "outputs": [{ "name": "", "type": "uint256" }]
+      }
+    ],
+    "clearSigning": {
+      "supply": { "title": "Aave V3: supply collateral", "fields": { "asset": "Asset address", "amount": "Amount (raw units)", "onBehalfOf": "Beneficiary", "referralCode": "Referral code (0 if none)" } },
+      "withdraw": { "title": "Aave V3: withdraw collateral", "fields": { "asset": "Asset address", "amount": "Amount (raw units, type(uint256).max = full)", "to": "Receiver" } }
+    }
+  },
+  {
+    "chain": "eip155:42161",
+    "address": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+    "label": "Aave V3 Pool (Arbitrum)",
+    "abi": [
+      { "type": "function", "name": "supply", "stateMutability": "nonpayable", "inputs": [{ "name": "asset", "type": "address" }, { "name": "amount", "type": "uint256" }, { "name": "onBehalfOf", "type": "address" }, { "name": "referralCode", "type": "uint16" }], "outputs": [] },
+      { "type": "function", "name": "withdraw", "stateMutability": "nonpayable", "inputs": [{ "name": "asset", "type": "address" }, { "name": "amount", "type": "uint256" }, { "name": "to", "type": "address" }], "outputs": [{ "name": "", "type": "uint256" }] }
+    ],
+    "clearSigning": {
+      "supply": { "title": "Aave V3 (Arbitrum): supply collateral", "fields": { "asset": "Asset", "amount": "Amount", "onBehalfOf": "Beneficiary", "referralCode": "Referral" } },
+      "withdraw": { "title": "Aave V3 (Arbitrum): withdraw collateral", "fields": { "asset": "Asset", "amount": "Amount", "to": "Receiver" } }
+    }
+  },
+  {
+    "chain": "eip155:10",
+    "address": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+    "label": "Aave V3 Pool (Optimism)",
+    "abi": [
+      { "type": "function", "name": "supply", "stateMutability": "nonpayable", "inputs": [{ "name": "asset", "type": "address" }, { "name": "amount", "type": "uint256" }, { "name": "onBehalfOf", "type": "address" }, { "name": "referralCode", "type": "uint16" }], "outputs": [] },
+      { "type": "function", "name": "withdraw", "stateMutability": "nonpayable", "inputs": [{ "name": "asset", "type": "address" }, { "name": "amount", "type": "uint256" }, { "name": "to", "type": "address" }], "outputs": [{ "name": "", "type": "uint256" }] }
+    ],
+    "clearSigning": {
+      "supply": { "title": "Aave V3 (Optimism): supply collateral", "fields": { "asset": "Asset", "amount": "Amount", "onBehalfOf": "Beneficiary", "referralCode": "Referral" } },
+      "withdraw": { "title": "Aave V3 (Optimism): withdraw collateral", "fields": { "asset": "Asset", "amount": "Amount", "to": "Receiver" } }
+    }
+  },
+  {
+    "chain": "eip155:137",
+    "address": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
+    "label": "Aave V3 Pool (Polygon)",
+    "abi": [
+      { "type": "function", "name": "supply", "stateMutability": "nonpayable", "inputs": [{ "name": "asset", "type": "address" }, { "name": "amount", "type": "uint256" }, { "name": "onBehalfOf", "type": "address" }, { "name": "referralCode", "type": "uint16" }], "outputs": [] },
+      { "type": "function", "name": "withdraw", "stateMutability": "nonpayable", "inputs": [{ "name": "asset", "type": "address" }, { "name": "amount", "type": "uint256" }, { "name": "to", "type": "address" }], "outputs": [{ "name": "", "type": "uint256" }] }
+    ],
+    "clearSigning": {
+      "supply": { "title": "Aave V3 (Polygon): supply collateral", "fields": { "asset": "Asset", "amount": "Amount", "onBehalfOf": "Beneficiary", "referralCode": "Referral" } },
+      "withdraw": { "title": "Aave V3 (Polygon): withdraw collateral", "fields": { "asset": "Asset", "amount": "Amount", "to": "Receiver" } }
+    }
+  },
+  {
+    "chain": "eip155:8453",
+    "address": "0xA238Dd80C259a72e81d7e4664a9801593F98d1c5",
+    "label": "Aave V3 Pool (Base)",
+    "abi": [
+      { "type": "function", "name": "supply", "stateMutability": "nonpayable", "inputs": [{ "name": "asset", "type": "address" }, { "name": "amount", "type": "uint256" }, { "name": "onBehalfOf", "type": "address" }, { "name": "referralCode", "type": "uint16" }], "outputs": [] },
+      { "type": "function", "name": "withdraw", "stateMutability": "nonpayable", "inputs": [{ "name": "asset", "type": "address" }, { "name": "amount", "type": "uint256" }, { "name": "to", "type": "address" }], "outputs": [{ "name": "", "type": "uint256" }] }
+    ],
+    "clearSigning": {
+      "supply": { "title": "Aave V3 (Base): supply collateral", "fields": { "asset": "Asset", "amount": "Amount", "onBehalfOf": "Beneficiary", "referralCode": "Referral" } },
+      "withdraw": { "title": "Aave V3 (Base): withdraw collateral", "fields": { "asset": "Asset", "amount": "Amount", "to": "Receiver" } }
+    }
+  }
+]
