@@ -1,0 +1,153 @@
+[
+  {
+    "chain": "eip155:1",
+    "address": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+    "label": "Uniswap V3 SwapRouter02",
+    "abi": [
+      {
+        "type": "function",
+        "name": "exactInputSingle",
+        "stateMutability": "payable",
+        "inputs": [
+          {
+            "name": "params",
+            "type": "tuple",
+            "components": [
+              { "name": "tokenIn", "type": "address" },
+              { "name": "tokenOut", "type": "address" },
+              { "name": "fee", "type": "uint24" },
+              { "name": "recipient", "type": "address" },
+              { "name": "amountIn", "type": "uint256" },
+              { "name": "amountOutMinimum", "type": "uint256" },
+              { "name": "sqrtPriceLimitX96", "type": "uint160" }
+            ]
+          }
+        ],
+        "outputs": [{ "name": "amountOut", "type": "uint256" }]
+      },
+      {
+        "type": "function",
+        "name": "exactInput",
+        "stateMutability": "payable",
+        "inputs": [
+          {
+            "name": "params",
+            "type": "tuple",
+            "components": [
+              { "name": "path", "type": "bytes" },
+              { "name": "recipient", "type": "address" },
+              { "name": "amountIn", "type": "uint256" },
+              { "name": "amountOutMinimum", "type": "uint256" }
+            ]
+          }
+        ],
+        "outputs": [{ "name": "amountOut", "type": "uint256" }]
+      },
+      {
+        "type": "function",
+        "name": "exactOutputSingle",
+        "stateMutability": "payable",
+        "inputs": [
+          {
+            "name": "params",
+            "type": "tuple",
+            "components": [
+              { "name": "tokenIn", "type": "address" },
+              { "name": "tokenOut", "type": "address" },
+              { "name": "fee", "type": "uint24" },
+              { "name": "recipient", "type": "address" },
+              { "name": "amountOut", "type": "uint256" },
+              { "name": "amountInMaximum", "type": "uint256" },
+              { "name": "sqrtPriceLimitX96", "type": "uint160" }
+            ]
+          }
+        ],
+        "outputs": [{ "name": "amountIn", "type": "uint256" }]
+      },
+      {
+        "type": "function",
+        "name": "multicall",
+        "stateMutability": "payable",
+        "inputs": [
+          { "name": "deadline", "type": "uint256" },
+          { "name": "data", "type": "bytes[]" }
+        ],
+        "outputs": [{ "name": "results", "type": "bytes[]" }]
+      }
+    ],
+    "clearSigning": {
+      "exactInputSingle": { "title": "Uniswap V3 swap (exact input)", "fields": { "params": "Token in/out, fee tier, amount in, min amount out, recipient" } },
+      "exactInput": { "title": "Uniswap V3 multi-hop swap (exact input)", "fields": { "params": "Encoded path, amount in, min amount out, recipient" } },
+      "exactOutputSingle": { "title": "Uniswap V3 swap (exact output)", "fields": { "params": "Token in/out, fee tier, amount out, max amount in, recipient" } },
+      "multicall": { "title": "Uniswap V3 batched calls", "fields": { "deadline": "Deadline (unix seconds)", "data": "Array of inner calldata" } }
+    }
+  },
+  {
+    "chain": "eip155:42161",
+    "address": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+    "label": "Uniswap V3 SwapRouter02 (Arbitrum)",
+    "abi": [
+      { "type": "function", "name": "exactInputSingle", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "tokenIn", "type": "address" }, { "name": "tokenOut", "type": "address" }, { "name": "fee", "type": "uint24" }, { "name": "recipient", "type": "address" }, { "name": "amountIn", "type": "uint256" }, { "name": "amountOutMinimum", "type": "uint256" }, { "name": "sqrtPriceLimitX96", "type": "uint160" }] }], "outputs": [{ "name": "amountOut", "type": "uint256" }] },
+      { "type": "function", "name": "exactInput", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "path", "type": "bytes" }, { "name": "recipient", "type": "address" }, { "name": "amountIn", "type": "uint256" }, { "name": "amountOutMinimum", "type": "uint256" }] }], "outputs": [{ "name": "amountOut", "type": "uint256" }] },
+      { "type": "function", "name": "exactOutputSingle", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "tokenIn", "type": "address" }, { "name": "tokenOut", "type": "address" }, { "name": "fee", "type": "uint24" }, { "name": "recipient", "type": "address" }, { "name": "amountOut", "type": "uint256" }, { "name": "amountInMaximum", "type": "uint256" }, { "name": "sqrtPriceLimitX96", "type": "uint160" }] }], "outputs": [{ "name": "amountIn", "type": "uint256" }] },
+      { "type": "function", "name": "multicall", "stateMutability": "payable", "inputs": [{ "name": "deadline", "type": "uint256" }, { "name": "data", "type": "bytes[]" }], "outputs": [{ "name": "results", "type": "bytes[]" }] }
+    ],
+    "clearSigning": {
+      "exactInputSingle": { "title": "Uniswap V3 swap on Arbitrum", "fields": { "params": "Token in/out, fee tier, amounts, recipient" } },
+      "exactInput": { "title": "Uniswap V3 multi-hop swap on Arbitrum", "fields": { "params": "Encoded path, amounts, recipient" } },
+      "exactOutputSingle": { "title": "Uniswap V3 exact-out swap on Arbitrum", "fields": { "params": "Token in/out, fee tier, amounts, recipient" } },
+      "multicall": { "title": "Uniswap V3 batched calls on Arbitrum", "fields": { "deadline": "Deadline", "data": "Inner calldata" } }
+    }
+  },
+  {
+    "chain": "eip155:10",
+    "address": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+    "label": "Uniswap V3 SwapRouter02 (Optimism)",
+    "abi": [
+      { "type": "function", "name": "exactInputSingle", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "tokenIn", "type": "address" }, { "name": "tokenOut", "type": "address" }, { "name": "fee", "type": "uint24" }, { "name": "recipient", "type": "address" }, { "name": "amountIn", "type": "uint256" }, { "name": "amountOutMinimum", "type": "uint256" }, { "name": "sqrtPriceLimitX96", "type": "uint160" }] }], "outputs": [{ "name": "amountOut", "type": "uint256" }] },
+      { "type": "function", "name": "exactInput", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "path", "type": "bytes" }, { "name": "recipient", "type": "address" }, { "name": "amountIn", "type": "uint256" }, { "name": "amountOutMinimum", "type": "uint256" }] }], "outputs": [{ "name": "amountOut", "type": "uint256" }] },
+      { "type": "function", "name": "exactOutputSingle", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "tokenIn", "type": "address" }, { "name": "tokenOut", "type": "address" }, { "name": "fee", "type": "uint24" }, { "name": "recipient", "type": "address" }, { "name": "amountOut", "type": "uint256" }, { "name": "amountInMaximum", "type": "uint256" }, { "name": "sqrtPriceLimitX96", "type": "uint160" }] }], "outputs": [{ "name": "amountIn", "type": "uint256" }] },
+      { "type": "function", "name": "multicall", "stateMutability": "payable", "inputs": [{ "name": "deadline", "type": "uint256" }, { "name": "data", "type": "bytes[]" }], "outputs": [{ "name": "results", "type": "bytes[]" }] }
+    ],
+    "clearSigning": {
+      "exactInputSingle": { "title": "Uniswap V3 swap on Optimism", "fields": { "params": "Token in/out, fee tier, amounts, recipient" } },
+      "exactInput": { "title": "Uniswap V3 multi-hop swap on Optimism", "fields": { "params": "Encoded path, amounts, recipient" } },
+      "exactOutputSingle": { "title": "Uniswap V3 exact-out swap on Optimism", "fields": { "params": "Token in/out, fee tier, amounts, recipient" } },
+      "multicall": { "title": "Uniswap V3 batched calls on Optimism", "fields": { "deadline": "Deadline", "data": "Inner calldata" } }
+    }
+  },
+  {
+    "chain": "eip155:137",
+    "address": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+    "label": "Uniswap V3 SwapRouter02 (Polygon)",
+    "abi": [
+      { "type": "function", "name": "exactInputSingle", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "tokenIn", "type": "address" }, { "name": "tokenOut", "type": "address" }, { "name": "fee", "type": "uint24" }, { "name": "recipient", "type": "address" }, { "name": "amountIn", "type": "uint256" }, { "name": "amountOutMinimum", "type": "uint256" }, { "name": "sqrtPriceLimitX96", "type": "uint160" }] }], "outputs": [{ "name": "amountOut", "type": "uint256" }] },
+      { "type": "function", "name": "exactInput", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "path", "type": "bytes" }, { "name": "recipient", "type": "address" }, { "name": "amountIn", "type": "uint256" }, { "name": "amountOutMinimum", "type": "uint256" }] }], "outputs": [{ "name": "amountOut", "type": "uint256" }] },
+      { "type": "function", "name": "exactOutputSingle", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "tokenIn", "type": "address" }, { "name": "tokenOut", "type": "address" }, { "name": "fee", "type": "uint24" }, { "name": "recipient", "type": "address" }, { "name": "amountOut", "type": "uint256" }, { "name": "amountInMaximum", "type": "uint256" }, { "name": "sqrtPriceLimitX96", "type": "uint160" }] }], "outputs": [{ "name": "amountIn", "type": "uint256" }] },
+      { "type": "function", "name": "multicall", "stateMutability": "payable", "inputs": [{ "name": "deadline", "type": "uint256" }, { "name": "data", "type": "bytes[]" }], "outputs": [{ "name": "results", "type": "bytes[]" }] }
+    ],
+    "clearSigning": {
+      "exactInputSingle": { "title": "Uniswap V3 swap on Polygon", "fields": { "params": "Token in/out, fee tier, amounts, recipient" } },
+      "exactInput": { "title": "Uniswap V3 multi-hop swap on Polygon", "fields": { "params": "Encoded path, amounts, recipient" } },
+      "exactOutputSingle": { "title": "Uniswap V3 exact-out swap on Polygon", "fields": { "params": "Token in/out, fee tier, amounts, recipient" } },
+      "multicall": { "title": "Uniswap V3 batched calls on Polygon", "fields": { "deadline": "Deadline", "data": "Inner calldata" } }
+    }
+  },
+  {
+    "chain": "eip155:8453",
+    "address": "0x2626664c2603336E57B271c5C0b26F421741e481",
+    "label": "Uniswap V3 SwapRouter02 (Base)",
+    "abi": [
+      { "type": "function", "name": "exactInputSingle", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "tokenIn", "type": "address" }, { "name": "tokenOut", "type": "address" }, { "name": "fee", "type": "uint24" }, { "name": "recipient", "type": "address" }, { "name": "amountIn", "type": "uint256" }, { "name": "amountOutMinimum", "type": "uint256" }, { "name": "sqrtPriceLimitX96", "type": "uint160" }] }], "outputs": [{ "name": "amountOut", "type": "uint256" }] },
+      { "type": "function", "name": "exactInput", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "path", "type": "bytes" }, { "name": "recipient", "type": "address" }, { "name": "amountIn", "type": "uint256" }, { "name": "amountOutMinimum", "type": "uint256" }] }], "outputs": [{ "name": "amountOut", "type": "uint256" }] },
+      { "type": "function", "name": "exactOutputSingle", "stateMutability": "payable", "inputs": [{ "name": "params", "type": "tuple", "components": [{ "name": "tokenIn", "type": "address" }, { "name": "tokenOut", "type": "address" }, { "name": "fee", "type": "uint24" }, { "name": "recipient", "type": "address" }, { "name": "amountOut", "type": "uint256" }, { "name": "amountInMaximum", "type": "uint256" }, { "name": "sqrtPriceLimitX96", "type": "uint160" }] }], "outputs": [{ "name": "amountIn", "type": "uint256" }] },
+      { "type": "function", "name": "multicall", "stateMutability": "payable", "inputs": [{ "name": "deadline", "type": "uint256" }, { "name": "data", "type": "bytes[]" }], "outputs": [{ "name": "results", "type": "bytes[]" }] }
+    ],
+    "clearSigning": {
+      "exactInputSingle": { "title": "Uniswap V3 swap on Base", "fields": { "params": "Token in/out, fee tier, amounts, recipient" } },
+      "exactInput": { "title": "Uniswap V3 multi-hop swap on Base", "fields": { "params": "Encoded path, amounts, recipient" } },
+      "exactOutputSingle": { "title": "Uniswap V3 exact-out swap on Base", "fields": { "params": "Token in/out, fee tier, amounts, recipient" } },
+      "multicall": { "title": "Uniswap V3 batched calls on Base", "fields": { "deadline": "Deadline", "data": "Inner calldata" } }
+    }
+  }
+]

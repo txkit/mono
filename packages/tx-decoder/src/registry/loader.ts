@@ -2,6 +2,7 @@ import type { RegistryDescriptor } from '../types'
 
 import erc20Data from './data/erc20.json'
 import permit2Data from './data/permit2.json'
+import uniswapV3Data from './data/uniswap-v3.json'
 
 
 /**
@@ -31,9 +32,10 @@ export const buildRegistry = (descriptors: ReadonlyArray<RegistryDescriptor>): R
  * Coverage as of v0.1.0-alpha.4:
  *  - ERC-20 standard: USDC, WETH, USDT (mainnet)
  *  - Permit2: mainnet + Arbitrum + Base + Optimism + Polygon
+ *  - Uniswap V3 SwapRouter02: mainnet + Arbitrum + Optimism + Polygon + Base
  *
  * Roadmap: ERC-7730 manifests for top-50 protocols by tx volume:
- * Uniswap v2/v3/v4, Aave v3, Compound III, Lido, EigenLayer,
+ * Uniswap v2/v4, Aave v3, Compound III, Lido, EigenLayer,
  * 1inch v6, Across v3, Wormhole, Safe MultiSig, Chainlink CCIP, etc.
  */
 // JSON imports lose their template-literal types (`eip155:${number}`, `0x${string}`)
@@ -43,6 +45,7 @@ export const buildRegistry = (descriptors: ReadonlyArray<RegistryDescriptor>): R
 const allDescriptors: ReadonlyArray<RegistryDescriptor> = [
   ...(erc20Data as unknown as ReadonlyArray<RegistryDescriptor>),
   ...(permit2Data as unknown as ReadonlyArray<RegistryDescriptor>),
+  ...(uniswapV3Data as unknown as ReadonlyArray<RegistryDescriptor>),
 ]
 
 export const BUILTIN_REGISTRY: Registry = buildRegistry(allDescriptors)
