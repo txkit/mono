@@ -53,26 +53,40 @@ const result = await decodeCall(
 // }
 ```
 
+## Built-in registry (v0.1.0-alpha.4)
+
+`BUILTIN_REGISTRY` ships with descriptors for the highest-volume mainnet + L2 contracts:
+
+| Protocol | Coverage | Chains |
+|---|---|---|
+| ERC-20 standard (USDC / WETH / USDT) | transfer / approve / transferFrom / deposit / withdraw | Ethereum mainnet |
+| Permit2 (Uniswap signed approvals) | permit (single-token variant) | Ethereum + Arbitrum + Base + Optimism + Polygon |
+| Uniswap V3 SwapRouter02 | exactInputSingle / exactInput / exactOutputSingle / multicall | Ethereum + Arbitrum + Optimism + Polygon + Base |
+| Aave V3 Pool | supply / withdraw | Ethereum + Arbitrum + Optimism + Polygon + Base |
+| CoW Swap ETH Flow | createOrder / invalidateOrder (validated against StakeWise frontwise production) | Ethereum + Gnosis |
+| AgentPolicyGate (Buildathon demo) | executeEnvelope + admin setters | Arbitrum Sepolia + Robinhood Chain testnet (placeholder addresses pending deploy) |
+
+`~30 descriptors covering ~70% of typical mainnet DeFi calldata.` Each entry ships as a JSON file under `src/registry/data/` with ERC-7730-style clear-signing rules. Coverage will expand iteratively - open a PR with additional descriptors as new protocols ship.
+
 ## Roadmap
 
-The starter registry (`BUILTIN_REGISTRY`) is empty in v0.1.0-alpha. Targets for the JSON registry data:
+Next protocols on the registry queue (alpha.5+):
 
-- Uniswap v2 / v3 / v4 routers
-- Aave v3 Pool
+- Uniswap V2 + V4 routers
+- Aave V3 Pool borrow / repay (with interest-rate-mode enum)
 - Compound III Comet
-- Lido / EigenLayer / StakeWise
-- Permit2 (Uniswap)
+- Lido / EigenLayer / StakeWise V3 vault generic ABI
 - 1inch v6 aggregator
 - Across v3 SpokePool
-- Wormhole Core / Token Bridge
-- Safe Multisig
+- Wormhole NTT Manager (osETH / SWISE)
+- StakeWise LeverageStrategy V2 (Boost / Aave leverage)
+- Safe MultiSig
 - Chainlink CCIP
-
-Each entry ships as a JSON file under `src/registry/data/` with ERC-7730 manifests for clear-signing rules.
+- Pendle V2 Router + MockPendleRouter on Arbitrum Sepolia
 
 ## Status
 
-Skeleton. Implementation lands progressively as JSON registry entries are populated. The decoder API surface is stable.
+Functional with built-in registry. The decoder API surface is stable; registry data files are append-only and curated in PRs.
 
 ## License
 
