@@ -67,7 +67,7 @@
   },
   "dependencies": {
     "@txkit/tx-protocol": "workspace:^",
-    "viem": "^2.48.4"
+    "viem": "^2.51.0"
   },
   "devDependencies": {
     "tsup": "^8.4.0",

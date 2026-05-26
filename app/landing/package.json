@@ -12,20 +12,20 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/mdx": "^5.0.4",
-    "@astrojs/react": "^5.0.4",
+    "@astrojs/mdx": "^5.0.6",
+    "@astrojs/react": "^5.0.5",
     "@astrojs/rss": "^4.0.18",
     "@txkit/themes": "workspace:*",
     "@vercel/analytics": "^1.4.1",
     "@vercel/speed-insights": "^2.0.0",
     "@web3icons/react": "^4.1.17",
-    "astro": "^6.3.0",
-    "motion": "^12.23.24",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "astro": "^6.3.7",
+    "motion": "^12.40.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
   },
   "devDependencies": {
-    "@types/react": "^19.0.0",
+    "@types/react": "^19.2.15",
     "@types/react-dom": "^19.0.0",
     "typescript": "^5.7.3"
   }
