@@ -1,0 +1,90 @@
+import { describe, expect, it } from 'vitest'
+
+import { decodeCall } from '../decode'
+import { BUILTIN_REGISTRY } from '../registry/loader'
+
+
+/**
+ * Integration tests that exercise BUILTIN_REGISTRY against real-shape
+ * production calldata. Each test pairs a verified mainnet contract
+ * address with a canonical calldata sample and asserts the decoded
+ * shape matches the JSON registry entry.
+ */
+
+describe('BUILTIN_REGISTRY - ERC-20', () => {
+  it('decodes USDC transfer on mainnet', async () => {
+    // transfer(0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045, 100_000_000) - 100 USDC
+    const data = '0xa9059cbb000000000000000000000000d8da6bf26964af9d7eed9e03e53415d37aa960450000000000000000000000000000000000000000000000000000000005f5e100'
+
+    const result = await decodeCall(
+      {
+        call: { to: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', data },
+        chain: 'eip155:1',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('transfer')
+    expect(result.args).toHaveLength(2)
+    expect(result.args[0]?.name).toBe('to')
+    expect(result.args[0]?.value).toBe('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045')
+    expect(result.args[1]?.name).toBe('amount')
+    expect(result.args[1]?.value).toBe(100_000_000n)
+    expect((result.clearSigning as { title?: string } | undefined)?.title).toContain('USDC')
+  })
+
+  it('decodes USDT transfer (ABI quirk: "value" not "amount")', async () => {
+    // transfer(0xd8dA..., 1_000_000) - 1 USDT
+    const data = '0xa9059cbb000000000000000000000000d8da6bf26964af9d7eed9e03e53415d37aa9604500000000000000000000000000000000000000000000000000000000000f4240'
+
+    const result = await decodeCall(
+      {
+        call: { to: '0xdAC17F958D2ee523a2206206994597C13D831ec7', data },
+        chain: 'eip155:1',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('transfer')
+    // USDT uses "value" not "amount" - real ABI quirk verified on Etherscan.
+    expect(result.args[1]?.name).toBe('value')
+  })
+
+  it('decodes WETH deposit (payable, no args)', async () => {
+    // deposit() - selector only, with 1 ETH attached (HexQuantity per EvmCall.value)
+    const data = '0xd0e30db0'
+
+    const result = await decodeCall(
+      {
+        call: { to: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', data, value: '0xde0b6b3a7640000' },
+        chain: 'eip155:1',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('deposit')
+    expect(result.args).toHaveLength(0)
+    expect((result.clearSigning as { title?: string } | undefined)?.title).toBe('Wrap ETH to WETH')
+  })
+
+  it('decodes WETH approve to a spender with max allowance', async () => {
+    // approve(0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45, MaxUint256)
+    const data = '0x095ea7b300000000000000000000000068b3465833fb72a70ecdf485e0e4c7bd8665fc45ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+
+    const result = await decodeCall(
+      {
+        call: { to: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', data },
+        chain: 'eip155:1',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('approve')
+    expect(result.args[0]?.name).toBe('spender')
+    expect(result.args[1]?.value).toBe(115792089237316195423570985008687907853269984665640564039457584007913129639935n)
+  })
+})

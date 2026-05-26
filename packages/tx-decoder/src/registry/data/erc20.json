@@ -1,0 +1,137 @@
+[
+  {
+    "chain": "eip155:1",
+    "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "label": "USDC",
+    "abi": [
+      {
+        "type": "function",
+        "name": "transfer",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "to", "type": "address" },
+          { "name": "amount", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "", "type": "bool" }]
+      },
+      {
+        "type": "function",
+        "name": "approve",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "spender", "type": "address" },
+          { "name": "amount", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "", "type": "bool" }]
+      },
+      {
+        "type": "function",
+        "name": "transferFrom",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "from", "type": "address" },
+          { "name": "to", "type": "address" },
+          { "name": "amount", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "", "type": "bool" }]
+      }
+    ],
+    "clearSigning": {
+      "transfer": { "title": "Transfer USDC", "fields": { "to": "Recipient", "amount": "Amount (6 decimals)" } },
+      "approve": { "title": "Approve USDC spender", "fields": { "spender": "Approved spender", "amount": "Allowance (6 decimals)" } },
+      "transferFrom": { "title": "Transfer USDC (delegated)", "fields": { "from": "From", "to": "To", "amount": "Amount (6 decimals)" } }
+    }
+  },
+  {
+    "chain": "eip155:1",
+    "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    "label": "WETH",
+    "abi": [
+      {
+        "type": "function",
+        "name": "transfer",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "to", "type": "address" },
+          { "name": "amount", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "", "type": "bool" }]
+      },
+      {
+        "type": "function",
+        "name": "approve",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "spender", "type": "address" },
+          { "name": "amount", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "", "type": "bool" }]
+      },
+      {
+        "type": "function",
+        "name": "deposit",
+        "stateMutability": "payable",
+        "inputs": [],
+        "outputs": []
+      },
+      {
+        "type": "function",
+        "name": "withdraw",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "wad", "type": "uint256" }
+        ],
+        "outputs": []
+      }
+    ],
+    "clearSigning": {
+      "transfer": { "title": "Transfer WETH", "fields": { "to": "Recipient", "amount": "Amount (wei)" } },
+      "approve": { "title": "Approve WETH spender", "fields": { "spender": "Approved spender", "amount": "Allowance (wei)" } },
+      "deposit": { "title": "Wrap ETH to WETH", "fields": {} },
+      "withdraw": { "title": "Unwrap WETH to ETH", "fields": { "wad": "Amount (wei)" } }
+    }
+  },
+  {
+    "chain": "eip155:1",
+    "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    "label": "USDT",
+    "abi": [
+      {
+        "type": "function",
+        "name": "transfer",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "to", "type": "address" },
+          { "name": "value", "type": "uint256" }
+        ],
+        "outputs": []
+      },
+      {
+        "type": "function",
+        "name": "approve",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "spender", "type": "address" },
+          { "name": "value", "type": "uint256" }
+        ],
+        "outputs": []
+      },
+      {
+        "type": "function",
+        "name": "transferFrom",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "from", "type": "address" },
+          { "name": "to", "type": "address" },
+          { "name": "value", "type": "uint256" }
+        ],
+        "outputs": []
+      }
+    ],
+    "clearSigning": {
+      "transfer": { "title": "Transfer USDT", "fields": { "to": "Recipient", "value": "Amount (6 decimals)" } },
+      "approve": { "title": "Approve USDT spender", "fields": { "spender": "Approved spender", "value": "Allowance (6 decimals)" } },
+      "transferFrom": { "title": "Transfer USDT (delegated)", "fields": { "from": "From", "to": "To", "value": "Amount (6 decimals)" } }
+    }
+  }
+]

@@ -1,5 +1,7 @@
 import type { RegistryDescriptor } from '../types'
 
+import erc20Data from './data/erc20.json'
+
 
 /**
  * Read-only registry of decoder descriptors keyed by `${chain}:${address}`
@@ -22,11 +24,22 @@ export const buildRegistry = (descriptors: ReadonlyArray<RegistryDescriptor>): R
 }
 
 /**
- * Built-in starter registry. Empty in v0.1 - real entries land as JSON files
- * under `src/registry/data/` and are imported here.
+ * Built-in starter registry. Real entries land as JSON files under
+ * `src/registry/data/` and are imported into this barrel.
+ *
+ * Coverage as of v0.1.0-alpha.4:
+ *  - ERC-20 standard: USDC, WETH, USDT (mainnet)
  *
  * Roadmap: ERC-7730 manifests for top-50 protocols by tx volume:
  * Uniswap v2/v3/v4, Aave v3, Compound III, Lido, EigenLayer, Permit2,
  * 1inch v6, Across v3, Wormhole, Safe MultiSig, Chainlink CCIP, etc.
  */
-export const BUILTIN_REGISTRY: Registry = buildRegistry([])
+// JSON imports lose their template-literal types (`eip155:${number}`, `0x${string}`)
+// once parsed - cast through unknown is the idiomatic escape hatch. We accept the
+// loss of compile-time chain/address validation here because the data files are
+// hand-curated and reviewed in PR; a future runtime validator (Zod) can re-tighten.
+const allDescriptors: ReadonlyArray<RegistryDescriptor> = [
+  ...(erc20Data as unknown as ReadonlyArray<RegistryDescriptor>),
+]
+
+export const BUILTIN_REGISTRY: Registry = buildRegistry(allDescriptors)
