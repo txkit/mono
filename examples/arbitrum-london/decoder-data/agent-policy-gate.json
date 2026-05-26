@@ -19,6 +19,25 @@
       },
       {
         "type": "function",
+        "name": "hashExecuteEnvelope",
+        "stateMutability": "view",
+        "inputs": [
+          { "name": "envelopeHash", "type": "bytes32" },
+          { "name": "to", "type": "address" },
+          { "name": "data", "type": "bytes" },
+          { "name": "value", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "", "type": "bytes32" }]
+      },
+      {
+        "type": "function",
+        "name": "DOMAIN_SEPARATOR",
+        "stateMutability": "view",
+        "inputs": [],
+        "outputs": [{ "name": "", "type": "bytes32" }]
+      },
+      {
+        "type": "function",
         "name": "setAgentSigner",
         "stateMutability": "nonpayable",
         "inputs": [{ "name": "newSigner", "type": "address" }],
@@ -43,7 +62,7 @@
       }
     ],
     "clearSigning": {
-      "executeEnvelope": { "title": "Execute envelope via AgentPolicyGate", "fields": { "envelopeHash": "Envelope hash (verified)", "signature": "Agent signature", "to": "Inner target contract", "data": "Inner calldata", "value": "ETH value to forward" } },
+      "executeEnvelope": { "title": "Execute envelope via AgentPolicyGate", "fields": { "envelopeHash": "Envelope hash (verified)", "signature": "EIP-712 agent signature", "to": "Inner target contract", "data": "Inner calldata", "value": "ETH value to forward (must equal msg.value)" } },
       "setAgentSigner": { "title": "Rotate AgentPolicyGate signer", "fields": { "newSigner": "New signer address" } },
       "setSpendLimit": { "title": "Update AgentPolicyGate spend limit", "fields": { "newLimit": "New per-call cap (wei)" } },
       "setAllowedRecipient": { "title": "Toggle AgentPolicyGate recipient allow-list entry", "fields": { "recipient": "Recipient address", "allowed": "true / false" } }
@@ -69,6 +88,25 @@
       },
       {
         "type": "function",
+        "name": "hashExecuteEnvelope",
+        "stateMutability": "view",
+        "inputs": [
+          { "name": "envelopeHash", "type": "bytes32" },
+          { "name": "to", "type": "address" },
+          { "name": "data", "type": "bytes" },
+          { "name": "value", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "", "type": "bytes32" }]
+      },
+      {
+        "type": "function",
+        "name": "DOMAIN_SEPARATOR",
+        "stateMutability": "view",
+        "inputs": [],
+        "outputs": [{ "name": "", "type": "bytes32" }]
+      },
+      {
+        "type": "function",
         "name": "setAgentSigner",
         "stateMutability": "nonpayable",
         "inputs": [{ "name": "newSigner", "type": "address" }],
@@ -93,7 +131,7 @@
       }
     ],
     "clearSigning": {
-      "executeEnvelope": { "title": "Execute envelope via AgentPolicyGate (Robinhood Chain)", "fields": { "envelopeHash": "Envelope hash (verified)", "signature": "Agent signature", "to": "Inner target contract", "data": "Inner calldata", "value": "ETH value to forward" } },
+      "executeEnvelope": { "title": "Execute envelope via AgentPolicyGate (Robinhood Chain)", "fields": { "envelopeHash": "Envelope hash (verified)", "signature": "EIP-712 agent signature", "to": "Inner target contract", "data": "Inner calldata", "value": "ETH value to forward (must equal msg.value)" } },
       "setAgentSigner": { "title": "Rotate AgentPolicyGate signer (Robinhood Chain)", "fields": { "newSigner": "New signer address" } },
       "setSpendLimit": { "title": "Update AgentPolicyGate spend limit (Robinhood Chain)", "fields": { "newLimit": "New per-call cap (wei)" } },
       "setAllowedRecipient": { "title": "Toggle AgentPolicyGate recipient allow-list entry (Robinhood Chain)", "fields": { "recipient": "Recipient address", "allowed": "true / false" } }

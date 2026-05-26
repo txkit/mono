@@ -1,7 +1,6 @@
 import type { RegistryDescriptor } from '../types'
 
 import aaveV3Data from './data/aave-v3.json'
-import agentPolicyGateData from './data/agent-policy-gate.json'
 import cowProtocolData from './data/cow-protocol.json'
 import erc20Data from './data/erc20.json'
 import permit2Data from './data/permit2.json'
@@ -32,18 +31,21 @@ export const buildRegistry = (descriptors: ReadonlyArray<RegistryDescriptor>): R
  * Built-in starter registry. Real entries land as JSON files under
  * `src/registry/data/` and are imported into this barrel.
  *
- * Coverage as of v0.1.0-alpha.4:
- *  - ERC-20 standard: USDC, WETH, USDT (mainnet)
- *  - Permit2: mainnet + Arbitrum + Base + Optimism + Polygon
- *  - Uniswap V3 SwapRouter02: mainnet + Arbitrum + Optimism + Polygon + Base
- *  - Aave V3 Pool (supply + withdraw): mainnet + Arbitrum + Optimism + Polygon + Base
- *  - CoW Swap ETH Flow: mainnet + Gnosis (validated against StakeWise frontwise production)
- *  - AgentPolicyGate (Buildathon demo): Arbitrum Sepolia + Robinhood Chain testnet
- *    (addresses are placeholder until Mike's deploy populates contracts/deployed.json)
+ * Coverage (20 descriptors across 6 mainnet + L2 + Gnosis contracts):
+ *  - ERC-20 standard: USDC, WETH, USDT (mainnet, 3 descriptors)
+ *  - Permit2: mainnet + Arbitrum + Base + Optimism + Polygon (5 descriptors)
+ *  - Uniswap V3 SwapRouter02: mainnet + Arbitrum + Optimism + Polygon + Base (5 descriptors)
+ *  - Aave V3 Pool (supply + withdraw): mainnet + Arbitrum + Optimism + Polygon + Base (5 descriptors)
+ *  - CoW Swap ETH Flow: mainnet + Gnosis (2 descriptors, validated against StakeWise frontwise production)
+ *
+ * Buildathon-specific descriptors (AgentPolicyGate on Arbitrum Sepolia +
+ * Robinhood Chain testnet) live in `examples/arbitrum-london/decoder-data/`
+ * and are loaded by the example app only - not bundled into the published
+ * registry until Mike's deploy provides real contract addresses.
  *
  * Roadmap: ERC-7730 manifests for top-50 protocols by tx volume:
  * Uniswap v2/v4, Aave v3 borrow/repay, Compound III, Lido, EigenLayer,
- * 1inch v6, Across v3, Wormhole, Safe MultiSig, Chainlink CCIP, etc.
+ * 1inch v6, Across v3, Wormhole, Safe MultiSig, Chainlink CCIP, Pendle, etc.
  */
 // JSON imports lose their template-literal types (`eip155:${number}`, `0x${string}`)
 // once parsed - cast through unknown is the idiomatic escape hatch. We accept the
@@ -55,7 +57,6 @@ const allDescriptors: ReadonlyArray<RegistryDescriptor> = [
   ...(uniswapV3Data as unknown as ReadonlyArray<RegistryDescriptor>),
   ...(aaveV3Data as unknown as ReadonlyArray<RegistryDescriptor>),
   ...(cowProtocolData as unknown as ReadonlyArray<RegistryDescriptor>),
-  ...(agentPolicyGateData as unknown as ReadonlyArray<RegistryDescriptor>),
 ]
 
 export const BUILTIN_REGISTRY: Registry = buildRegistry(allDescriptors)
