@@ -1,6 +1,7 @@
 import type { RegistryDescriptor } from '../types'
 
 import aaveV3Data from './data/aave-v3.json'
+import cowProtocolData from './data/cow-protocol.json'
 import erc20Data from './data/erc20.json'
 import permit2Data from './data/permit2.json'
 import uniswapV3Data from './data/uniswap-v3.json'
@@ -35,6 +36,7 @@ export const buildRegistry = (descriptors: ReadonlyArray<RegistryDescriptor>): R
  *  - Permit2: mainnet + Arbitrum + Base + Optimism + Polygon
  *  - Uniswap V3 SwapRouter02: mainnet + Arbitrum + Optimism + Polygon + Base
  *  - Aave V3 Pool (supply + withdraw): mainnet + Arbitrum + Optimism + Polygon + Base
+ *  - CoW Swap ETH Flow: mainnet + Gnosis (validated against StakeWise frontwise production)
  *
  * Roadmap: ERC-7730 manifests for top-50 protocols by tx volume:
  * Uniswap v2/v4, Aave v3 borrow/repay, Compound III, Lido, EigenLayer,
@@ -49,6 +51,7 @@ const allDescriptors: ReadonlyArray<RegistryDescriptor> = [
   ...(permit2Data as unknown as ReadonlyArray<RegistryDescriptor>),
   ...(uniswapV3Data as unknown as ReadonlyArray<RegistryDescriptor>),
   ...(aaveV3Data as unknown as ReadonlyArray<RegistryDescriptor>),
+  ...(cowProtocolData as unknown as ReadonlyArray<RegistryDescriptor>),
 ]
 
 export const BUILTIN_REGISTRY: Registry = buildRegistry(allDescriptors)

@@ -1,0 +1,116 @@
+[
+  {
+    "chain": "eip155:1",
+    "address": "0xbA3cB449bD2B4ADddBc894D8697F5170800EAdeC",
+    "label": "CoW Swap ETH Flow",
+    "abi": [
+      {
+        "type": "function",
+        "name": "createOrder",
+        "stateMutability": "payable",
+        "inputs": [
+          {
+            "name": "order",
+            "type": "tuple",
+            "components": [
+              { "name": "buyToken", "type": "address" },
+              { "name": "receiver", "type": "address" },
+              { "name": "sellAmount", "type": "uint256" },
+              { "name": "buyAmount", "type": "uint256" },
+              { "name": "appData", "type": "bytes32" },
+              { "name": "feeAmount", "type": "uint256" },
+              { "name": "validTo", "type": "uint32" },
+              { "name": "partiallyFillable", "type": "bool" },
+              { "name": "quoteId", "type": "int64" }
+            ]
+          }
+        ],
+        "outputs": [{ "name": "orderHash", "type": "bytes32" }]
+      },
+      {
+        "type": "function",
+        "name": "invalidateOrder",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          {
+            "name": "order",
+            "type": "tuple",
+            "components": [
+              { "name": "buyToken", "type": "address" },
+              { "name": "receiver", "type": "address" },
+              { "name": "sellAmount", "type": "uint256" },
+              { "name": "buyAmount", "type": "uint256" },
+              { "name": "appData", "type": "bytes32" },
+              { "name": "feeAmount", "type": "uint256" },
+              { "name": "validTo", "type": "uint32" },
+              { "name": "partiallyFillable", "type": "bool" },
+              { "name": "quoteId", "type": "int64" }
+            ]
+          }
+        ],
+        "outputs": []
+      }
+    ],
+    "clearSigning": {
+      "createOrder": { "title": "CoW Swap: create ETH-flow order", "fields": { "order": "Order details (buyToken / receiver / amounts / validTo / appData)" } },
+      "invalidateOrder": { "title": "CoW Swap: cancel ETH-flow order", "fields": { "order": "Order details to invalidate" } }
+    }
+  },
+  {
+    "chain": "eip155:100",
+    "address": "0xbA3cB449bD2B4ADddBc894D8697F5170800EAdeC",
+    "label": "CoW Swap ETH Flow (Gnosis)",
+    "abi": [
+      {
+        "type": "function",
+        "name": "createOrder",
+        "stateMutability": "payable",
+        "inputs": [
+          {
+            "name": "order",
+            "type": "tuple",
+            "components": [
+              { "name": "buyToken", "type": "address" },
+              { "name": "receiver", "type": "address" },
+              { "name": "sellAmount", "type": "uint256" },
+              { "name": "buyAmount", "type": "uint256" },
+              { "name": "appData", "type": "bytes32" },
+              { "name": "feeAmount", "type": "uint256" },
+              { "name": "validTo", "type": "uint32" },
+              { "name": "partiallyFillable", "type": "bool" },
+              { "name": "quoteId", "type": "int64" }
+            ]
+          }
+        ],
+        "outputs": [{ "name": "orderHash", "type": "bytes32" }]
+      },
+      {
+        "type": "function",
+        "name": "invalidateOrder",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          {
+            "name": "order",
+            "type": "tuple",
+            "components": [
+              { "name": "buyToken", "type": "address" },
+              { "name": "receiver", "type": "address" },
+              { "name": "sellAmount", "type": "uint256" },
+              { "name": "buyAmount", "type": "uint256" },
+              { "name": "appData", "type": "bytes32" },
+              { "name": "feeAmount", "type": "uint256" },
+              { "name": "validTo", "type": "uint32" },
+              { "name": "partiallyFillable", "type": "bool" },
+              { "name": "quoteId", "type": "int64" }
+            ]
+          }
+        ],
+        "outputs": []
+      }
+    ],
+    "clearSigning": {
+      "createOrder": { "title": "CoW Swap on Gnosis: create xDAI-flow order", "fields": { "order": "Order details (buyToken / receiver / amounts / validTo)" } },
+      "invalidateOrder": { "title": "CoW Swap on Gnosis: cancel xDAI-flow order", "fields": { "order": "Order details to invalidate" } }
+    }
+  }
+]

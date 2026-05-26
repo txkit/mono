@@ -361,3 +361,81 @@ describe('BUILTIN_REGISTRY - Aave V3 Pool', () => {
     expect((result.clearSigning as { title?: string } | undefined)?.title).toContain('Arbitrum')
   })
 })
+
+
+describe('BUILTIN_REGISTRY - CoW Swap ETH Flow', () => {
+  // ABI sourced from StakeWise frontwise production
+  // (apps/web/src/contracts/abis/SwapEthFlow.json) - this is the contract
+  // shipped behind the production swap UI at app.stakewise.io.
+  const createOrderAbi = [
+    {
+      type: 'function',
+      name: 'createOrder',
+      stateMutability: 'payable',
+      inputs: [
+        {
+          name: 'order',
+          type: 'tuple',
+          components: [
+            { name: 'buyToken', type: 'address' },
+            { name: 'receiver', type: 'address' },
+            { name: 'sellAmount', type: 'uint256' },
+            { name: 'buyAmount', type: 'uint256' },
+            { name: 'appData', type: 'bytes32' },
+            { name: 'feeAmount', type: 'uint256' },
+            { name: 'validTo', type: 'uint32' },
+            { name: 'partiallyFillable', type: 'bool' },
+            { name: 'quoteId', type: 'int64' },
+          ],
+        },
+      ],
+      outputs: [{ name: 'orderHash', type: 'bytes32' }],
+    },
+  ] as const
+
+  const sampleOrderCalldata = encodeFunctionData({
+    abi: createOrderAbi,
+    functionName: 'createOrder',
+    args: [
+      {
+        buyToken: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        receiver: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+        sellAmount: 1000000000000000000n,
+        buyAmount: 1800000000n,
+        appData: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        feeAmount: 0n,
+        validTo: 1735689600,
+        partiallyFillable: false,
+        quoteId: 0n,
+      },
+    ],
+  })
+
+  it('decodes createOrder on mainnet CoW SwapEthFlow', async () => {
+    const result = await decodeCall(
+      {
+        call: { to: '0xbA3cB449bD2B4ADddBc894D8697F5170800EAdeC', data: sampleOrderCalldata },
+        chain: 'eip155:1',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('createOrder')
+    expect((result.clearSigning as { title?: string } | undefined)?.title).toContain('CoW Swap')
+  })
+
+  it('decodes the same createOrder on Gnosis chain', async () => {
+    const result = await decodeCall(
+      {
+        call: { to: '0xbA3cB449bD2B4ADddBc894D8697F5170800EAdeC', data: sampleOrderCalldata },
+        chain: 'eip155:100',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('createOrder')
+    expect((result.clearSigning as { title?: string } | undefined)?.title).toContain('Gnosis')
+  })
+})
