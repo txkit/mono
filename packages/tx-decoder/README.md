@@ -53,9 +53,9 @@ const result = await decodeCall(
 // }
 ```
 
-## Built-in registry (v0.1.0-alpha.4)
+## Built-in registry
 
-`BUILTIN_REGISTRY` ships with descriptors for the highest-volume mainnet + L2 contracts:
+`BUILTIN_REGISTRY` ships with 20 descriptors covering high-volume mainnet + L2 contracts across 6 mainstream protocols:
 
 | Protocol | Coverage | Chains |
 |---|---|---|
@@ -64,9 +64,10 @@ const result = await decodeCall(
 | Uniswap V3 SwapRouter02 | exactInputSingle / exactInput / exactOutputSingle / multicall | Ethereum + Arbitrum + Optimism + Polygon + Base |
 | Aave V3 Pool | supply / withdraw | Ethereum + Arbitrum + Optimism + Polygon + Base |
 | CoW Swap ETH Flow | createOrder / invalidateOrder (validated against StakeWise frontwise production) | Ethereum + Gnosis |
-| AgentPolicyGate (Buildathon demo) | executeEnvelope + admin setters | Arbitrum Sepolia + Robinhood Chain testnet (placeholder addresses pending deploy) |
 
-`~30 descriptors covering ~70% of typical mainnet DeFi calldata.` Each entry ships as a JSON file under `src/registry/data/` with ERC-7730-style clear-signing rules. Coverage will expand iteratively - open a PR with additional descriptors as new protocols ship.
+Each entry ships as a JSON file under `src/registry/data/` with ERC-7730-style clear-signing rules. Coverage will expand iteratively - open a PR with additional descriptors as new protocols ship.
+
+The Buildathon `AgentPolicyGate` decoder data is intentionally not bundled here: it lives in `examples/arbitrum-london/decoder-data/` and is loaded by the example app only, so consumers do not hit a placeholder-address descriptor before Mike's deploy.
 
 ## Roadmap
 
