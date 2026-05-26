@@ -2,9 +2,40 @@
   "name": "@txkit/example-arbitrum-london",
   "version": "0.0.0",
   "private": true,
-  "description": "txKit Arbitrum London Buildathon scaffold. Shipped: AgentPolicyGate Solidity contract with EIP-712 binding + 15 Foundry tests, chain configs for Arbitrum Sepolia + Robinhood Chain testnet, decoder data under decoder-data/. Pending: Pendle yield swap demo (scenario A), x402 RWA agent on Robinhood Chain (scenario C), Next.js app (run `pnpm create next-app@15 .` to scaffold).",
+  "description": "txKit Arbitrum London Buildathon scaffold. Shipped: AgentPolicyGate Solidity contract with EIP-712 binding + 15 Foundry tests, chain configs for Arbitrum Sepolia + Robinhood Chain testnet, decoder data under decoder-data/, Next.js 15 App Router scaffold with Claude SDK echo route. Pending: Pendle yield swap demo (scenario A), x402 RWA agent on Robinhood Chain (scenario C), live AgentPolicyGate deploy.",
   "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "eslint",
     "build:contracts": "cd contracts && forge build",
     "test:contracts": "cd contracts && forge test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@tanstack/react-query": "^5.0.0",
+    "@txkit/core": "workspace:^",
+    "@txkit/react": "workspace:^",
+    "@txkit/themes": "workspace:^",
+    "@txkit/tx-decoder": "workspace:^",
+    "@txkit/tx-protocol": "workspace:^",
+    "@txkit/x402-adapter": "workspace:^",
+    "next": "15.5.18",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "viem": "^2.48.4",
+    "wagmi": "^2.13.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.18",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

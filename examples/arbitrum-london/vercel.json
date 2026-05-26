@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "regions": [ "iad1" ],
+  "buildCommand": "pnpm --filter @txkit/example-arbitrum-london build",
+  "installCommand": "pnpm install --filter @txkit/example-arbitrum-london...",
+  "outputDirectory": ".next"
+}
