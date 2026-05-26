@@ -439,3 +439,67 @@ describe('BUILTIN_REGISTRY - CoW Swap ETH Flow', () => {
     expect((result.clearSigning as { title?: string } | undefined)?.title).toContain('Gnosis')
   })
 })
+
+
+describe('BUILTIN_REGISTRY - AgentPolicyGate (Buildathon)', () => {
+  // AgentPolicyGate uses placeholder address (0x0...0) until Mike deploys.
+  // These tests validate the ABI shape via the registry by calling the same
+  // placeholder address - mainly to confirm executeEnvelope decodes correctly,
+  // since the Buildathon Day 5 /api/decode/route.ts will rely on this.
+  const executeEnvelopeAbi = [
+    {
+      type: 'function',
+      name: 'executeEnvelope',
+      stateMutability: 'payable',
+      inputs: [
+        { name: 'envelopeHash', type: 'bytes32' },
+        { name: 'signature', type: 'bytes' },
+        { name: 'to', type: 'address' },
+        { name: 'data', type: 'bytes' },
+        { name: 'value', type: 'uint256' },
+      ],
+      outputs: [{ name: 'returnData', type: 'bytes' }],
+    },
+  ] as const
+
+  const sampleExecuteCalldata = encodeFunctionData({
+    abi: executeEnvelopeAbi,
+    functionName: 'executeEnvelope',
+    args: [
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
+      '0x',
+      '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+      '0x',
+      0n,
+    ],
+  })
+
+  it('decodes executeEnvelope on Arbitrum Sepolia (placeholder address until deploy)', async () => {
+    const result = await decodeCall(
+      {
+        call: { to: '0x0000000000000000000000000000000000000000', data: sampleExecuteCalldata },
+        chain: 'eip155:421614',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('executeEnvelope')
+    expect(result.args[0]?.name).toBe('envelopeHash')
+    expect(result.args[2]?.name).toBe('to')
+  })
+
+  it('decodes executeEnvelope on Robinhood Chain testnet (placeholder address)', async () => {
+    const result = await decodeCall(
+      {
+        call: { to: '0x0000000000000000000000000000000000000000', data: sampleExecuteCalldata },
+        chain: 'eip155:46630',
+      },
+      { registry: BUILTIN_REGISTRY },
+    )
+
+    expect(result.source).toBe('registry')
+    expect(result.functionName).toBe('executeEnvelope')
+    expect((result.clearSigning as { title?: string } | undefined)?.title).toContain('Robinhood')
+  })
+})

@@ -1,0 +1,102 @@
+[
+  {
+    "chain": "eip155:421614",
+    "address": "0x0000000000000000000000000000000000000000",
+    "label": "AgentPolicyGate (Buildathon, Arbitrum Sepolia - PENDING DEPLOY)",
+    "abi": [
+      {
+        "type": "function",
+        "name": "executeEnvelope",
+        "stateMutability": "payable",
+        "inputs": [
+          { "name": "envelopeHash", "type": "bytes32" },
+          { "name": "signature", "type": "bytes" },
+          { "name": "to", "type": "address" },
+          { "name": "data", "type": "bytes" },
+          { "name": "value", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "returnData", "type": "bytes" }]
+      },
+      {
+        "type": "function",
+        "name": "setAgentSigner",
+        "stateMutability": "nonpayable",
+        "inputs": [{ "name": "newSigner", "type": "address" }],
+        "outputs": []
+      },
+      {
+        "type": "function",
+        "name": "setSpendLimit",
+        "stateMutability": "nonpayable",
+        "inputs": [{ "name": "newLimit", "type": "uint256" }],
+        "outputs": []
+      },
+      {
+        "type": "function",
+        "name": "setAllowedRecipient",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "recipient", "type": "address" },
+          { "name": "allowed", "type": "bool" }
+        ],
+        "outputs": []
+      }
+    ],
+    "clearSigning": {
+      "executeEnvelope": { "title": "Execute envelope via AgentPolicyGate", "fields": { "envelopeHash": "Envelope hash (verified)", "signature": "Agent signature", "to": "Inner target contract", "data": "Inner calldata", "value": "ETH value to forward" } },
+      "setAgentSigner": { "title": "Rotate AgentPolicyGate signer", "fields": { "newSigner": "New signer address" } },
+      "setSpendLimit": { "title": "Update AgentPolicyGate spend limit", "fields": { "newLimit": "New per-call cap (wei)" } },
+      "setAllowedRecipient": { "title": "Toggle AgentPolicyGate recipient allow-list entry", "fields": { "recipient": "Recipient address", "allowed": "true / false" } }
+    }
+  },
+  {
+    "chain": "eip155:46630",
+    "address": "0x0000000000000000000000000000000000000000",
+    "label": "AgentPolicyGate (Buildathon, Robinhood Chain testnet - PENDING DEPLOY)",
+    "abi": [
+      {
+        "type": "function",
+        "name": "executeEnvelope",
+        "stateMutability": "payable",
+        "inputs": [
+          { "name": "envelopeHash", "type": "bytes32" },
+          { "name": "signature", "type": "bytes" },
+          { "name": "to", "type": "address" },
+          { "name": "data", "type": "bytes" },
+          { "name": "value", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "returnData", "type": "bytes" }]
+      },
+      {
+        "type": "function",
+        "name": "setAgentSigner",
+        "stateMutability": "nonpayable",
+        "inputs": [{ "name": "newSigner", "type": "address" }],
+        "outputs": []
+      },
+      {
+        "type": "function",
+        "name": "setSpendLimit",
+        "stateMutability": "nonpayable",
+        "inputs": [{ "name": "newLimit", "type": "uint256" }],
+        "outputs": []
+      },
+      {
+        "type": "function",
+        "name": "setAllowedRecipient",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "recipient", "type": "address" },
+          { "name": "allowed", "type": "bool" }
+        ],
+        "outputs": []
+      }
+    ],
+    "clearSigning": {
+      "executeEnvelope": { "title": "Execute envelope via AgentPolicyGate (Robinhood Chain)", "fields": { "envelopeHash": "Envelope hash (verified)", "signature": "Agent signature", "to": "Inner target contract", "data": "Inner calldata", "value": "ETH value to forward" } },
+      "setAgentSigner": { "title": "Rotate AgentPolicyGate signer (Robinhood Chain)", "fields": { "newSigner": "New signer address" } },
+      "setSpendLimit": { "title": "Update AgentPolicyGate spend limit (Robinhood Chain)", "fields": { "newLimit": "New per-call cap (wei)" } },
+      "setAllowedRecipient": { "title": "Toggle AgentPolicyGate recipient allow-list entry (Robinhood Chain)", "fields": { "recipient": "Recipient address", "allowed": "true / false" } }
+    }
+  }
+]
