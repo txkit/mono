@@ -1,0 +1,43 @@
+import Link from 'next/link'
+
+import { PendleAgentChat } from './PendleAgentChat'
+
+
+/**
+ * Server component shell for Scenario A (Pendle yield swap on Arbitrum Sepolia).
+ * Static lift-pitch + technical note + client-side chat below the fold.
+ */
+const FlowA = () => {
+  return (
+    <main className="mx-auto max-w-3xl px-6 py-12 space-y-8">
+      <Link href="/" className="text-sm opacity-70 hover:opacity-100">&larr; Back</Link>
+
+      <header>
+        <p className="text-xs uppercase tracking-wider text-[color:var(--color-accent)] mb-2">
+          Scenario A - Arbitrum Sepolia
+        </p>
+        <h1 className="text-3xl font-bold mb-3">Pendle yield swap</h1>
+        <p className="opacity-80">
+          Tell the agent which token you want to rotate into PT. It prepares
+          a typed envelope through a mock Pendle router, you review the
+          decoded preview, then sign once via AgentPolicyGate.executeEnvelope.
+        </p>
+      </header>
+
+      <PendleAgentChat />
+
+      <footer className="border-t border-[color:var(--color-border)] pt-6 text-xs opacity-60 space-y-1">
+        <p>
+          Mock Pendle router used on testnet - production envelope shape matches Pendle V2.
+        </p>
+        <p>
+          AgentPolicyGate verifies: (1) msg.value == declared value, (2) recipient allow-listed,
+          (3) value within spend cap, (4) envelope hash not used, (5) EIP-712 signature recovers
+          to agent signer.
+        </p>
+      </footer>
+    </main>
+  )
+}
+
+export default FlowA

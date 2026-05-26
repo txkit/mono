@@ -23,7 +23,9 @@ import { AgentPolicyGate } from "../src/AgentPolicyGate.sol";
  *   - ARBISCAN_API_KEY      (only required for --verify)
  *
  * After deployment, append the address to `contracts/deployed.json` and
- * sync the registry entry in `packages/tx-decoder/src/registry/data/agent-policy-gate.json`.
+ * sync the registry entry in `examples/arbitrum-london/decoder-data/agent-policy-gate.json`
+ * (NOT the public packages/tx-decoder/src/registry/data/ - that path no
+ * longer carries AgentPolicyGate after the alpha.4 cleanup).
  */
 contract DeployArbSepolia is Script {
     function run() external returns (AgentPolicyGate gate) {
