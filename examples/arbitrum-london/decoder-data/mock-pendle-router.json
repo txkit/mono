@@ -21,7 +21,7 @@
         "name": "SwapExactTokenForPt",
         "inputs": [
           { "indexed": true, "name": "receiver", "type": "address" },
-          { "indexed": true, "name": "tokenIn", "type": "address" },
+          { "indexed": true, "name": "caller", "type": "address" },
           { "indexed": true, "name": "ptOut", "type": "address" },
           { "indexed": false, "name": "amountIn", "type": "uint256" },
           { "indexed": false, "name": "ptOutReturned", "type": "uint256" }

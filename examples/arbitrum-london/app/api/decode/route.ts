@@ -103,20 +103,22 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  if (typeof body.chain !== 'string' || !body.chain.startsWith('eip155:')) {
+  const { chain, call } = body
+
+  if (typeof chain !== 'string' || !chain.startsWith('eip155:')) {
     return NextResponse.json(
       { error: 'chain must be a CAIP-2 EIP-155 id (e.g. "eip155:421614")' },
       { status: 400 },
     )
   }
 
-  if (typeof body.call?.to !== 'string' || typeof body.call?.data !== 'string') {
+  if (typeof call?.to !== 'string' || typeof call?.data !== 'string') {
     return NextResponse.json({ error: 'call.to and call.data are required' }, { status: 400 })
   }
 
   try {
     const decoded = await decodeCall(
-      { chain: body.chain, call: { to: body.call.to, data: body.call.data } },
+      { chain, call: { to: call.to, data: call.data } },
       { registry: mergedRegistry },
     )
 

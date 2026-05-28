@@ -178,18 +178,19 @@ export const attachAgentSignature = (
   envelope: DemoEnvelope,
   signature: Hex,
 ): DemoEnvelope => {
-  const chainId = Number(envelope.chain.split(':')[1])
+  const { chain, inner, meta, call } = envelope
+  const chainId = Number(chain.split(':')[1])
   const policyGateAddress = getAgentPolicyGateAddress(chainId)
 
   const outerCallData = encodeFunctionData({
     abi: AGENT_POLICY_GATE_ABI,
     functionName: 'executeEnvelope',
     args: [
-      envelope.meta.envelopeHash,
+      meta.envelopeHash,
       signature,
-      envelope.inner.to,
-      envelope.inner.data,
-      BigInt(envelope.inner.value),
+      inner.to,
+      inner.data,
+      BigInt(inner.value),
     ],
   })
 
@@ -198,7 +199,7 @@ export const attachAgentSignature = (
     call: {
       to: policyGateAddress,
       data: outerCallData,
-      value: envelope.call.value,
+      value: call.value,
     },
   }
 }

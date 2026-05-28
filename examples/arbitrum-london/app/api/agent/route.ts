@@ -82,12 +82,11 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  if (!Array.isArray(body.messages) || body.messages.length === 0) {
+  const { messages, scenario = 'pendle', receiverAddress = DEFAULT_RECEIVER } = body
+
+  if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: 'messages must be a non-empty array' }, { status: 400 })
   }
-
-  const scenario = body.scenario ?? 'pendle'
-  const receiverAddress = body.receiverAddress ?? DEFAULT_RECEIVER
 
   let env
   try {
@@ -99,7 +98,9 @@ export const POST = async (request: NextRequest) => {
     )
   }
 
-  if (env.ANTHROPIC_API_KEY === undefined) {
+  const { ANTHROPIC_API_KEY, AGENT_SIGNER_PRIVATE_KEY } = env
+
+  if (ANTHROPIC_API_KEY === undefined) {
     return NextResponse.json(
       {
         error: 'ANTHROPIC_API_KEY not set',
@@ -120,7 +121,7 @@ export const POST = async (request: NextRequest) => {
     )
   }
 
-  const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
+  const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY })
 
   const systemPrompt = scenario === 'rwa' ? RWA_SYSTEM_PROMPT : PENDLE_SYSTEM_PROMPT
   const toolDefinition = scenario === 'rwa' ? RWA_TOOL_DEFINITION : PENDLE_TOOL_DEFINITION
@@ -132,7 +133,7 @@ export const POST = async (request: NextRequest) => {
       max_tokens: 1024,
       system: systemPrompt,
       tools: [ toolDefinition ],
-      messages: body.messages.map((message) => ({
+      messages: messages.map((message) => ({
         role: message.role,
         content: message.content,
       })),
@@ -170,23 +171,25 @@ export const POST = async (request: NextRequest) => {
     )
   }
 
-  if (toolUseBlock.name !== 'prepare_pendle_yield_swap') {
+  const { name: toolName, input: toolInput } = toolUseBlock
+
+  if (toolName !== 'prepare_pendle_yield_swap') {
     return NextResponse.json(
       {
-        error: `Unexpected tool call: ${toolUseBlock.name}`,
+        error: `Unexpected tool call: ${toolName}`,
         detail: 'Only prepare_pendle_yield_swap is wired in the Pendle scenario.',
       },
       { status: 502 },
     )
   }
 
-  const argsParse = preparePendleYieldSwapArgs.safeParse(toolUseBlock.input)
+  const argsParse = preparePendleYieldSwapArgs.safeParse(toolInput)
   if (!argsParse.success) {
     return NextResponse.json(
       {
         error: 'Invalid tool args from Claude',
         detail: argsParse.error.flatten(),
-        rawInput: toolUseBlock.input,
+        rawInput: toolInput,
       },
       { status: 422 },
     )
@@ -208,7 +211,7 @@ export const POST = async (request: NextRequest) => {
     )
   }
 
-  if (env.AGENT_SIGNER_PRIVATE_KEY === undefined) {
+  if (AGENT_SIGNER_PRIVATE_KEY === undefined) {
     return NextResponse.json(
       {
         error: 'AGENT_SIGNER_PRIVATE_KEY not set',
@@ -220,17 +223,19 @@ export const POST = async (request: NextRequest) => {
     )
   }
 
+  const { meta, inner } = envelope
+
   let signedEnvelope: DemoEnvelope
   try {
     const gateAddress = getAgentPolicyGateAddress(ARBITRUM_SEPOLIA_CHAIN_ID)
     const signature = await signEnvelope({
-      envelopeHash: envelope.meta.envelopeHash,
-      to: envelope.inner.to,
-      data: envelope.inner.data,
-      value: BigInt(envelope.inner.value),
+      envelopeHash: meta.envelopeHash,
+      to: inner.to,
+      data: inner.data,
+      value: BigInt(inner.value),
       chainId: ARBITRUM_SEPOLIA_CHAIN_ID,
       gateAddress,
-      signerPrivateKey: env.AGENT_SIGNER_PRIVATE_KEY as Hex,
+      signerPrivateKey: AGENT_SIGNER_PRIVATE_KEY as Hex,
     })
     signedEnvelope = attachAgentSignature(envelope, signature)
   } catch (signError) {
