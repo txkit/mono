@@ -1,29 +1,77 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import type { Hex } from 'viem'
 
+import { ARBITRUM_SEPOLIA_CHAIN_ID } from '@/src/chains'
+import {
+  attachAgentSignature,
+  buildPendleEnvelope,
+  type DemoEnvelope,
+} from '@/src/agent/envelope-builder'
+import { signEnvelope } from '@/src/agent/signing'
+import {
+  PENDLE_SYSTEM_PROMPT,
+  RWA_SYSTEM_PROMPT,
+} from '@/src/agent/system-prompt'
+import {
+  PENDLE_TOOL_DEFINITION,
+  RWA_TOOL_DEFINITION,
+  preparePendleYieldSwapArgs,
+} from '@/src/agent/tools'
+import { getAgentPolicyGateAddress } from '@/src/config/deployed'
 import { getEnv } from '@/src/config/env'
 
 
 export const runtime = 'nodejs'
 
 /**
- * Phase 1 Day 3 milestone: minimum-viable Claude SDK echo.
+ * Phase 1 Day 5 milestone: tool-use loop + EIP-712 envelope signing.
  *
  * V1 contract:
- *   POST /api/agent { messages: [{ role, content }] }
- *   -> { reply: string, envelope?: DemoEnvelope }
+ *   POST /api/agent { messages, scenario?, receiverAddress? }
+ *   -> { reply, envelope?, scenario, milestone }
  *
- * For the Day 3 milestone we only echo the user message back through
- * Claude with no tools attached - confirms Node runtime + env loading +
- * Anthropic SDK plumbing works end to end. Tool calls + envelope return
- * land in Day 4 (Pendle) and Day 10 (RWA).
+ * Pendle flow:
+ *   1. Claude reads PENDLE_SYSTEM_PROMPT + receives PENDLE_TOOL_DEFINITION.
+ *   2. If args are clear: Claude calls prepare_pendle_yield_swap.
+ *   3. We validate via zod, buildPendleEnvelope, sign EIP-712 via signEnvelope,
+ *      attach signature, return both the assistant's text reply (if any) and
+ *      the signed envelope.
+ *   4. If Claude asks for clarification (text only): return reply, no envelope.
+ *
+ * RWA flow lands Phase 2 Day 10.
  *
  * The SDK is dynamically imported inside the handler so the route module
- * stays importable even when ANTHROPIC_API_KEY is unset (better DX for
- * the first contributor cloning the repo).
+ * stays loadable even when ANTHROPIC_API_KEY is unset (better DX for the
+ * first contributor cloning the repo).
  */
+const DEFAULT_RECEIVER = '0x000000000000000000000000000000000000dEaD' as const
+
 type AgentRequestBody = {
   messages: Array<{ role: 'user' | 'assistant', content: string }>,
   scenario?: 'pendle' | 'rwa',
+  receiverAddress?: `0x${string}`,
+}
+
+type ToolUseBlock = {
+  type: 'tool_use',
+  id: string,
+  name: string,
+  input: Record<string, unknown>,
+}
+
+type TextBlock = {
+  type: 'text',
+  text: string,
+}
+
+type ResponseContentBlock = ToolUseBlock | TextBlock | { type: string }
+
+const checkIsToolUseBlock = (block: ResponseContentBlock): block is ToolUseBlock => {
+  return block.type === 'tool_use'
+}
+
+const checkIsTextBlock = (block: ResponseContentBlock): block is TextBlock => {
+  return block.type === 'text'
 }
 
 export const POST = async (request: NextRequest) => {
@@ -37,6 +85,9 @@ export const POST = async (request: NextRequest) => {
   if (!Array.isArray(body.messages) || body.messages.length === 0) {
     return NextResponse.json({ error: 'messages must be a non-empty array' }, { status: 400 })
   }
+
+  const scenario = body.scenario ?? 'pendle'
+  const receiverAddress = body.receiverAddress ?? DEFAULT_RECEIVER
 
   let env
   try {
@@ -52,16 +103,13 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json(
       {
         error: 'ANTHROPIC_API_KEY not set',
-        hint: 'Add ANTHROPIC_API_KEY to .env.local - see .env.example for the full list',
+        hint: 'Add ANTHROPIC_API_KEY to .env.local - see .env.example',
       },
       { status: 503 },
     )
   }
 
-  // Dynamic import keeps the route module loadable without the SDK installed.
-  // Day 4 will replace this with the full Agent SDK + tool-use loop.
   const { default: Anthropic } = await import('@anthropic-ai/sdk').catch(() => ({ default: null }))
-
   if (Anthropic === null) {
     return NextResponse.json(
       {
@@ -74,27 +122,20 @@ export const POST = async (request: NextRequest) => {
 
   const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
 
+  const systemPrompt = scenario === 'rwa' ? RWA_SYSTEM_PROMPT : PENDLE_SYSTEM_PROMPT
+  const toolDefinition = scenario === 'rwa' ? RWA_TOOL_DEFINITION : PENDLE_TOOL_DEFINITION
+
+  let completion
   try {
-    const completion = await anthropic.messages.create({
+    completion = await anthropic.messages.create({
       model: 'claude-opus-4-5',
       max_tokens: 1024,
-      system:
-        'You are a placeholder echo agent. Day 4 replaces you with the full Pendle tool-use loop. Reply briefly to confirm the pipeline works.',
+      system: systemPrompt,
+      tools: [ toolDefinition ],
       messages: body.messages.map((message) => ({
         role: message.role,
         content: message.content,
       })),
-    })
-
-    const reply = completion.content
-      .filter((block: { type: string }) => block.type === 'text')
-      .map((block: { type: string, text?: string }) => block.text ?? '')
-      .join('\n')
-
-    return NextResponse.json({
-      reply,
-      scenario: body.scenario ?? 'pendle',
-      milestone: 'phase-1-day-3-echo',
     })
   } catch (modelError) {
     return NextResponse.json(
@@ -102,4 +143,107 @@ export const POST = async (request: NextRequest) => {
       { status: 502 },
     )
   }
+
+  const contentBlocks = completion.content as ResponseContentBlock[]
+  const textReply = contentBlocks
+    .filter(checkIsTextBlock)
+    .map((block) => block.text)
+    .join('\n')
+  const toolUseBlock = contentBlocks.find(checkIsToolUseBlock)
+
+  // No tool call - Claude is asking for clarification or refusing.
+  if (toolUseBlock === undefined) {
+    return NextResponse.json({
+      reply: textReply,
+      scenario,
+      milestone: 'phase-1-day-5-tool-use-text-only',
+    })
+  }
+
+  if (scenario !== 'pendle') {
+    return NextResponse.json(
+      {
+        error: 'RWA scenario not implemented yet',
+        detail: 'Phase 2 Day 10 wires the RWA envelope builder + Robinhood Chain deploy.',
+      },
+      { status: 501 },
+    )
+  }
+
+  if (toolUseBlock.name !== 'prepare_pendle_yield_swap') {
+    return NextResponse.json(
+      {
+        error: `Unexpected tool call: ${toolUseBlock.name}`,
+        detail: 'Only prepare_pendle_yield_swap is wired in the Pendle scenario.',
+      },
+      { status: 502 },
+    )
+  }
+
+  const argsParse = preparePendleYieldSwapArgs.safeParse(toolUseBlock.input)
+  if (!argsParse.success) {
+    return NextResponse.json(
+      {
+        error: 'Invalid tool args from Claude',
+        detail: argsParse.error.flatten(),
+        rawInput: toolUseBlock.input,
+      },
+      { status: 422 },
+    )
+  }
+
+  let envelope: DemoEnvelope
+  try {
+    envelope = buildPendleEnvelope(argsParse.data, receiverAddress)
+  } catch (buildError) {
+    return NextResponse.json(
+      {
+        error: 'Envelope build failed',
+        detail: String(buildError),
+        hint:
+          'Most often this means MockPendleRouter or AgentPolicyGate is not deployed yet. ' +
+          'Run the forge scripts and update contracts/deployed.json.',
+      },
+      { status: 503 },
+    )
+  }
+
+  if (env.AGENT_SIGNER_PRIVATE_KEY === undefined) {
+    return NextResponse.json(
+      {
+        error: 'AGENT_SIGNER_PRIVATE_KEY not set',
+        hint:
+          'Required for EIP-712 envelope binding. Add a testnet key to .env.local ' +
+          'matching AGENT_SIGNER_ADDRESS.',
+      },
+      { status: 503 },
+    )
+  }
+
+  let signedEnvelope: DemoEnvelope
+  try {
+    const gateAddress = getAgentPolicyGateAddress(ARBITRUM_SEPOLIA_CHAIN_ID)
+    const signature = await signEnvelope({
+      envelopeHash: envelope.meta.envelopeHash,
+      to: envelope.inner.to,
+      data: envelope.inner.data,
+      value: BigInt(envelope.inner.value),
+      chainId: ARBITRUM_SEPOLIA_CHAIN_ID,
+      gateAddress,
+      signerPrivateKey: env.AGENT_SIGNER_PRIVATE_KEY as Hex,
+    })
+    signedEnvelope = attachAgentSignature(envelope, signature)
+  } catch (signError) {
+    return NextResponse.json(
+      { error: 'Signing failed', detail: String(signError) },
+      { status: 500 },
+    )
+  }
+
+  return NextResponse.json({
+    reply: textReply,
+    envelope: signedEnvelope,
+    scenario,
+    milestone: 'phase-1-day-5-tool-use-with-envelope',
+  })
 }

@@ -1,0 +1,43 @@
+[
+  {
+    "chain": "eip155:421614",
+    "address": "0x0000000000000000000000000000000000000000",
+    "label": "MockPendleRouter (Buildathon, Arbitrum Sepolia - PENDING DEPLOY)",
+    "abi": [
+      {
+        "type": "function",
+        "name": "swapExactTokenForPt",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "receiver", "type": "address" },
+          { "name": "ptOut", "type": "address" },
+          { "name": "amountIn", "type": "uint256" },
+          { "name": "minPtOut", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "ptOutReturned", "type": "uint256" }]
+      },
+      {
+        "type": "event",
+        "name": "SwapExactTokenForPt",
+        "inputs": [
+          { "indexed": true, "name": "receiver", "type": "address" },
+          { "indexed": true, "name": "tokenIn", "type": "address" },
+          { "indexed": true, "name": "ptOut", "type": "address" },
+          { "indexed": false, "name": "amountIn", "type": "uint256" },
+          { "indexed": false, "name": "ptOutReturned", "type": "uint256" }
+        ]
+      }
+    ],
+    "clearSigning": {
+      "swapExactTokenForPt": {
+        "title": "Pendle yield swap (mock router)",
+        "fields": {
+          "receiver": "Recipient of PT tokens",
+          "ptOut": "Pendle PT token to receive",
+          "amountIn": "Input amount (raw token units, 1:0.995 deterministic rate)",
+          "minPtOut": "Min PT out after declared slippage"
+        }
+      }
+    }
+  }
+]

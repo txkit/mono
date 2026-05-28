@@ -16,6 +16,7 @@ type DeployedEntry = {
 
 type DeployedMap = {
   AgentPolicyGate: Record<string, DeployedEntry>,
+  MockPendleRouter: Record<string, DeployedEntry>,
 }
 
 const deployed = deployedJson as DeployedMap
@@ -48,6 +49,36 @@ export const getAgentPolicyGateExplorerUrl = (chainId: number): string => {
 
 export const checkIsAgentPolicyGateDeployed = (chainId: number): boolean => {
   const entry = deployed.AgentPolicyGate[String(chainId)]
+  if (entry === undefined) {
+    return false
+  }
+  return isDeployed(entry)
+}
+
+export const getMockPendleRouterAddress = (chainId: number): `0x${string}` => {
+  const entry = deployed.MockPendleRouter[String(chainId)]
+  if (entry === undefined) {
+    throw new Error(`MockPendleRouter not configured for chainId ${chainId}`)
+  }
+  if (!isDeployed(entry)) {
+    throw new Error(
+      `MockPendleRouter on chainId ${chainId} is not deployed yet. ` +
+      `Run forge script DeployMockPendleRouter.s.sol and update contracts/deployed.json.`,
+    )
+  }
+  return entry.address as `0x${string}`
+}
+
+export const getMockPendleRouterExplorerUrl = (chainId: number): string => {
+  const entry = deployed.MockPendleRouter[String(chainId)]
+  if (entry === undefined) {
+    throw new Error(`MockPendleRouter not configured for chainId ${chainId}`)
+  }
+  return entry.blockExplorer
+}
+
+export const checkIsMockPendleRouterDeployed = (chainId: number): boolean => {
+  const entry = deployed.MockPendleRouter[String(chainId)]
   if (entry === undefined) {
     return false
   }

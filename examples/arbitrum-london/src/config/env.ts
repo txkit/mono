@@ -29,6 +29,11 @@ const envSchema = z.object({
   // Deployer + signer
   DEPLOYER_PRIVATE_KEY: z.string().regex(/^0x[a-fA-F0-9]{64}$/).optional(),
   AGENT_SIGNER_ADDRESS: z.string().regex(/^0x[a-fA-F0-9]{40}$/).optional(),
+  // Server-side EIP-712 signing key for /api/agent envelope binding.
+  // Pair must match AGENT_SIGNER_ADDRESS - the on-chain AgentPolicyGate
+  // recovers ECDSA signatures and reverts InvalidSignature if mismatched.
+  // TESTNET ONLY KEY - rotate before any mainnet usage.
+  AGENT_SIGNER_PRIVATE_KEY: z.string().regex(/^0x[a-fA-F0-9]{64}$/).optional(),
 
   // x402 facilitator - REQUIRED for /api/x402/*
   X402_FACILITATOR_PRIVATE_KEY: z.string().regex(/^0x[a-fA-F0-9]{64}$/).optional(),

@@ -1,5 +1,15 @@
-import { decodeCall, BUILTIN_REGISTRY } from '@txkit/tx-decoder'
+import {
+  decodeCall,
+  BUILTIN_REGISTRY,
+  buildRegistry,
+  type RegistryDescriptor,
+} from '@txkit/tx-decoder'
 import { NextResponse, type NextRequest } from 'next/server'
+
+import deployedJson from '@/contracts/deployed.json'
+import agentPolicyGateData from '@/decoder-data/agent-policy-gate.json'
+import mockPendleRouterData from '@/decoder-data/mock-pendle-router.json'
+
 
 export const runtime = 'nodejs'
 
@@ -10,14 +20,15 @@ export const runtime = 'nodejs'
  *   POST /api/decode { chain: "eip155:421614", call: { to, data, value? } }
  *   -> DecodedCall (per @txkit/tx-decoder shape)
  *
- * Day 5 client renders this through <EnvelopePreview/>.
- *
  * Registry composition:
  *   - BUILTIN_REGISTRY: ERC-20 / Permit2 / Uniswap V3 / Aave V3 / CoW Swap
  *     (5 mainstream protocols, 20 descriptors)
- *   - AgentPolicyGate registry data (Arbitrum Sepolia + Robinhood Chain
- *     testnet) is loaded from examples/arbitrum-london/decoder-data/ until
- *     Mike's deploy populates contracts/deployed.json - see TODO below.
+ *   - examples/arbitrum-london/decoder-data: AgentPolicyGate + MockPendleRouter
+ *     (Arbitrum Sepolia, Robinhood Chain testnet). Addresses are placeholder
+ *     0x0000...0000 in JSON; the merge step below patches them with real
+ *     addresses from contracts/deployed.json once Mike deploys.
+ *
+ * Day 5 client renders this through <EnvelopePreview/>.
  */
 type DecodeRequestBody = {
   chain: `eip155:${number}`,
@@ -26,6 +37,62 @@ type DecodeRequestBody = {
     data: `0x${string}`,
     value?: `0x${string}`,
   },
+}
+
+type DeployedEntry = { address: string }
+type DeployedMap = Record<string, Record<string, DeployedEntry>>
+
+const deployedMap = deployedJson as DeployedMap
+
+/**
+ * Patch placeholder addresses (0x0000...0000) in the example decoder data
+ * with real addresses from contracts/deployed.json once a forge deploy
+ * script lands. Entries still in PENDING state stay as-is - the decoder
+ * misses them until the real contract is live, which surfaces the deploy
+ * gap rather than silently mis-decoding.
+ */
+const resolveDescriptors = (
+  data: ReadonlyArray<RegistryDescriptor>,
+  contractName: string,
+): ReadonlyArray<RegistryDescriptor> => {
+  const section = deployedMap[contractName]
+  if (section === undefined) {
+    return data
+  }
+  return data.map((descriptor) => {
+    const chainId = String(Number(descriptor.chain.split(':')[1]))
+    const entry = section[chainId]
+    if (entry === undefined) {
+      return descriptor
+    }
+    const isReal =
+      /^0x[a-fA-F0-9]{40}$/.test(entry.address) && !entry.address.includes('PENDING')
+    if (!isReal) {
+      return descriptor
+    }
+    return { ...descriptor, address: entry.address as `0x${string}` }
+  })
+}
+
+const exampleDescriptors: ReadonlyArray<RegistryDescriptor> = [
+  ...resolveDescriptors(
+    agentPolicyGateData as unknown as ReadonlyArray<RegistryDescriptor>,
+    'AgentPolicyGate',
+  ),
+  ...resolveDescriptors(
+    mockPendleRouterData as unknown as ReadonlyArray<RegistryDescriptor>,
+    'MockPendleRouter',
+  ),
+]
+
+const exampleRegistry = buildRegistry(exampleDescriptors)
+
+// Inferred shape matches @txkit/tx-decoder's Registry (Readonly<Record<string, RegistryDescriptor>>).
+// We avoid importing the Registry type because it is currently not exported
+// from the package barrel - shape-compatibility via spread is sufficient.
+const mergedRegistry = {
+  ...BUILTIN_REGISTRY,
+  ...exampleRegistry,
 }
 
 export const POST = async (request: NextRequest) => {
@@ -47,14 +114,10 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({ error: 'call.to and call.data are required' }, { status: 400 })
   }
 
-  // TODO Phase 1 Day 5+: extend registry with examples/arbitrum-london/decoder-data/
-  //   const localRegistry = await loadExamplesRegistry()
-  //   const registry = mergeRegistries(BUILTIN_REGISTRY, localRegistry)
-
   try {
     const decoded = await decodeCall(
       { chain: body.chain, call: { to: body.call.to, data: body.call.data } },
-      { registry: BUILTIN_REGISTRY },
+      { registry: mergedRegistry },
     )
 
     // BigInt values (decoded args) do not serialise as JSON by default.
