@@ -38,38 +38,96 @@ jobs:
       # Publish order respects dependency graph: core has no internal
       # deps, themes is css-only, tx-protocol has no @txkit deps, react
       # depends on @txkit/core.
+      #
+      # Each step is idempotent (publish-if-new): a cohort release only
+      # ships packages whose package.json version is not yet on the npm
+      # registry. Lets a tag like v0.1.0-alpha.N add a single new package
+      # without forcing a synchronized cohort bump for the others.
 
       - name: Publish @txkit/core
-        run: pnpm --filter @txkit/core publish --no-git-checks --access public --tag alpha
+        run: |
+          VERSION=$(node -p "require('./packages/core/package.json').version")
+          if npm view "@txkit/core@$VERSION" version >/dev/null 2>&1; then
+            echo "@txkit/core@$VERSION already on npm, skipping"
+          else
+            pnpm --filter @txkit/core publish --no-git-checks --access public --tag alpha
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @txkit/themes
-        run: pnpm --filter @txkit/themes publish --no-git-checks --access public --tag alpha
+        run: |
+          VERSION=$(node -p "require('./packages/themes/package.json').version")
+          if npm view "@txkit/themes@$VERSION" version >/dev/null 2>&1; then
+            echo "@txkit/themes@$VERSION already on npm, skipping"
+          else
+            pnpm --filter @txkit/themes publish --no-git-checks --access public --tag alpha
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @txkit/tx-protocol
-        run: pnpm --filter @txkit/tx-protocol publish --no-git-checks --access public --tag alpha
+        run: |
+          VERSION=$(node -p "require('./packages/tx-protocol/package.json').version")
+          if npm view "@txkit/tx-protocol@$VERSION" version >/dev/null 2>&1; then
+            echo "@txkit/tx-protocol@$VERSION already on npm, skipping"
+          else
+            pnpm --filter @txkit/tx-protocol publish --no-git-checks --access public --tag alpha
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @txkit/tx-decoder
-        run: pnpm --filter @txkit/tx-decoder publish --no-git-checks --access public --tag alpha
+        run: |
+          VERSION=$(node -p "require('./packages/tx-decoder/package.json').version")
+          if npm view "@txkit/tx-decoder@$VERSION" version >/dev/null 2>&1; then
+            echo "@txkit/tx-decoder@$VERSION already on npm, skipping"
+          else
+            pnpm --filter @txkit/tx-decoder publish --no-git-checks --access public --tag alpha
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @txkit/ows-adapter
-        run: pnpm --filter @txkit/ows-adapter publish --no-git-checks --access public --tag alpha
+        run: |
+          VERSION=$(node -p "require('./packages/ows-adapter/package.json').version")
+          if npm view "@txkit/ows-adapter@$VERSION" version >/dev/null 2>&1; then
+            echo "@txkit/ows-adapter@$VERSION already on npm, skipping"
+          else
+            pnpm --filter @txkit/ows-adapter publish --no-git-checks --access public --tag alpha
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @txkit/x402-adapter
-        run: pnpm --filter @txkit/x402-adapter publish --no-git-checks --access public --tag alpha
+        run: |
+          VERSION=$(node -p "require('./packages/x402-adapter/package.json').version")
+          if npm view "@txkit/x402-adapter@$VERSION" version >/dev/null 2>&1; then
+            echo "@txkit/x402-adapter@$VERSION already on npm, skipping"
+          else
+            pnpm --filter @txkit/x402-adapter publish --no-git-checks --access public --tag alpha
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @txkit/arbitrum-adapter
+        run: |
+          VERSION=$(node -p "require('./packages/arbitrum-adapter/package.json').version")
+          if npm view "@txkit/arbitrum-adapter@$VERSION" version >/dev/null 2>&1; then
+            echo "@txkit/arbitrum-adapter@$VERSION already on npm, skipping"
+          else
+            pnpm --filter @txkit/arbitrum-adapter publish --no-git-checks --access public --tag alpha
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @txkit/react
-        run: pnpm --filter @txkit/react publish --no-git-checks --access public --tag alpha
+        run: |
+          VERSION=$(node -p "require('./packages/react/package.json').version")
+          if npm view "@txkit/react@$VERSION" version >/dev/null 2>&1; then
+            echo "@txkit/react@$VERSION already on npm, skipping"
+          else
+            pnpm --filter @txkit/react publish --no-git-checks --access public --tag alpha
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
