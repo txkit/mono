@@ -98,7 +98,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tsup": "^8.5.1",
-    "typescript": "^5.7.3",
+    "typescript": "^6.0.3",
     "viem": "^2.48.4",
     "wagmi": "^3.6.5"
   },
