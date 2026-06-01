@@ -73,6 +73,18 @@ const formatTxExplorerUrl = (chainId: number, txHash: `0x${string}`): string => 
   return `chain ${chainId} tx ${txHash}`
 }
 
+const formatExplorerBase = (chainId: number | null): string | undefined => {
+  if (chainId === 421614) {
+    return 'https://sepolia.arbiscan.io'
+  }
+
+  if (chainId === 46630) {
+    return 'https://explorer.testnet.chain.robinhood.com'
+  }
+
+  return undefined
+}
+
 const resolveReplyText = (reply: string | undefined, hasEnvelope: boolean): string => {
   const hasReplyText = reply !== undefined && reply.length > 0
   if (hasReplyText) {
@@ -185,6 +197,11 @@ export const PendleAgentChat = () => {
     sendTransaction({ to: call.to, data: call.data, value: BigInt(call.value), chainId })
   }
 
+  const handleReject = () => {
+    patchState({ envelope: null, decodedInner: null })
+    resetSendTx()
+  }
+
   const resolveTxButtonLabel = (): string => {
     if (isSigning) {
       return 'Sign in your wallet...'
@@ -258,6 +275,7 @@ export const PendleAgentChat = () => {
           decoded={decodedForPreview}
           policyStatus="allow"
           policyReason="signed by agent, within policy gate limits"
+          explorerBaseUrl={formatExplorerBase(envelopeChainId)}
           feeSlot={(
             <SequencerFeeRow
               chain={envelope.chain as ArbitrumChainId}
@@ -270,14 +288,24 @@ export const PendleAgentChat = () => {
 
       {envelope !== null ? (
         <div className="space-y-2">
-          <button
-            type="button"
-            onClick={handleSignTransaction}
-            disabled={!isConnected || isBusySendingTx}
-            className="w-full rounded-md border border-[color:var(--color-success)] bg-[color:var(--color-success-bg)] px-4 py-3 text-sm text-[color:var(--color-success)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {resolveTxButtonLabel()}
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={handleReject}
+              disabled={isBusySendingTx}
+              className="flex-1 rounded-md border border-[color:var(--color-border)] bg-transparent px-4 py-3 text-sm text-[color:var(--color-muted)] hover:text-[color:var(--color-foreground)] hover:border-[color:var(--color-border-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Reject
+            </button>
+            <button
+              type="button"
+              onClick={handleSignTransaction}
+              disabled={!isConnected || isBusySendingTx}
+              className="flex-1 rounded-md border border-[color:var(--color-success)] bg-[color:var(--color-success-bg)] px-4 py-3 text-sm text-[color:var(--color-success)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {resolveTxButtonLabel()}
+            </button>
+          </div>
           {!isConnected ? (
             <p className="text-xs text-[color:var(--color-muted)] text-center">Connect your wallet to sign</p>
           ) : null}

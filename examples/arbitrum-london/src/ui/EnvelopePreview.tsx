@@ -1,5 +1,8 @@
-import type { ReactNode } from 'react'
+'use client'
 
+import { useEffect, useState, type ReactNode } from 'react'
+
+import { CopyableValue } from './CopyableValue'
 import { PolicyStatusBadge, type PolicyStatus } from './PolicyStatusBadge'
 
 
@@ -27,23 +30,20 @@ type EnvelopePreviewProps = {
   decoded?: DecodedCallShape,
   policyStatus?: PolicyStatus,
   policyReason?: string,
+  explorerBaseUrl?: string,
   feeSlot?: ReactNode,
 }
 
-const formatExpiry = (notAfter: number): string => {
-  const remainingSeconds = notAfter - Math.floor(Date.now() / 1000)
+const formatExpiry = (remainingSeconds: number): string => {
   if (remainingSeconds <= 0) {
     return 'expired'
   }
 
-  const minutes = Math.floor(remainingSeconds / 60)
-  if (minutes < 60) {
-    return `${minutes} min`
-  }
+  const hours = Math.floor(remainingSeconds / 3600)
+  const minutes = Math.floor((remainingSeconds % 3600) / 60)
+  const seconds = remainingSeconds % 60
 
-  const hours = Math.floor(minutes / 60)
-
-  return `${hours}h ${minutes % 60}m`
+  return `${hours}h ${minutes}m ${seconds}s`
 }
 
 const formatAddress = (address: string): string => {
@@ -70,6 +70,14 @@ const stringifyValue = (value: unknown): string => {
   return JSON.stringify(value)
 }
 
+const buildExplorerUrl = (baseUrl: string | undefined, address: string): string | undefined => {
+  if (baseUrl === undefined) {
+    return undefined
+  }
+
+  return `${baseUrl}/address/${address}`
+}
+
 export const EnvelopePreview = (props: EnvelopePreviewProps) => {
   const {
     chainLabel,
@@ -81,8 +89,21 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
     decoded,
     policyStatus,
     policyReason,
+    explorerBaseUrl,
     feeSlot,
   } = props
+
+  const [ remainingSeconds, setRemainingSeconds ] = useState(() =>
+    Math.max(0, validityNotAfter - Math.floor(Date.now() / 1000)),
+  )
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRemainingSeconds(Math.max(0, validityNotAfter - Math.floor(Date.now() / 1000)))
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [ validityNotAfter ])
 
   const title = decoded?.clearSigning?.title ?? decoded?.functionName ?? 'Unknown action'
   const fields = decoded?.clearSigning?.fields ?? {}
@@ -110,6 +131,14 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
     )
     : null
 
+  const feeNode = feeSlot !== undefined && feeSlot !== null
+    ? <div className="px-5 py-4 border-t border-[color:var(--color-border)]">{feeSlot}</div>
+    : null
+
+  const argsContainerNode = argsNode !== null
+    ? <div className="px-5 pb-5 pt-4">{argsNode}</div>
+    : null
+
   return (
     <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-card)] overflow-hidden">
       <div className="flex items-start justify-between gap-3 px-5 pt-5">
@@ -124,37 +153,34 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
 
       <div className="grid gap-3 text-sm px-5 py-4">
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)]">Chain</span>
+          <span className="text-[color:var(--color-muted)] shrink-0">Chain</span>
           <span className="font-mono">{chainLabel}</span>
         </div>
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)]">Policy gate</span>
-          <span className="font-mono" title={toAddress}>{formatAddress(toAddress)}</span>
+          <span className="text-[color:var(--color-muted)] shrink-0">Policy gate</span>
+          <CopyableValue value={toAddress} display={formatAddress(toAddress)} explorerUrl={buildExplorerUrl(explorerBaseUrl, toAddress)} />
         </div>
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)]">Inner target</span>
-          <span className="font-mono" title={innerToAddress}>{formatAddress(innerToAddress)}</span>
+          <span className="text-[color:var(--color-muted)] shrink-0">Inner target</span>
+          <CopyableValue value={innerToAddress} display={formatAddress(innerToAddress)} explorerUrl={buildExplorerUrl(explorerBaseUrl, innerToAddress)} />
         </div>
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)]">Envelope hash</span>
-          <span className="font-mono" title={envelopeHash}>{formatAddress(envelopeHash)}</span>
+          <span className="text-[color:var(--color-muted)] shrink-0">Envelope hash</span>
+          <CopyableValue value={envelopeHash} display={formatAddress(envelopeHash)} />
         </div>
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)]">Expires in</span>
-          <span className="font-mono">{formatExpiry(validityNotAfter)}</span>
+          <span className="text-[color:var(--color-muted)] shrink-0">Expires in</span>
+          <span className="font-mono">{formatExpiry(remainingSeconds)}</span>
         </div>
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)]">Decoder source</span>
+          <span className="text-[color:var(--color-muted)] shrink-0">Decoder source</span>
           <span className="font-mono">{decoded?.source ?? 'unknown'}</span>
         </div>
-        {feeSlot}
       </div>
 
-      {argsNode !== null ? (
-        <div className="px-5 pb-5">
-          {argsNode}
-        </div>
-      ) : null}
+      {feeNode}
+
+      {argsContainerNode}
     </div>
   )
 }

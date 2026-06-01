@@ -39,3 +39,14 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-sans);
 }
+
+/*
+ * Tailwind v4 dropped the preflight `cursor: pointer` on buttons, so every
+ * enabled button across the demo needs it restored. Disabled buttons keep the
+ * default (and opt into `cursor-not-allowed` where relevant).
+ */
+@layer base {
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}

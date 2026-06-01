@@ -21,14 +21,15 @@ const formatFeeGwei = (weiHex: `0x${string}`): string => {
 }
 
 /**
- * Live Arbitrum sequencer-fee breakdown for the outer policy-gate call.
- * Reads NodeInterface.gasEstimateComponents via @txkit/arbitrum-adapter
- * through the wagmi public client, fetched with react-query. Only used by
- * the Pendle flow (value=0 = a clean L1 calldata + L2 compute split).
+ * Live Arbitrum sequencer-fee breakdown for the outer policy-gate call:
+ * the L1 calldata-posting cost, the L2 compute cost, and their total. Reads
+ * NodeInterface.gasEstimateComponents via @txkit/arbitrum-adapter through the
+ * wagmi public client, fetched with react-query. Pendle flow only (value=0 =
+ * a clean L1 + L2 split).
  *
- * Failure modes degrade silently: while the RPC is in flight we show an
- * "estimating" hint, and a null preview (RPC unreachable or the simulated
- * call reverts) renders nothing rather than blocking the envelope preview.
+ * Failure modes degrade gracefully: an "estimating" hint while the RPC is in
+ * flight, and a null preview (RPC unreachable or the simulated call reverts)
+ * renders nothing rather than blocking the envelope preview.
  */
 export const SequencerFeeRow = (props: SequencerFeeRowProps) => {
   const { chain, to, calldata } = props
@@ -49,10 +50,7 @@ export const SequencerFeeRow = (props: SequencerFeeRowProps) => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-between gap-3">
-        <span className="text-[color:var(--color-muted)]">Sequencer fee</span>
-        <span className="font-mono text-[color:var(--color-muted)]">estimating...</span>
-      </div>
+      <p className="text-sm text-[color:var(--color-muted)]">Estimating sequencer fee...</p>
     )
   }
 
@@ -60,14 +58,27 @@ export const SequencerFeeRow = (props: SequencerFeeRowProps) => {
     return null
   }
 
-  const { l1FeeWei, l2FeeWei } = preview
+  const { l1FeeWei, l2FeeWei, totalFeeWei } = preview
 
   return (
-    <div className="flex justify-between gap-3">
-      <span className="text-[color:var(--color-muted)]">Sequencer fee</span>
-      <span className="font-mono text-right">
-        L1 calldata {formatFeeGwei(l1FeeWei)} · L2 compute {formatFeeGwei(l2FeeWei)}
-      </span>
+    <div className="space-y-2">
+      <p className="text-sm text-[color:var(--color-muted)]">Estimated sequencer fee</p>
+      <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-card-sunken)] p-4 space-y-3 text-sm">
+        <div className="flex justify-between gap-3">
+          <span className="text-[color:var(--color-muted)]">L1 calldata</span>
+          <span className="font-mono">{formatFeeGwei(l1FeeWei)}</span>
+        </div>
+        <div className="h-px bg-[color:var(--color-border)]" />
+        <div className="flex justify-between gap-3">
+          <span className="text-[color:var(--color-muted)]">L2 compute</span>
+          <span className="font-mono">{formatFeeGwei(l2FeeWei)}</span>
+        </div>
+        <div className="h-px bg-[color:var(--color-border)]" />
+        <div className="flex justify-between gap-3">
+          <span className="text-[color:var(--color-foreground)]">Total</span>
+          <span className="font-mono">{formatFeeGwei(totalFeeWei)}</span>
+        </div>
+      </div>
     </div>
   )
 }
