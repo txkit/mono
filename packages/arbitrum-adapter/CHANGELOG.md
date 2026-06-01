@@ -1,5 +1,11 @@
 # @txkit/arbitrum-adapter
 
+## [Unreleased]
+
+- `previewSequencerFee` is now a live estimation rather than a stub. It reads `NodeInterface.gasEstimateComponents` (precompile 0xC8) through a caller-supplied viem `PublicClient`, splitting the cost into the L2 compute portion and the L1 calldata-posting portion (both priced at the L2 base fee, per the Arbitrum Nitro fee model) and filling every `SequencerFeePreview` field.
+- Signature change (alpha, surface was flagged unstable): `previewSequencerFee(client, { chain, to, calldata, from?, l1BaseFeeWei? })` is now async and returns `Promise<SequencerFeePreview | null>`. A `to` is required (the precompile simulates the call) and the viem client is injected so the function stays RPC-agnostic and testable. Any failure (RPC down, simulated call reverts, malformed calldata) returns `null` - the preview is advisory and never blocks signing.
+- `viem` added as a peer dependency (`>=2`).
+
 ## [0.1.0-alpha.0] - 2026-05-29
 
 Initial skeleton release for the Arbitrum Open House London Buildathon Week 1 deliverable.
