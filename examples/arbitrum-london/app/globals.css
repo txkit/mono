@@ -1,21 +1,41 @@
 @import "tailwindcss";
 
 /*
- * @txkit/themes ships its dark theme via the `.txkit-dark` selector applied
- * on <html> in app/layout.tsx. Tailwind v4 picks the variables up
- * automatically through the @theme inline block below.
+ * @txkit/themes ships its dark theme as the `.tx-dark` token block and the
+ * `.tx-root` base (font-family + color + background). Both are applied on
+ * <html> in app/layout.tsx, so the real `--tx-*` design tokens resolve here.
+ *
+ * This block bridges those tokens onto the Tailwind v4 `--color-*` / `--font-*`
+ * names the components reference. Hardcoded hex fallbacks stay only as a
+ * defensive last resort - in the running app every value below resolves to a
+ * live txKit token, which is the point of the demo (the design system styles
+ * itself, nothing is hand-picked).
  */
-
 @theme inline {
-  --color-background: var(--txkit-color-background, #0a0a0a);
-  --color-foreground: var(--txkit-color-foreground, #ededed);
-  --color-card: var(--txkit-color-card, #1a1a1a);
-  --color-border: var(--txkit-color-border, #2a2a2a);
-  --color-accent: var(--txkit-color-accent, #5b8cff);
+  --color-background: var(--tx-color-bg, #0a0a0a);
+  --color-foreground: var(--tx-color-text, #ededed);
+  --color-muted: var(--tx-color-text-secondary, #9ca3af);
+  --color-card: var(--tx-color-bg-elevated, #1a1a1a);
+  --color-card-sunken: var(--tx-color-bg-secondary, #141414);
+  --color-border: var(--tx-color-border, #2a2a2a);
+  --color-border-hover: var(--tx-color-border-hover, #3a3a3a);
+  --color-accent: var(--tx-color-primary, #5b8cff);
+  --color-accent-text: var(--tx-color-primary-text, #ffffff);
+  --color-success: var(--tx-color-success, #34d399);
+  --color-success-bg: var(--tx-color-success-bg, #052e1a);
+  --color-warning: var(--tx-color-warning, #fbbf24);
+  --color-warning-bg: var(--tx-color-warning-bg, #2e2305);
+  --color-error: var(--tx-color-error, #f87171);
+  --color-error-bg: var(--tx-color-error-bg, #2e0808);
+
+  --font-mono: var(--tx-font-mono, 'IBM Plex Mono', ui-monospace, 'Menlo', monospace);
+  --font-sans: var(--tx-font-family, ui-sans-serif, system-ui, -apple-system, sans-serif);
+
+  --radius-lg: var(--tx-radius-lg, 8px);
 }
 
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-sans);
 }

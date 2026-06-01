@@ -1,11 +1,14 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { type FormEvent, useState } from 'react'
 import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi'
+
+import type { ArbitrumChainId } from '@txkit/arbitrum-adapter'
 
 import type { DemoEnvelope } from '@/src/agent/envelope-builder'
 import { ChatMessage } from '@/src/ui/ChatMessage'
 import { EnvelopePreview } from '@/src/ui/EnvelopePreview'
+import { SequencerFeeRow } from '@/src/ui/SequencerFeeRow'
 
 
 type Message = { role: 'user' | 'assistant', content: string }
@@ -27,14 +30,34 @@ type AgentResponse = {
   hint?: string,
 }
 
+type ChatState = {
+  messages: Message[],
+  input: string,
+  isLoading: boolean,
+  errorMessage: string | null,
+  envelope: DemoEnvelope | null,
+  decodedInner: DecodedCall | null,
+}
+
+const INITIAL_STATE: ChatState = {
+  messages: [],
+  input: '',
+  isLoading: false,
+  errorMessage: null,
+  envelope: null,
+  decodedInner: null,
+}
+
 const formatChainLabel = (chain: `eip155:${number}`): string => {
   const chainId = Number(chain.split(':')[1])
   if (chainId === 421614) {
     return 'Arbitrum Sepolia (421614)'
   }
+
   if (chainId === 46630) {
     return 'Robinhood Chain testnet (46630)'
   }
+
   return `chain ${chainId}`
 }
 
@@ -42,27 +65,42 @@ const formatTxExplorerUrl = (chainId: number, txHash: `0x${string}`): string => 
   if (chainId === 421614) {
     return `https://sepolia.arbiscan.io/tx/${txHash}`
   }
+
   if (chainId === 46630) {
     return `https://explorer.testnet.chain.robinhood.com/tx/${txHash}`
   }
+
   return `chain ${chainId} tx ${txHash}`
 }
 
+const resolveReplyText = (reply: string | undefined, hasEnvelope: boolean): string => {
+  const hasReplyText = reply !== undefined && reply.length > 0
+  if (hasReplyText) {
+    return reply
+  }
+
+  if (hasEnvelope) {
+    return '(envelope prepared - review below)'
+  }
+
+  return '(empty reply)'
+}
+
 /**
- * Day 5 + Day 6 client: tool-use loop + TransactionButton.
+ * Scenario A client: Claude tool-use loop + one-click sign.
  *
- * Day 5 sends conversation history to /api/agent, which returns either a
- * clarifying reply (text only) or a signed envelope ready for review.
- * Day 6 adds wagmi useSendTransaction so the user signs envelope.call in
- * one click. The Arbiscan link appears once the tx hash is returned.
+ * Sends conversation history to /api/agent, which returns either a clarifying
+ * reply (text only) or a signed envelope ready for review. wagmi
+ * useSendTransaction signs envelope.call in one click; the Arbiscan link
+ * appears once the tx hash is returned.
  */
 export const PendleAgentChat = () => {
-  const [ messages, setMessages ] = useState<Message[]>([])
-  const [ input, setInput ] = useState('')
-  const [ isLoading, setLoading ] = useState(false)
-  const [ errorMessage, setErrorMessage ] = useState<string | null>(null)
-  const [ envelope, setEnvelope ] = useState<DemoEnvelope | null>(null)
-  const [ decodedInner, setDecodedInner ] = useState<DecodedCall | null>(null)
+  const [ state, setState ] = useState<ChatState>(INITIAL_STATE)
+  const { messages, input, isLoading, errorMessage, envelope, decodedInner } = state
+
+  const patchState = (patch: Partial<ChatState>) => {
+    setState((previous) => ({ ...previous, ...patch }))
+  }
 
   const { address: connectedAddress, isConnected } = useAccount()
   const {
@@ -72,9 +110,7 @@ export const PendleAgentChat = () => {
     error: sendError,
     reset: resetSendTx,
   } = useSendTransaction()
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-    hash: txHash,
-  })
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash: txHash })
 
   const fetchDecoded = async (env: DemoEnvelope): Promise<DecodedCall | null> => {
     try {
@@ -84,17 +120,14 @@ export const PendleAgentChat = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chain,
-          call: {
-            to: inner.to,
-            data: inner.data,
-            value: inner.value,
-          },
+          call: { to: inner.to, data: inner.data, value: inner.value },
         }),
       })
       const json = (await response.json()) as DecodedCall & { error?: string }
       if (!response.ok || json.error !== undefined) {
         return null
       }
+
       return json
     } catch {
       return null
@@ -110,48 +143,35 @@ export const PendleAgentChat = () => {
 
     const userMessage: Message = { role: 'user', content: trimmed }
     const next = [ ...messages, userMessage ]
-    setMessages(next)
-    setInput('')
-    setLoading(true)
-    setErrorMessage(null)
+    patchState({ messages: next, input: '', isLoading: true, errorMessage: null })
     resetSendTx()
 
     try {
       const response = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: next,
-          scenario: 'pendle',
-          receiverAddress: connectedAddress,
-        }),
+        body: JSON.stringify({ messages: next, scenario: 'pendle', receiverAddress: connectedAddress }),
       })
       const json = (await response.json()) as AgentResponse
       const { reply, envelope: returnedEnvelope, error, hint } = json
 
       if (!response.ok) {
         const detail = hint !== undefined ? `${error ?? 'Agent error'} - ${hint}` : error ?? 'Agent request failed'
-        setErrorMessage(detail)
+        patchState({ errorMessage: detail })
         return
       }
 
-      const hasReplyText = reply !== undefined && reply.length > 0
-      const replyTextNode = hasReplyText
-        ? reply
-        : returnedEnvelope !== undefined
-          ? '(envelope prepared - review below)'
-          : '(empty reply)'
-      setMessages([ ...next, { role: 'assistant', content: replyTextNode } ])
+      const replyText = resolveReplyText(reply, returnedEnvelope !== undefined)
+      patchState({ messages: [ ...next, { role: 'assistant', content: replyText } ] })
 
       if (returnedEnvelope !== undefined) {
-        setEnvelope(returnedEnvelope)
         const decoded = await fetchDecoded(returnedEnvelope)
-        setDecodedInner(decoded)
+        patchState({ envelope: returnedEnvelope, decodedInner: decoded })
       }
     } catch (networkError) {
-      setErrorMessage(`Network error: ${String(networkError)}`)
+      patchState({ errorMessage: `Network error: ${String(networkError)}` })
     } finally {
-      setLoading(false)
+      patchState({ isLoading: false })
     }
   }
 
@@ -159,46 +179,70 @@ export const PendleAgentChat = () => {
     if (envelope === null || !isConnected) {
       return
     }
+
     const { call, chain } = envelope
     const chainId = Number(chain.split(':')[1])
-    sendTransaction({
-      to: call.to,
-      data: call.data,
-      value: BigInt(call.value),
-      chainId,
-    })
+    sendTransaction({ to: call.to, data: call.data, value: BigInt(call.value), chainId })
+  }
+
+  const resolveTxButtonLabel = (): string => {
+    if (isSigning) {
+      return 'Sign in your wallet...'
+    }
+
+    if (isConfirming) {
+      return 'Waiting for confirmation...'
+    }
+
+    if (isConfirmed) {
+      return 'Confirmed - sign another?'
+    }
+
+    return 'Sign tx in wallet'
   }
 
   const isBusySendingTx = isSigning || isConfirming
   const envelopeChainId = envelope !== null ? Number(envelope.chain.split(':')[1]) : null
-  const txButtonLabel = isSigning
-    ? 'Sign in your wallet...'
-    : isConfirming
-      ? 'Waiting for confirmation...'
-      : isConfirmed
-        ? 'Confirmed - sign another?'
-        : 'Sign tx in wallet'
 
+  const decodedForPreview = decodedInner !== null
+    ? {
+      selector: decodedInner.selector ?? undefined,
+      functionName: decodedInner.functionName ?? undefined,
+      args: decodedInner.args?.map((arg) => ({ name: arg.name ?? '', type: arg.type, value: arg.value })),
+      source: decodedInner.source,
+      clearSigning: decodedInner.clearSigning,
+    }
+    : undefined
+
+  const emptyStateNode = (
+    <div className="rounded-lg border border-dashed border-[color:var(--color-border)] bg-[color:var(--color-card)]/40 px-5 py-8 text-center">
+      <p className="text-sm text-[color:var(--color-muted)]">
+        Try{': '}
+        <span className="font-mono text-[color:var(--color-foreground)]">Swap 100 USDC for PT-stETH</span>
+      </p>
+      <p className="text-xs text-[color:var(--color-muted)] mt-2">
+        The agent calls prepare_pendle_yield_swap, you review the decoded envelope, then sign in your wallet.
+      </p>
+    </div>
+  )
+
+  const messagesNode = messages.length === 0
+    ? emptyStateNode
+    : messages.map((message, index) => (
+      <ChatMessage key={index} role={message.role} content={message.content} />
+    ))
 
   return (
     <section className="space-y-4">
-      <div className="space-y-3 min-h-[200px]">
-        {messages.length === 0 ? (
-          <div className="opacity-50 text-sm italic">
-            Try: &ldquo;Swap 100 USDC for PT-stETH&rdquo;. Agent calls prepare_pendle_yield_swap, you review the envelope, then sign in your wallet.
-          </div>
-        ) : (
-          messages.map((message, index) => (
-            <ChatMessage key={index} role={message.role} content={message.content} />
-          ))
-        )}
+      <div className="space-y-3">
+        {messagesNode}
         {isLoading ? (
-          <div className="opacity-60 text-sm">Agent thinking&hellip;</div>
+          <div className="text-sm text-[color:var(--color-muted)]">Agent thinking&hellip;</div>
         ) : null}
       </div>
 
       {errorMessage !== null ? (
-        <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+        <div className="rounded-md border border-[color:var(--color-error)] bg-[color:var(--color-error-bg)] px-3 py-2 text-sm text-[color:var(--color-error)]">
           {errorMessage}
         </div>
       ) : null}
@@ -211,19 +255,16 @@ export const PendleAgentChat = () => {
           innerLabel={envelope.inner.label}
           envelopeHash={envelope.meta.envelopeHash}
           validityNotAfter={envelope.meta.validity.notAfter}
-          decoded={decodedInner !== null ? {
-            selector: decodedInner.selector ?? undefined,
-            functionName: decodedInner.functionName ?? undefined,
-            args: decodedInner.args?.map((arg) => ({
-              name: arg.name ?? '',
-              type: arg.type,
-              value: arg.value,
-            })),
-            source: decodedInner.source,
-            clearSigning: decodedInner.clearSigning,
-          } : undefined}
+          decoded={decodedForPreview}
           policyStatus="allow"
           policyReason="signed by agent, within policy gate limits"
+          feeSlot={(
+            <SequencerFeeRow
+              chain={envelope.chain as ArbitrumChainId}
+              to={envelope.call.to}
+              calldata={envelope.call.data}
+            />
+          )}
         />
       ) : null}
 
@@ -233,15 +274,15 @@ export const PendleAgentChat = () => {
             type="button"
             onClick={handleSignTransaction}
             disabled={!isConnected || isBusySendingTx}
-            className="w-full rounded-md bg-emerald-500/20 border border-emerald-500/40 px-4 py-3 text-sm text-emerald-200 hover:bg-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-md border border-[color:var(--color-success)] bg-[color:var(--color-success-bg)] px-4 py-3 text-sm text-[color:var(--color-success)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {txButtonLabel}
+            {resolveTxButtonLabel()}
           </button>
           {!isConnected ? (
-            <p className="text-xs opacity-60 text-center">Connect your wallet to sign</p>
+            <p className="text-xs text-[color:var(--color-muted)] text-center">Connect your wallet to sign</p>
           ) : null}
           {sendError !== null ? (
-            <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            <div className="rounded-md border border-[color:var(--color-error)] bg-[color:var(--color-error-bg)] px-3 py-2 text-xs text-[color:var(--color-error)]">
               {sendError.message}
             </div>
           ) : null}
@@ -250,7 +291,7 @@ export const PendleAgentChat = () => {
               href={formatTxExplorerUrl(envelopeChainId, txHash)}
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-center text-xs font-mono opacity-80 hover:opacity-100 underline"
+              className="block text-center text-xs font-mono text-[color:var(--color-muted)] hover:text-[color:var(--color-foreground)] underline"
             >
               {isConfirmed ? 'Confirmed on Arbiscan' : 'View pending tx on Arbiscan'}: {txHash}
             </a>
@@ -260,16 +301,16 @@ export const PendleAgentChat = () => {
 
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
-          className="flex-1 rounded-md border border-[color:var(--color-border)] bg-transparent px-3 py-2 text-sm"
+          className="flex-1 rounded-md border border-[color:var(--color-border)] bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-[color:var(--color-accent)]"
           placeholder="Describe a yield rotation..."
           value={input}
-          onChange={(event) => setInput(event.target.value)}
+          onChange={(event) => patchState({ input: event.target.value })}
           disabled={isLoading}
         />
         <button
           type="submit"
           disabled={isLoading || input.trim().length === 0}
-          className="rounded-md bg-[color:var(--color-accent)] px-4 py-2 text-sm text-white disabled:opacity-50"
+          className="rounded-md bg-[color:var(--color-accent)] px-4 py-2 text-sm text-[color:var(--color-accent-text)] disabled:opacity-50"
         >
           Send
         </button>
