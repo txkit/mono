@@ -196,6 +196,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.0.0
         version: 5.90.21(react@19.1.0)
+      '@txkit/arbitrum-adapter':
+        specifier: workspace:^
+        version: link:../../packages/arbitrum-adapter
       '@txkit/core':
         specifier: workspace:^
         version: link:../../packages/core

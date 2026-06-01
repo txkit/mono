@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import '@txkit/themes/base'
 import '@txkit/themes/dark'
 import './globals.css'
 import { Providers } from './providers'
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
   return (
-    <html lang="en" className="txkit-dark">
+    <html lang="en" className="tx-root tx-dark">
       <body className="antialiased min-h-screen">
         <Providers>{children}</Providers>
       </body>

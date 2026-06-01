@@ -14,6 +14,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
     "@tanstack/react-query": "^5.0.0",
+    "@txkit/arbitrum-adapter": "workspace:^",
     "@txkit/core": "workspace:^",
     "@txkit/react": "workspace:^",
     "@txkit/themes": "workspace:^",
