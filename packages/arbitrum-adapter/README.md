@@ -5,7 +5,7 @@
 
 Bridge Arbitrum specifics and `@txkit/tx-protocol` `PreparedEnvelope`. Attach L1->L2 bridge intents, retryable-ticket UX hints, and sequencer-fee previews to an envelope; decode Arbitrum-flavoured calldata.
 
-> **v0.1.0-alpha** - skeleton scaffolded for the Arbitrum Open House London Buildathon (June 14 deadline). Surface stable; helper bodies will harden in alpha.1 with viem integration.
+> **v0.1.0-alpha** - scaffolded for the Arbitrum Open House London Buildathon (June 14 deadline). `previewSequencerFee` is live (viem-driven precompile read); the decoder registry and the remaining helper coverage harden in alpha.1.
 
 ## Why this exists
 
@@ -21,8 +21,10 @@ The PreparedTransaction Envelope (ERC-8265, [PR #1753](https://github.com/ethere
 ## Install
 
 ```bash
-npm install @txkit/arbitrum-adapter@alpha @txkit/tx-protocol@alpha
+npm install @txkit/arbitrum-adapter@alpha @txkit/tx-protocol@alpha viem
 ```
+
+`viem` is a peer dependency - `previewSequencerFee` reads Arbitrum precompiles through a viem `PublicClient` you supply.
 
 ## Usage
 
@@ -66,6 +68,30 @@ const withRetryable = attachRetryableHints(envelope, {
 ```
 
 ### Preview the sequencer fee
+
+Compute a live preview from an Arbitrum RPC, then attach it to the envelope:
+
+```ts
+import { createPublicClient, http } from 'viem'
+import { arbitrum } from 'viem/chains'
+import { previewSequencerFee, attachSequencerFeePreview } from '@txkit/arbitrum-adapter'
+
+const client = createPublicClient({ chain: arbitrum, transport: http() })
+
+const preview = await previewSequencerFee(client, {
+  chain: 'eip155:42161',
+  to: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', // inner call target
+  calldata: '0xa9059cbb...',                        // inner calldata
+})
+// -> { l2GasEstimate, l1CalldataBytes, l1FeeWei, l2FeeWei, totalFeeWei, isCompressed, previewBlock }
+// or null if the RPC is unreachable or the simulated call reverts
+
+const withFee = preview ? attachSequencerFeePreview(envelope, preview) : envelope
+```
+
+`previewSequencerFee` reads `NodeInterface.gasEstimateComponents` (precompile 0xC8), which simulates the `to` + `calldata` call and splits the cost into the L2 compute portion and the L1 calldata-posting portion. Both are priced at the L2 base fee (the L1 component is denominated in L2 gas units). Pass `from` to set the simulated `msg.sender`, or `l1BaseFeeWei` to pin the reported L1 base fee.
+
+You can also attach a producer-supplied preview directly, without an RPC:
 
 ```ts
 import { attachSequencerFeePreview } from '@txkit/arbitrum-adapter'
@@ -112,7 +138,7 @@ const decoded = decodeArbitrumCall({
 - `attachSequencerFeePreview(envelope, preview)` - attach `meta.arbitrum.sequencerFee`
 - `extractSequencerFeePreview(envelope)` - read `meta.arbitrum.sequencerFee`
 - `isSequencerFeePreview(value)` - type guard
-- `previewSequencerFee({ chain, calldata, l1BaseFeeWei? })` - skeleton stub, returns `null` until alpha.1
+- `previewSequencerFee(client, { chain, to, calldata, from?, l1BaseFeeWei? })` - async; live preview via `NodeInterface.gasEstimateComponents` read through the supplied viem `PublicClient`. Returns `null` on RPC failure or if the simulated call reverts
 - `NOVA_USES_COMPRESSED_CALLDATA` - constant flag (`true`)
 
 ### Decoder
@@ -122,7 +148,7 @@ const decoded = decodeArbitrumCall({
 
 ## Status
 
-Skeleton. Helper bodies for `previewSequencerFee` and the decoder registry will harden in alpha.1 with viem-driven precompile reads (`ArbGasInfo`, `NodeInterface`) plus expanded coverage of Hop bonders per token, Across SpokePool per chain, Stargate routers, Camelot, GMX, Pendle, and Aave V3 on Arbitrum One.
+`previewSequencerFee` is live via a viem-driven `NodeInterface` read. The decoder registry is still a seed and will harden in alpha.1 with expanded coverage of Hop bonders per token, Across SpokePool per chain, Stargate routers, Camelot, GMX, Pendle, and Aave V3 on Arbitrum One. Two known alpha.1 refinements for the fee preview: Nova `l1CalldataBytes` currently reports the raw byte count (not the post-Brotli/DAC size, though the fee itself is accurate), and a revert-resilient `ArbGasInfo` fallback would let the L1 portion survive when the simulated call reverts.
 
 Tracking issue: open one in [github.com/txkit/mono/issues](https://github.com/txkit/mono/issues) if you have a buildathon use case that needs prioritisation.
 

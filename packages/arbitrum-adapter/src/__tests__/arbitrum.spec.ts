@@ -1,3 +1,4 @@
+import { toHex, type PublicClient } from 'viem'
 import { describe, expect, it } from 'vitest'
 
 import { attachBridgeIntent, extractBridgeIntent, isBridgeIntent } from '../bridge'
@@ -48,6 +49,44 @@ const SAMPLE_PREVIEW: SequencerFeePreview = {
   l2FeeWei: '0x71afd498d0000',
   totalFeeWei: '0x1d4ab7f7c2a0000',
   isCompressed: false,
+}
+
+const DEAD_ADDRESS = '0x000000000000000000000000000000000000dEaD' as const
+
+type MockReadParams = {
+  address: string,
+  functionName: string,
+  args: readonly unknown[],
+  account?: unknown,
+}
+
+/**
+ * Minimal fake viem PublicClient. previewSequencerFee only touches
+ * readContract + getBlockNumber, so we stub exactly those two and cast.
+ * The gasEstimateComponents tuple defaults to the happy-path values used
+ * across the assertions below.
+ */
+const createMockClient = (options: {
+  components?: readonly [ bigint, bigint, bigint, bigint ],
+  blockNumber?: bigint,
+  throwOnRead?: boolean,
+  onRead?: (params: MockReadParams) => void,
+}): PublicClient => {
+  const { components, blockNumber, throwOnRead, onRead } = options
+  const componentsValue = components ?? [ 1000000n, 200000n, 100000000n, 30000000000n ]
+  const blockNumberValue = blockNumber ?? 12345n
+
+  return {
+    readContract: async (params: MockReadParams) => {
+      onRead?.(params)
+      if (throwOnRead) {
+        throw new Error('rpc down')
+      }
+
+      return componentsValue
+    },
+    getBlockNumber: async () => blockNumberValue,
+  } as unknown as PublicClient
 }
 
 describe('arbitrum-adapter / bridge', () => {
@@ -119,9 +158,92 @@ describe('arbitrum-adapter / sequencer', () => {
     expect(isSequencerFeePreview({ l2GasEstimate: '0x1' })).toBe(false)
   })
 
-  it('previewSequencerFee is a skeleton stub - returns null', () => {
-    const preview = previewSequencerFee({ chain: 'eip155:42161', calldata: '0x' })
+  it('previewSequencerFee computes every field from gasEstimateComponents', async () => {
+    const client = createMockClient({
+      components: [ 1000000n, 200000n, 100000000n, 30000000000n ],
+      blockNumber: 12345n,
+    })
+    const preview = await previewSequencerFee(client, {
+      chain: 'eip155:42161',
+      to: DEAD_ADDRESS,
+      calldata: '0xabcdef',
+    })
+
+    expect(preview).toEqual({
+      l2GasEstimate: toHex(800000n),
+      l1CalldataBytes: 3,
+      l1BaseFeeWei: toHex(30000000000n),
+      l1FeeWei: toHex(200000n * 100000000n),
+      l2FeeWei: toHex(800000n * 100000000n),
+      totalFeeWei: toHex(1000000n * 100000000n),
+      isCompressed: false,
+      previewBlock: 12345,
+    })
+  })
+
+  it('previewSequencerFee reads gasEstimateComponents on NodeInterface 0xC8', async () => {
+    let captured: MockReadParams | undefined
+    const client = createMockClient({ onRead: (params) => { captured = params } })
+    await previewSequencerFee(client, {
+      chain: 'eip155:42161',
+      to: DEAD_ADDRESS,
+      calldata: '0x1234',
+    })
+
+    expect(captured?.address).toBe('0x00000000000000000000000000000000000000C8')
+    expect(captured?.functionName).toBe('gasEstimateComponents')
+    expect(captured?.args).toEqual([ DEAD_ADDRESS, false, '0x1234' ])
+  })
+
+  it('previewSequencerFee flags Nova calldata compression', async () => {
+    const client = createMockClient({})
+    const preview = await previewSequencerFee(client, {
+      chain: 'eip155:42170',
+      to: DEAD_ADDRESS,
+      calldata: '0x',
+    })
+
+    expect(preview?.isCompressed).toBe(true)
+  })
+
+  it('previewSequencerFee honours an l1BaseFeeWei override', async () => {
+    const client = createMockClient({ components: [ 1000000n, 200000n, 100000000n, 30000000000n ] })
+    const preview = await previewSequencerFee(client, {
+      chain: 'eip155:42161',
+      to: DEAD_ADDRESS,
+      calldata: '0x',
+      l1BaseFeeWei: '0x1',
+    })
+
+    expect(preview?.l1BaseFeeWei).toBe('0x1')
+  })
+
+  it('previewSequencerFee returns null when the precompile read fails', async () => {
+    const client = createMockClient({ throwOnRead: true })
+    const preview = await previewSequencerFee(client, {
+      chain: 'eip155:42161',
+      to: DEAD_ADDRESS,
+      calldata: '0x',
+    })
+
     expect(preview).toBeNull()
+  })
+
+  it('previewSequencerFee counts calldata bytes', async () => {
+    const client = createMockClient({})
+    const empty = await previewSequencerFee(client, {
+      chain: 'eip155:42161',
+      to: DEAD_ADDRESS,
+      calldata: '0x',
+    })
+    const filled = await previewSequencerFee(client, {
+      chain: 'eip155:42161',
+      to: DEAD_ADDRESS,
+      calldata: '0xdeadbeef',
+    })
+
+    expect(empty?.l1CalldataBytes).toBe(0)
+    expect(filled?.l1CalldataBytes).toBe(4)
   })
 
   it('exposes the Nova compression flag', () => {
