@@ -28,7 +28,7 @@ jobs:
         # fine on macOS/Linux desktops with mobile preset; CI is the gap.
         formFactor: [ desktop ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v4
 
