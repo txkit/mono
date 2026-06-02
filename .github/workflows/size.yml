@@ -18,7 +18,7 @@ jobs:
           # size-limit-action diffs against the base branch, needs full history
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
       - uses: actions/setup-node@v6
         with:
