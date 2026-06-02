@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { DeployPendingBanner } from '@/src/ui/DeployPendingBanner'
+
 import { PendleAgentChat } from './PendleAgentChat'
 
 
@@ -23,6 +25,8 @@ const FlowA = () => {
           decoded preview, then sign once via AgentPolicyGate.executeEnvelope.
         </p>
       </header>
+
+      <DeployPendingBanner />
 
       <PendleAgentChat />
 
