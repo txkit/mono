@@ -6,9 +6,9 @@ type PolicyStatusBadgeProps = {
 }
 
 const STATUS_STYLES: Record<PolicyStatus, string> = {
-  allow: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40',
-  warn: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
-  block: 'bg-red-500/15 text-red-300 border-red-500/40',
+  allow: 'bg-[color:var(--color-success-bg)] text-[color:var(--color-success)] border-[color:var(--color-success)]',
+  warn: 'bg-[color:var(--color-warning-bg)] text-[color:var(--color-warning)] border-[color:var(--color-warning)]',
+  block: 'bg-[color:var(--color-error-bg)] text-[color:var(--color-error)] border-[color:var(--color-error)]',
 }
 
 const STATUS_LABELS: Record<PolicyStatus, string> = {
@@ -17,7 +17,11 @@ const STATUS_LABELS: Record<PolicyStatus, string> = {
   block: 'BLOCK',
 }
 
-export const PolicyStatusBadge = ({ status, reason }: PolicyStatusBadgeProps) => {
+export const PolicyStatusBadge = (props: PolicyStatusBadgeProps) => {
+  const { status, reason } = props
+  const hasReason = reason !== undefined && reason.length > 0
+  const reasonNode = hasReason ? <span className="opacity-80">- {reason}</span> : null
+
   return (
     <span
       className={`inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-xs font-mono ${STATUS_STYLES[status]}`}
@@ -25,9 +29,7 @@ export const PolicyStatusBadge = ({ status, reason }: PolicyStatusBadgeProps) =>
     >
       <span className="size-1.5 rounded-full bg-current" />
       {STATUS_LABELS[status]}
-      {reason !== undefined && reason.length > 0 ? (
-        <span className="opacity-70">- {reason}</span>
-      ) : null}
+      {reasonNode}
     </span>
   )
 }

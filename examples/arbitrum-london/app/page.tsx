@@ -2,9 +2,10 @@ import Link from 'next/link'
 
 
 /**
- * Landing page for the Buildathon demo. Two scenario cards, each linking
- * to its own /flow-* page. Lift-pitch above the fold, technical context
- * below, repo + ERC links in footer.
+ * Landing page for the Buildathon demo. Leads with the txKit value prop and
+ * the ERC-8265 credential, then a primary call-to-action into the working
+ * Pendle flow (Scenario A). Scenario C (RWA on Robinhood) is shown as a
+ * roadmap card, honestly labelled, so judges go straight to the live demo.
  */
 const Home = () => {
   return (
@@ -14,27 +15,38 @@ const Home = () => {
           txKit - Arbitrum Open House London Buildathon
         </p>
         <h1 className="text-4xl font-bold mb-4">
-          ERC-8265 envelopes, on-chain enforced
+          Verify before you sign
         </h1>
-        <p className="text-lg opacity-80 max-w-2xl">
-          An autonomous agent prepares a transaction. You see a typed,
-          decoded preview before signing. A minimum-viable policy gate
-          enforces the rules on-chain. Two scenarios below show the flow
-          end to end.
+        <p className="text-lg text-[color:var(--color-muted)] max-w-2xl mb-6">
+          An autonomous agent prepares an Arbitrum transaction. You see a
+          typed, decoded preview of exactly what it does before signing, and a
+          minimum-viable policy gate enforces the rules on-chain.
         </p>
+        <a
+          href="https://github.com/ethereum/ERCs/pull/1753"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-md border border-[color:var(--color-border)] px-3 py-1.5 text-xs font-mono text-[color:var(--color-muted)] hover:border-[color:var(--color-accent)] hover:text-[color:var(--color-foreground)] transition-colors"
+        >
+          <span className="size-1.5 rounded-full bg-[color:var(--color-accent)]" />
+          Built on ERC-8265 - Ethereum PR #1753
+        </a>
       </header>
 
-      <section className="grid gap-6 md:grid-cols-2 mb-16">
+      <section className="grid gap-6 md:grid-cols-3 mb-16">
         <Link
           href="/flow-a"
-          className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-card)] p-6 hover:border-[color:var(--color-accent)] transition-colors"
+          className="md:col-span-2 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-card)] p-6 hover:border-[color:var(--color-accent)] transition-colors"
         >
-          <p className="text-xs uppercase tracking-wider opacity-60 mb-2">Scenario A</p>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs uppercase tracking-wider text-[color:var(--color-success)] font-mono">Live demo</span>
+            <span className="text-xs uppercase tracking-wider text-[color:var(--color-muted)]">Scenario A</span>
+          </div>
           <h2 className="text-2xl font-semibold mb-2">Pendle yield swap</h2>
-          <p className="opacity-80 mb-4">
-            Agent rotates yield by swapping a base token for Pendle PT
-            on Arbitrum Sepolia. Envelope decoded with
-            <code className="bg-black/30 px-1 rounded mx-1">@txkit/tx-decoder</code>,
+          <p className="text-[color:var(--color-muted)] mb-4">
+            Agent rotates yield by swapping a base token for Pendle PT on
+            Arbitrum Sepolia. Envelope decoded with
+            <code className="font-mono bg-[color:var(--color-card-sunken)] px-1 rounded mx-1">@txkit/tx-decoder</code>,
             executed via AgentPolicyGate.
           </p>
           <p className="text-sm text-[color:var(--color-accent)]">Open demo &rarr;</p>
@@ -42,32 +54,30 @@ const Home = () => {
 
         <Link
           href="/flow-c"
-          className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-card)] p-6 hover:border-[color:var(--color-accent)] transition-colors"
+          className="rounded-lg border border-dashed border-[color:var(--color-border)] bg-[color:var(--color-card)]/40 p-6 hover:border-[color:var(--color-border-hover)] transition-colors"
         >
-          <p className="text-xs uppercase tracking-wider opacity-60 mb-2">Scenario C</p>
-          <h2 className="text-2xl font-semibold mb-2">x402 RWA agent</h2>
-          <p className="opacity-80 mb-4">
-            Pay 0.1 USDC via x402, the agent then prepares a tokenised
-            equity buy on Robinhood Chain testnet. Mock TSLA / AMZN / PLTR
-            from the official faucet.
+          <p className="text-xs uppercase tracking-wider text-[color:var(--color-muted)] font-mono mb-2">Roadmap - Phase 2</p>
+          <h2 className="text-xl font-semibold mb-2 text-[color:var(--color-muted)]">x402 RWA agent</h2>
+          <p className="text-sm text-[color:var(--color-muted)]">
+            x402-paid agent buying tokenised equity on Robinhood Chain testnet.
+            Multi-chain envelope flow, landing next.
           </p>
-          <p className="text-sm text-[color:var(--color-accent)]">Open demo &rarr;</p>
         </Link>
       </section>
 
-      <footer className="border-t border-[color:var(--color-border)] pt-8 text-sm opacity-70">
+      <footer className="border-t border-[color:var(--color-border)] pt-8 text-sm text-[color:var(--color-muted)]">
         <p className="mb-2">
           Source:{' '}
-          <a className="underline" href="https://github.com/txkit/mono">
+          <a className="underline hover:text-[color:var(--color-foreground)]" href="https://github.com/txkit/mono">
             github.com/txkit/mono
           </a>
           {' '}- ERC PR:{' '}
-          <a className="underline" href="https://github.com/ethereum/ERCs/pull/1753">
+          <a className="underline hover:text-[color:var(--color-foreground)]" href="https://github.com/ethereum/ERCs/pull/1753">
             ethereum/ERCs#1753
           </a>
           {' '}- Discussion:{' '}
           <a
-            className="underline"
+            className="underline hover:text-[color:var(--color-foreground)]"
             href="https://ethereum-magicians.org/t/erc-8265-prepared-transaction-envelope/28557"
           >
             Ethereum Magicians thread 28557
@@ -78,5 +88,6 @@ const Home = () => {
     </main>
   )
 }
+
 
 export default Home
