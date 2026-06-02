@@ -35,16 +35,16 @@ export const DeployPendingBanner = () => {
   return (
     <div
       role="status"
-      className="rounded-md border border-dashed border-[color:var(--color-warning)] bg-[color:var(--color-warning-bg)] px-4 py-3 text-sm"
+      className="rounded-md border border-dashed border-warning bg-warning-bg px-4 py-3 text-sm"
     >
-      <p className="font-medium text-[color:var(--color-warning)]">
+      <p className="font-medium text-warning">
         Preview mode - contracts not deployed yet
       </p>
-      <p className="mt-1 text-xs text-[color:var(--color-muted)]">
+      <p className="mt-1 text-xs text-muted">
         {missingLabel} on Arbitrum Sepolia {verb} still a placeholder address. You can
         explore the flow, but preparing an envelope returns a &ldquo;not deployed yet&rdquo;
         notice until the contracts are live. Deploy steps:{' '}
-        <span className="font-mono text-[color:var(--color-foreground)]">examples/arbitrum-london/DEPLOY.md</span>.
+        <span className="font-mono text-foreground">examples/arbitrum-london/DEPLOY.md</span>.
       </p>
     </div>
   )

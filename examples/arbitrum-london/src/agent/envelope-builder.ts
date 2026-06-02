@@ -1,6 +1,6 @@
 import { encodeAbiParameters, encodeFunctionData, keccak256, type Hex } from 'viem'
 
-import { ARBITRUM_SEPOLIA_CHAIN_ID, ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
+import { ARBITRUM_SEPOLIA_CHAIN_ID } from '@/src/chains'
 import {
   getAgentPolicyGateAddress,
   getMockPendleRouterAddress,
@@ -213,10 +213,5 @@ export const buildRwaEnvelope = (
   _args: PrepareRwaBuyArgs,
   _receiverAddress: `0x${string}`,
 ): DemoEnvelope => {
-  throw new Error(
-    'RWA envelope builder not implemented yet. Lands in Buildathon Phase 2 Day 10 (Sun Jun 1).',
-  )
+  throw new Error('RWA envelope builder is not implemented in this build.')
 }
-
-// Suppress unused-import warning for the chain id constant in the placeholder branch.
-void ROBINHOOD_TESTNET_CHAIN_ID

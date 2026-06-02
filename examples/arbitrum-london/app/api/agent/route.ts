@@ -182,7 +182,6 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({
       reply: textReply,
       scenario,
-      milestone: 'phase-1-day-5-tool-use-text-only',
     })
   }
 
@@ -190,7 +189,7 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json(
       {
         error: 'RWA scenario not implemented yet',
-        detail: 'Phase 2 Day 10 wires the RWA envelope builder + Robinhood Chain deploy.',
+        detail: 'The RWA scenario is not implemented in this build.',
       },
       { status: 501 },
     )
@@ -274,6 +273,5 @@ export const POST = async (request: NextRequest) => {
     reply: textReply,
     envelope: signedEnvelope,
     scenario,
-    milestone: 'phase-1-day-5-tool-use-with-envelope',
   })
 }

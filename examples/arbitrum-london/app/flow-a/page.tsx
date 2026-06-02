@@ -10,12 +10,13 @@ import { PendleAgentChat } from './PendleAgentChat'
  * Static lift-pitch + technical note + client-side chat below the fold.
  */
 const FlowA = () => {
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-12 space-y-8">
       <Link href="/" className="text-sm opacity-70 hover:opacity-100">&larr; Back</Link>
 
       <header>
-        <p className="text-xs uppercase tracking-wider text-[color:var(--color-accent)] mb-2">
+        <p className="text-xs uppercase tracking-wider text-accent mb-2">
           Scenario A - Arbitrum Sepolia
         </p>
         <h1 className="text-3xl font-bold mb-3">Pendle yield swap</h1>
@@ -30,7 +31,7 @@ const FlowA = () => {
 
       <PendleAgentChat />
 
-      <footer className="border-t border-[color:var(--color-border)] pt-6 text-xs opacity-60 space-y-1">
+      <footer className="border-t border-border pt-6 text-xs opacity-60 space-y-1">
         <p>
           Mock Pendle router used on testnet - production envelope shape matches Pendle V2.
         </p>
