@@ -70,9 +70,10 @@ const createMockClient = (options: {
   components?: readonly [ bigint, bigint, bigint, bigint ],
   blockNumber?: bigint,
   throwOnRead?: boolean,
+  throwOnBlockNumber?: boolean,
   onRead?: (params: MockReadParams) => void,
 }): PublicClient => {
-  const { components, blockNumber, throwOnRead, onRead } = options
+  const { components, blockNumber, throwOnRead, throwOnBlockNumber, onRead } = options
   const componentsValue = components ?? [ 1000000n, 200000n, 100000000n, 30000000000n ]
   const blockNumberValue = blockNumber ?? 12345n
 
@@ -85,7 +86,13 @@ const createMockClient = (options: {
 
       return componentsValue
     },
-    getBlockNumber: async () => blockNumberValue,
+    getBlockNumber: async () => {
+      if (throwOnBlockNumber) {
+        throw new Error('block number unavailable')
+      }
+
+      return blockNumberValue
+    },
   } as unknown as PublicClient
 }
 
@@ -227,6 +234,24 @@ describe('arbitrum-adapter / sequencer', () => {
     })
 
     expect(preview).toBeNull()
+  })
+
+  it('previewSequencerFee returns the fee even when getBlockNumber rejects', async () => {
+    const client = createMockClient({
+      components: [ 1000000n, 200000n, 100000000n, 30000000000n ],
+      throwOnBlockNumber: true,
+    })
+    const preview = await previewSequencerFee(client, {
+      chain: 'eip155:42161',
+      to: DEAD_ADDRESS,
+      calldata: '0xabcdef',
+    })
+
+    expect(preview).not.toBeNull()
+    expect(preview?.l1FeeWei).toBe(toHex(200000n * 100000000n))
+    expect(preview?.l2FeeWei).toBe(toHex(800000n * 100000000n))
+    expect(preview?.totalFeeWei).toBe(toHex(1000000n * 100000000n))
+    expect(preview?.previewBlock).toBeUndefined()
   })
 
   it('previewSequencerFee counts calldata bytes', async () => {

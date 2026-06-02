@@ -86,6 +86,19 @@ const NODE_INTERFACE_GAS_ESTIMATE_COMPONENTS_ABI = [
 ] as const
 
 /**
+ * Best-effort current block height for the preview metadata. The block
+ * number is informational only, so a failed lookup must not discard an
+ * otherwise valid fee estimate - it degrades to `undefined` instead.
+ */
+const resolvePreviewBlock = async (client: PublicClient): Promise<number | undefined> => {
+  try {
+    return Number(await client.getBlockNumber())
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * Compute a live sequencer-fee preview for a calldata payload on the given
  * Arbitrum chain. Reads NodeInterface.gasEstimateComponents (precompile
  * 0xC8) through the supplied viem client, which simulates the `to` + `data`
@@ -125,10 +138,10 @@ export const previewSequencerFee = async (
       account: from,
     })
 
-    const blockNumber = await client.getBlockNumber()
     const l2GasUnits = gasEstimate - gasEstimateForL1
     const l1BaseFeeWeiValue = l1BaseFeeWei ? BigInt(l1BaseFeeWei) : l1BaseFeeEstimate
     const calldataByteCount = (calldata.length - 2) / 2
+    const previewBlock = await resolvePreviewBlock(client)
 
     return {
       l2GasEstimate: toHex(l2GasUnits),
@@ -138,7 +151,7 @@ export const previewSequencerFee = async (
       l2FeeWei: toHex(l2GasUnits * baseFee),
       totalFeeWei: toHex(gasEstimate * baseFee),
       isCompressed: checkIsNova(chain),
-      previewBlock: Number(blockNumber),
+      previewBlock,
     }
   } catch {
     return null
