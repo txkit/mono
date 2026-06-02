@@ -9,15 +9,26 @@ import { arbitrumSepolia, robinhoodTestnet } from '@/src/chains'
 
 
 /**
- * Wagmi config wires both Buildathon chains. Single shared HTTP transport
- * per chain - production app would want a chain-aware fallback list, but
- * for testnet demo a single RPC per chain is fine.
+ * Wagmi config wires both Buildathon chains. Each transport uses a configured
+ * RPC url when one is provided, otherwise the chain's public default.
+ *
+ * The sequencer-fee preview reads the Arbitrum NodeInterface precompile
+ * (gasEstimateComponents at 0xC8). The public default RPC returns empty data
+ * for that virtual precompile on browser-origin requests, so the fee row
+ * silently hides. Point NEXT_PUBLIC_ARB_SEPOLIA_RPC_URL at a dedicated RPC
+ * (e.g. Alchemy) to make the live fee breakdown render in the browser.
  */
+const arbitrumSepoliaRpcUrl = process.env.NEXT_PUBLIC_ARB_SEPOLIA_RPC_URL
+const robinhoodTestnetRpcUrl = process.env.NEXT_PUBLIC_ROBINHOOD_TESTNET_RPC_URL
+
+const arbitrumSepoliaTransport = arbitrumSepoliaRpcUrl !== undefined ? http(arbitrumSepoliaRpcUrl) : http()
+const robinhoodTestnetTransport = robinhoodTestnetRpcUrl !== undefined ? http(robinhoodTestnetRpcUrl) : http()
+
 const wagmiConfig = createConfig({
   chains: [ arbitrumSepolia, robinhoodTestnet ],
   transports: {
-    [arbitrumSepolia.id]: http(),
-    [robinhoodTestnet.id]: http(),
+    [arbitrumSepolia.id]: arbitrumSepoliaTransport,
+    [robinhoodTestnet.id]: robinhoodTestnetTransport,
   },
   ssr: true,
 })
