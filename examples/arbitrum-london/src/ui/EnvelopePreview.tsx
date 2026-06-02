@@ -116,13 +116,13 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
   const argsNode = argList.length > 0
     ? (
       <details className="text-sm">
-        <summary className="cursor-pointer text-[color:var(--color-muted)] hover:text-[color:var(--color-foreground)]">
+        <summary className="cursor-pointer text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
           Decoded arguments ({argList.length})
         </summary>
         <dl className="mt-3 grid gap-2">
           {argList.map((arg) => (
             <div key={arg.name} className="grid grid-cols-[140px_1fr] gap-2 font-mono text-xs">
-              <dt className="text-[color:var(--color-muted)]">{fields[arg.name] ?? arg.name}</dt>
+              <dt className="text-muted">{fields[arg.name] ?? arg.name}</dt>
               <dd className="break-all">{stringifyValue(arg.value)}</dd>
             </div>
           ))}
@@ -132,7 +132,7 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
     : null
 
   const feeNode = feeSlot !== undefined && feeSlot !== null
-    ? <div className="px-5 py-4 border-t border-[color:var(--color-border)]">{feeSlot}</div>
+    ? <div className="px-5 py-4 border-t border-border">{feeSlot}</div>
     : null
 
   const argsContainerNode = argsNode !== null
@@ -140,40 +140,40 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
     : null
 
   return (
-    <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-card)] overflow-hidden">
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
       <div className="flex items-start justify-between gap-3 px-5 pt-5">
-        <p className="text-xs uppercase tracking-wider text-[color:var(--color-muted)] font-mono">Prepared envelope</p>
+        <p className="text-xs uppercase tracking-wider text-muted font-mono">Prepared envelope</p>
         {badgeNode}
       </div>
 
-      <div className="px-5 pb-5 pt-2 border-b border-[color:var(--color-border)]">
+      <div className="px-5 pb-5 pt-2 border-b border-border">
         <h3 className="text-xl font-semibold mb-1">{title}</h3>
-        <p className="text-sm text-[color:var(--color-muted)]">{innerLabel}</p>
+        <p className="text-sm text-muted">{innerLabel}</p>
       </div>
 
       <div className="grid gap-3 text-sm px-5 py-4">
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)] shrink-0">Chain</span>
+          <span className="text-muted shrink-0">Chain</span>
           <span className="font-mono">{chainLabel}</span>
         </div>
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)] shrink-0">Policy gate</span>
+          <span className="text-muted shrink-0">Policy gate</span>
           <CopyableValue value={toAddress} display={formatAddress(toAddress)} explorerUrl={buildExplorerUrl(explorerBaseUrl, toAddress)} />
         </div>
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)] shrink-0">Inner target</span>
+          <span className="text-muted shrink-0">Inner target</span>
           <CopyableValue value={innerToAddress} display={formatAddress(innerToAddress)} explorerUrl={buildExplorerUrl(explorerBaseUrl, innerToAddress)} />
         </div>
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)] shrink-0">Envelope hash</span>
+          <span className="text-muted shrink-0">Envelope hash</span>
           <CopyableValue value={envelopeHash} display={formatAddress(envelopeHash)} />
         </div>
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)] shrink-0">Expires in</span>
+          <span className="text-muted shrink-0">Expires in</span>
           <span className="font-mono">{formatExpiry(remainingSeconds)}</span>
         </div>
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)] shrink-0">Decoder source</span>
+          <span className="text-muted shrink-0">Decoder source</span>
           <span className="font-mono">{decoded?.source ?? 'unknown'}</span>
         </div>
       </div>

@@ -46,7 +46,7 @@ export const CopyableValue = (props: CopyableValueProps) => {
   }
 
   const copiedNode = isCopied
-    ? <span className="text-xs text-[color:var(--color-success)]">copied</span>
+    ? <span className="text-xs text-success">copied</span>
     : null
   const linkNode = explorerUrl !== undefined
     ? (
@@ -55,7 +55,7 @@ export const CopyableValue = (props: CopyableValueProps) => {
         target="_blank"
         rel="noopener noreferrer"
         title="View on block explorer"
-        className="text-[color:var(--color-muted)] hover:text-[color:var(--color-accent)] transition-colors"
+        className="text-muted hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
       >
         ↗
       </a>
@@ -69,7 +69,7 @@ export const CopyableValue = (props: CopyableValueProps) => {
         type="button"
         onClick={handleCopy}
         title={`Copy ${value}`}
-        className="font-mono truncate hover:text-[color:var(--color-accent)] transition-colors"
+        className="font-mono truncate hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
       >
         {display}
       </button>
