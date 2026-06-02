@@ -17,7 +17,11 @@ import {
   RWA_TOOL_DEFINITION,
   preparePendleYieldSwapArgs,
 } from '@/src/agent/tools'
-import { getAgentPolicyGateAddress } from '@/src/config/deployed'
+import {
+  checkIsAgentPolicyGateDeployed,
+  checkIsMockPendleRouterDeployed,
+  getAgentPolicyGateAddress,
+} from '@/src/config/deployed'
 import { getEnv } from '@/src/config/env'
 
 
@@ -88,6 +92,27 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({ error: 'messages must be a non-empty array' }, { status: 400 })
   }
 
+  // Cost guard: skip the model call entirely when the scenario A contracts are
+  // not live yet. The envelope cannot be built without them, so calling Claude
+  // here would spend an API request for nothing. The deploy-pending banner
+  // already tells the user they are in preview mode.
+  if (scenario === 'pendle') {
+    const isGateDeployed = checkIsAgentPolicyGateDeployed(ARBITRUM_SEPOLIA_CHAIN_ID)
+    const isRouterDeployed = checkIsMockPendleRouterDeployed(ARBITRUM_SEPOLIA_CHAIN_ID)
+    const isScenarioReady = isGateDeployed && isRouterDeployed
+    if (!isScenarioReady) {
+      return NextResponse.json(
+        {
+          error: 'Contracts not deployed yet',
+          hint:
+            'AgentPolicyGate / MockPendleRouter are still placeholder addresses on ' +
+            'Arbitrum Sepolia. Deploy them (see DEPLOY.md) and update contracts/deployed.json.',
+        },
+        { status: 503 },
+      )
+    }
+  }
+
   let env
   try {
     env = getEnv()
@@ -129,7 +154,7 @@ export const POST = async (request: NextRequest) => {
   let completion
   try {
     completion = await anthropic.messages.create({
-      model: 'claude-opus-4-8',
+      model: 'claude-haiku-4-5',
       max_tokens: 1024,
       system: systemPrompt,
       tools: [ toolDefinition ],
