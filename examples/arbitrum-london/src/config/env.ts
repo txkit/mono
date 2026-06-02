@@ -42,6 +42,19 @@ const envSchema = z.object({
 export type Env = z.infer<typeof envSchema>
 
 /**
+ * Coerce blank env vars ("") to undefined so optional fields stay optional and
+ * defaulted fields fall back to their default. A blank value (common when
+ * copying .env.example and clearing it, or a host that injects empty vars)
+ * otherwise fails z.string().min(1)/.url() and surfaces a raw 500 instead of
+ * the route's intended "not set" handling.
+ */
+const blankToUndefined = (source: NodeJS.ProcessEnv): Record<string, string | undefined> => {
+  const entries = Object.entries(source).map(([ key, value ]) => [ key, value === '' ? undefined : value ] as const)
+
+  return Object.fromEntries(entries)
+}
+
+/**
  * Lazy-load + cache the parsed env. Called from server-only modules.
  * Throwing during module init breaks Next dev hot reload, so we defer to
  * first access and surface a 500 + structured error from the API route.
@@ -49,7 +62,7 @@ export type Env = z.infer<typeof envSchema>
 let cachedEnv: Env | undefined
 export const getEnv = (): Env => {
   if (cachedEnv === undefined) {
-    cachedEnv = envSchema.parse(process.env)
+    cachedEnv = envSchema.parse(blankToUndefined(process.env))
   }
   return cachedEnv
 }
