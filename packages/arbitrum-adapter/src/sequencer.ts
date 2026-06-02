@@ -141,7 +141,6 @@ export const previewSequencerFee = async (
       previewBlock: Number(blockNumber),
     }
   } catch {
-
     return null
   }
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 
 type CopyableValueProps = {
@@ -17,11 +17,32 @@ type CopyableValueProps = {
 export const CopyableValue = (props: CopyableValueProps) => {
   const { value, display, explorerUrl } = props
   const [ isCopied, setCopied ] = useState(false)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(value)
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
+
+  const handleCopy = async () => {
+    let copiedOk = true
+    try {
+      await navigator.clipboard.writeText(value)
+    } catch {
+      copiedOk = false
+    }
+    if (!copiedOk) {
+      return
+    }
+
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current)
+    }
+    timeoutRef.current = setTimeout(() => setCopied(false), 2000)
   }
 
   const copiedNode = isCopied
@@ -33,7 +54,7 @@ export const CopyableValue = (props: CopyableValueProps) => {
         href={explorerUrl}
         target="_blank"
         rel="noopener noreferrer"
-        title="View on Arbiscan"
+        title="View on block explorer"
         className="text-[color:var(--color-muted)] hover:text-[color:var(--color-accent)] transition-colors"
       >
         ↗

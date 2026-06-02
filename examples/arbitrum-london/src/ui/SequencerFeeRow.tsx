@@ -5,8 +5,6 @@ import { useQuery } from '@tanstack/react-query'
 import { formatGwei } from 'viem'
 import { usePublicClient } from 'wagmi'
 
-import { ARBITRUM_SEPOLIA_CHAIN_ID } from '@/src/chains'
-
 
 type SequencerFeeRowProps = {
   chain: ArbitrumChainId,
@@ -33,7 +31,11 @@ const formatFeeGwei = (weiHex: `0x${string}`): string => {
  */
 export const SequencerFeeRow = (props: SequencerFeeRowProps) => {
   const { chain, to, calldata } = props
-  const publicClient = usePublicClient({ chainId: ARBITRUM_SEPOLIA_CHAIN_ID })
+  // Use the chain the envelope is on (wagmi config wires Arbitrum Sepolia +
+  // Robinhood testnet). Returns undefined for any chain not in the config,
+  // which the queryFn below treats as "no preview".
+  const chainId = Number(chain.split(':')[1])
+  const publicClient = usePublicClient({ chainId })
 
   const { data: preview, isLoading } = useQuery({
     queryKey: [ 'sequencerFee', chain, to, calldata ],
