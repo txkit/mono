@@ -43,7 +43,7 @@ forge script script/DeployRobinhoodTestnet.s.sol \
 After deploy:
 
 1. Update `contracts/deployed.json` with the deployed address + timestamp.
-2. Sync the address into `packages/tx-decoder/src/registry/data/agent-policy-gate.json`.
+2. Sync the address into `examples/arbitrum-london/decoder-data/agent-policy-gate.json`.
 3. In the Next.js app, import from `contracts/deployed.json` via `src/config/deployed.ts`.
 
 ## Scope notes (v0.1, demo only)
