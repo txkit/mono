@@ -6,7 +6,7 @@
  */
 export const RwaAgentChat = () => {
   return (
-    <section className="rounded-lg border border-dashed border-[color:var(--color-border)] bg-[color:var(--color-card)]/40 p-6 text-center">
+    <section className="rounded-lg border border-dashed border-border bg-card/40 p-6 text-center">
       <p className="text-sm opacity-80 mb-2">
         Coming in Buildathon Phase 2
       </p>

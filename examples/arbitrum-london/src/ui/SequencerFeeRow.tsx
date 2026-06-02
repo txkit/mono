@@ -57,7 +57,7 @@ export const SequencerFeeRow = (props: SequencerFeeRowProps) => {
 
   if (isLoading) {
     return (
-      <p className="text-sm text-[color:var(--color-muted)]">Estimating sequencer fee...</p>
+      <p className="text-sm text-muted">Estimating sequencer fee...</p>
     )
   }
 
@@ -69,20 +69,20 @@ export const SequencerFeeRow = (props: SequencerFeeRowProps) => {
 
   return (
     <div className="space-y-2">
-      <p className="text-sm text-[color:var(--color-muted)]">Estimated sequencer fee</p>
-      <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-card-sunken)] p-4 space-y-3 text-sm">
+      <p className="text-sm text-muted">Estimated sequencer fee</p>
+      <div className="rounded-lg border border-border bg-card-sunken p-4 space-y-3 text-sm">
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)]">L1 calldata</span>
+          <span className="text-muted">L1 calldata</span>
           <span className="font-mono">{formatFeeGwei(l1FeeWei)}</span>
         </div>
-        <div className="h-px bg-[color:var(--color-border)]" />
+        <div className="h-px bg-border" />
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-muted)]">L2 compute</span>
+          <span className="text-muted">L2 compute</span>
           <span className="font-mono">{formatFeeGwei(l2FeeWei)}</span>
         </div>
-        <div className="h-px bg-[color:var(--color-border)]" />
+        <div className="h-px bg-border" />
         <div className="flex justify-between gap-3">
-          <span className="text-[color:var(--color-foreground)]">Total</span>
+          <span className="text-foreground">Total</span>
           <span className="font-mono">{formatFeeGwei(totalFeeWei)}</span>
         </div>
       </div>

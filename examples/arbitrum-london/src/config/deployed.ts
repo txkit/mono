@@ -21,7 +21,7 @@ type DeployedMap = {
 
 const deployed = deployedJson as DeployedMap
 
-const isDeployed = (entry: DeployedEntry): boolean => {
+const checkIsDeployed = (entry: DeployedEntry): boolean => {
   return /^0x[a-fA-F0-9]{40}$/.test(entry.address) && !entry.address.includes('PENDING')
 }
 
@@ -30,7 +30,7 @@ export const getAgentPolicyGateAddress = (chainId: number): `0x${string}` => {
   if (entry === undefined) {
     throw new Error(`AgentPolicyGate not configured for chainId ${chainId}`)
   }
-  if (!isDeployed(entry)) {
+  if (!checkIsDeployed(entry)) {
     throw new Error(
       `AgentPolicyGate on chainId ${chainId} is not deployed yet. ` +
       `Run forge script to deploy and update contracts/deployed.json.`,
@@ -52,7 +52,7 @@ export const checkIsAgentPolicyGateDeployed = (chainId: number): boolean => {
   if (entry === undefined) {
     return false
   }
-  return isDeployed(entry)
+  return checkIsDeployed(entry)
 }
 
 export const getMockPendleRouterAddress = (chainId: number): `0x${string}` => {
@@ -60,7 +60,7 @@ export const getMockPendleRouterAddress = (chainId: number): `0x${string}` => {
   if (entry === undefined) {
     throw new Error(`MockPendleRouter not configured for chainId ${chainId}`)
   }
-  if (!isDeployed(entry)) {
+  if (!checkIsDeployed(entry)) {
     throw new Error(
       `MockPendleRouter on chainId ${chainId} is not deployed yet. ` +
       `Run forge script DeployMockPendleRouter.s.sol and update contracts/deployed.json.`,
@@ -82,5 +82,5 @@ export const checkIsMockPendleRouterDeployed = (chainId: number): boolean => {
   if (entry === undefined) {
     return false
   }
-  return isDeployed(entry)
+  return checkIsDeployed(entry)
 }

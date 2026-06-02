@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 }
 
 const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
+
   return (
     <html lang="en" className="tx-root tx-dark">
       <body className="antialiased min-h-screen">
