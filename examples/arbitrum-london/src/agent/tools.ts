@@ -1,3 +1,4 @@
+import type Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 
 
@@ -64,7 +65,7 @@ export const PENDLE_TOOL_DEFINITION = {
     },
     required: [ 'tokenIn', 'tokenOut', 'amountIn' ],
   },
-} as const
+} satisfies Anthropic.Tool
 
 export const RWA_TOOL_DEFINITION = {
   name: 'prepare_rwa_buy',
@@ -78,4 +79,4 @@ export const RWA_TOOL_DEFINITION = {
     },
     required: [ 'asset', 'amount' ],
   },
-} as const
+} satisfies Anthropic.Tool
