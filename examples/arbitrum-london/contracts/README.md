@@ -14,6 +14,8 @@ forge test
 
 ## Deployment
 
+> Full copy-paste runbook (both chains, MockPendleRouter, allow-list, app wiring, smoke test): [`../DEPLOY.md`](../DEPLOY.md). The section below is the contracts-only quick reference.
+
 Required environment (set via `.env` or inline):
 
 - `DEPLOYER_PRIVATE_KEY` - owner key, signs deployment
