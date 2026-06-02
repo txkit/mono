@@ -129,7 +129,7 @@ export const POST = async (request: NextRequest) => {
   let completion
   try {
     completion = await anthropic.messages.create({
-      model: 'claude-opus-4-5',
+      model: 'claude-opus-4-8',
       max_tokens: 1024,
       system: systemPrompt,
       tools: [ toolDefinition ],
