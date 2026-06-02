@@ -73,7 +73,7 @@
   },
   "devDependencies": {
     "tsup": "^8.4.0",
-    "typescript": "^5.7.3",
+    "typescript": "^6.0.3",
     "viem": "^2.52.0",
     "vitest": "^4.1.8"
   },
