@@ -14,7 +14,7 @@ export const robinhoodTestnet = defineChain({
   name: 'Robinhood Chain Testnet',
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   rpcUrls: {
-    default: { http: [ 'https://testnet.rpc.chain.robinhood.com' ] },
+    default: { http: [ 'https://rpc.testnet.chain.robinhood.com' ] },
   },
   blockExplorers: {
     default: {

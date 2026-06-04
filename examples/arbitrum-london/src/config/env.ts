@@ -24,7 +24,7 @@ const envSchema = z.object({
   ROBINHOOD_TESTNET_RPC_URL: z
     .string()
     .url()
-    .default('https://testnet.rpc.chain.robinhood.com'),
+    .default('https://rpc.testnet.chain.robinhood.com'),
 
   // Deployer + signer
   DEPLOYER_PRIVATE_KEY: z.string().regex(/^0x[a-fA-F0-9]{64}$/).optional(),
