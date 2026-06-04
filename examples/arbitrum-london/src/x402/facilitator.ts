@@ -64,6 +64,9 @@ export type SignedPayment = {
   signature: Hex,
 }
 
+/** Over-the-wire shape of a SignedPayment: amount as a decimal string (JSON has no bigint). */
+export type SignedPaymentBody = Omit<SignedPayment, 'amount'> & { amount: string }
+
 export type VerifyResult =
   | { ok: true, proof: X402PaymentProof }
   | { ok: false, reason: string }

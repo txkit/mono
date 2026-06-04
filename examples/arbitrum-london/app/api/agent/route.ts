@@ -1,10 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import type { Hex } from 'viem'
 
-import { ARBITRUM_SEPOLIA_CHAIN_ID } from '@/src/chains'
+import type { X402PaymentProof } from '@txkit/x402-adapter'
+
+import { ARBITRUM_SEPOLIA_CHAIN_ID, ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import {
   attachAgentSignature,
   buildPendleEnvelope,
+  buildRwaEnvelope,
   type DemoEnvelope,
 } from '@/src/agent/envelope-builder'
 import { signEnvelope } from '@/src/agent/signing'
@@ -16,37 +19,38 @@ import {
   PENDLE_TOOL_DEFINITION,
   RWA_TOOL_DEFINITION,
   preparePendleYieldSwapArgs,
+  prepareRwaBuyArgs,
 } from '@/src/agent/tools'
 import {
   checkIsAgentPolicyGateDeployed,
   checkIsMockPendleRouterDeployed,
+  checkIsMockRwaRouterDeployed,
   getAgentPolicyGateAddress,
 } from '@/src/config/deployed'
 import { getEnv } from '@/src/config/env'
+import { verifyPayment, type SignedPaymentBody } from '@/src/x402/facilitator'
 
 
 export const runtime = 'nodejs'
 
 /**
- * Phase 1 Day 5 milestone: tool-use loop + EIP-712 envelope signing.
+ * Agent tool-use loop + EIP-712 envelope signing for both buildathon scenarios.
  *
- * V1 contract:
- *   POST /api/agent { messages, scenario?, receiverAddress? }
- *   -> { reply, envelope?, scenario, milestone }
+ *   POST /api/agent { messages, scenario?, receiverAddress?, payment? }
+ *   -> { reply, envelope?, scenario, x402Proof? }
  *
- * Pendle flow:
- *   1. Claude reads PENDLE_SYSTEM_PROMPT + receives PENDLE_TOOL_DEFINITION.
- *   2. If args are clear: Claude calls prepare_pendle_yield_swap.
- *   3. We validate via zod, buildPendleEnvelope, sign EIP-712 via signEnvelope,
- *      attach signature, return both the assistant's text reply (if any) and
- *      the signed envelope.
- *   4. If Claude asks for clarification (text only): return reply, no envelope.
+ * Pendle (scenario A, Arbitrum Sepolia): Claude reads PENDLE_SYSTEM_PROMPT +
+ * PENDLE_TOOL_DEFINITION; on a prepare_pendle_yield_swap call we validate via
+ * zod, buildPendleEnvelope, sign EIP-712, and return the signed envelope. A
+ * text-only reply is a clarification (no envelope).
  *
- * RWA flow lands Phase 2 Day 10.
+ * RWA (scenario C, Robinhood Chain testnet): gated behind the self-hosted x402
+ * facilitator - the request must carry a `payment` that re-verifies here (no
+ * payment, no model spend). A prepare_rwa_buy call builds + signs an RWA
+ * envelope and returns it alongside the canonical X402PaymentProof.
  *
- * The SDK is dynamically imported inside the handler so the route module
- * stays loadable even when ANTHROPIC_API_KEY is unset (better DX for the
- * first contributor cloning the repo).
+ * The SDK is dynamically imported inside the handler so the route module stays
+ * loadable even when ANTHROPIC_API_KEY is unset (better DX for the first clone).
  */
 const DEFAULT_RECEIVER = '0x000000000000000000000000000000000000dEaD' as const
 
@@ -54,6 +58,7 @@ type AgentRequestBody = {
   messages: Array<{ role: 'user' | 'assistant', content: string }>,
   scenario?: 'pendle' | 'rwa',
   receiverAddress?: `0x${string}`,
+  payment?: SignedPaymentBody,
 }
 
 type ToolUseBlock = {
@@ -86,7 +91,7 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { messages, scenario = 'pendle', receiverAddress = DEFAULT_RECEIVER } = body
+  const { messages, scenario = 'pendle', receiverAddress = DEFAULT_RECEIVER, payment } = body
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: 'messages must be a non-empty array' }, { status: 400 })
@@ -111,6 +116,53 @@ export const POST = async (request: NextRequest) => {
         { status: 503 },
       )
     }
+  }
+
+  // Scenario C is gated behind the self-hosted x402 facilitator. Re-verify the
+  // signed payment here (the /api/x402 verify is stateless, so a client could hit
+  // this route directly) and skip the model entirely on any failure - no payment,
+  // no Claude spend.
+  let x402Proof: X402PaymentProof | undefined
+  if (scenario === 'rwa') {
+    const isGateDeployed = checkIsAgentPolicyGateDeployed(ROBINHOOD_TESTNET_CHAIN_ID)
+    const isRouterDeployed = checkIsMockRwaRouterDeployed(ROBINHOOD_TESTNET_CHAIN_ID)
+    const isScenarioReady = isGateDeployed && isRouterDeployed
+    if (!isScenarioReady) {
+      return NextResponse.json(
+        {
+          error: 'Contracts not deployed yet',
+          hint:
+            'AgentPolicyGate / MockRwaRouter are still placeholder addresses on ' +
+            'Robinhood Chain testnet. Deploy them (see DEPLOY.md) and update contracts/deployed.json.',
+        },
+        { status: 503 },
+      )
+    }
+    if (payment === undefined) {
+      return NextResponse.json(
+        {
+          error: 'Payment required',
+          hint: 'Pay the x402 challenge (POST /api/x402) before invoking the RWA agent.',
+        },
+        { status: 402 },
+      )
+    }
+    let verifyResult
+    try {
+      verifyResult = await verifyPayment({ ...payment, amount: BigInt(payment.amount) })
+    } catch (paymentError) {
+      return NextResponse.json(
+        { error: 'Invalid payment payload', detail: String(paymentError) },
+        { status: 400 },
+      )
+    }
+    if (!verifyResult.ok) {
+      return NextResponse.json(
+        { error: 'Payment verification failed', detail: verifyResult.reason },
+        { status: 402 },
+      )
+    }
+    x402Proof = verifyResult.proof
   }
 
   let env
@@ -185,50 +237,50 @@ export const POST = async (request: NextRequest) => {
     })
   }
 
-  if (scenario !== 'pendle') {
-    return NextResponse.json(
-      {
-        error: 'RWA scenario not implemented yet',
-        detail: 'The RWA scenario is not implemented in this build.',
-      },
-      { status: 501 },
-    )
-  }
-
   const { name: toolName, input: toolInput } = toolUseBlock
 
-  if (toolName !== 'prepare_pendle_yield_swap') {
+  const expectedTool = scenario === 'rwa' ? 'prepare_rwa_buy' : 'prepare_pendle_yield_swap'
+  if (toolName !== expectedTool) {
     return NextResponse.json(
       {
         error: `Unexpected tool call: ${toolName}`,
-        detail: 'Only prepare_pendle_yield_swap is wired in the Pendle scenario.',
+        detail: `Only ${expectedTool} is wired in the ${scenario} scenario.`,
       },
       { status: 502 },
     )
   }
 
-  const argsParse = preparePendleYieldSwapArgs.safeParse(toolInput)
-  if (!argsParse.success) {
-    return NextResponse.json(
-      {
-        error: 'Invalid tool args from Claude',
-        detail: argsParse.error.flatten(),
-        rawInput: toolInput,
-      },
-      { status: 422 },
-    )
-  }
-
+  // Build the envelope with the scenario's zod schema + builder. The builders
+  // throw a clear error before deploy (getMock*RouterAddress), surfaced as 503.
+  const chainId = scenario === 'rwa' ? ROBINHOOD_TESTNET_CHAIN_ID : ARBITRUM_SEPOLIA_CHAIN_ID
   let envelope: DemoEnvelope
   try {
-    envelope = buildPendleEnvelope(argsParse.data, receiverAddress)
+    if (scenario === 'rwa') {
+      const rwaArgs = prepareRwaBuyArgs.safeParse(toolInput)
+      if (!rwaArgs.success) {
+        return NextResponse.json(
+          { error: 'Invalid tool args from Claude', detail: rwaArgs.error.flatten(), rawInput: toolInput },
+          { status: 422 },
+        )
+      }
+      envelope = buildRwaEnvelope(rwaArgs.data, receiverAddress)
+    } else {
+      const pendleArgs = preparePendleYieldSwapArgs.safeParse(toolInput)
+      if (!pendleArgs.success) {
+        return NextResponse.json(
+          { error: 'Invalid tool args from Claude', detail: pendleArgs.error.flatten(), rawInput: toolInput },
+          { status: 422 },
+        )
+      }
+      envelope = buildPendleEnvelope(pendleArgs.data, receiverAddress)
+    }
   } catch (buildError) {
     return NextResponse.json(
       {
         error: 'Envelope build failed',
         detail: String(buildError),
         hint:
-          'Most often this means MockPendleRouter or AgentPolicyGate is not deployed yet. ' +
+          'Most often this means the scenario contracts are not deployed yet. ' +
           'Run the forge scripts and update contracts/deployed.json.',
       },
       { status: 503 },
@@ -251,13 +303,13 @@ export const POST = async (request: NextRequest) => {
 
   let signedEnvelope: DemoEnvelope
   try {
-    const gateAddress = getAgentPolicyGateAddress(ARBITRUM_SEPOLIA_CHAIN_ID)
+    const gateAddress = getAgentPolicyGateAddress(chainId)
     const signature = await signEnvelope({
       envelopeHash: meta.envelopeHash,
       to: inner.to,
       data: inner.data,
       value: BigInt(inner.value),
-      chainId: ARBITRUM_SEPOLIA_CHAIN_ID,
+      chainId,
       gateAddress,
       signerPrivateKey: AGENT_SIGNER_PRIVATE_KEY as Hex,
     })
@@ -273,5 +325,6 @@ export const POST = async (request: NextRequest) => {
     reply: textReply,
     envelope: signedEnvelope,
     scenario,
+    x402Proof,
   })
 }

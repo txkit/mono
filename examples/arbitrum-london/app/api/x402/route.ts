@@ -7,7 +7,7 @@ import {
   X402_REQUIRED_AMOUNT,
   X402_RESOURCE,
   verifyPayment,
-  type SignedPayment,
+  type SignedPaymentBody,
 } from '@/src/x402/facilitator'
 
 
@@ -43,8 +43,6 @@ const paymentRequired = () => ({
 export const GET = async () => {
   return NextResponse.json(paymentRequired(), { status: 402 })
 }
-
-type SignedPaymentBody = Omit<SignedPayment, 'amount'> & { amount: string }
 
 export const POST = async (request: NextRequest) => {
   let body: SignedPaymentBody
