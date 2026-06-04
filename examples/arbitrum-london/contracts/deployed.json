@@ -20,5 +20,13 @@
       "blockExplorer": "https://sepolia.arbiscan.io/address/0x__PENDING__",
       "note": "Pending Mike deploy via forge script DeployMockPendleRouter.s.sol --broadcast. Allow-list required: cast send <gate> setAllowedRecipient(address,bool) <mock> true"
     }
+  },
+  "MockRwaRouter": {
+    "46630": {
+      "address": "0x__PENDING__",
+      "deployedAt": null,
+      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x__PENDING__",
+      "note": "Pending Mike deploy via forge script DeployRobinhoodTestnet.s.sol --broadcast (deploys gate + router + allow-list)"
+    }
   }
 }

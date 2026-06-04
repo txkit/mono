@@ -17,6 +17,7 @@ type DeployedEntry = {
 type DeployedMap = {
   AgentPolicyGate: Record<string, DeployedEntry>,
   MockPendleRouter: Record<string, DeployedEntry>,
+  MockRwaRouter: Record<string, DeployedEntry>,
 }
 
 const deployed = deployedJson as DeployedMap
@@ -79,6 +80,36 @@ export const getMockPendleRouterExplorerUrl = (chainId: number): string => {
 
 export const checkIsMockPendleRouterDeployed = (chainId: number): boolean => {
   const entry = deployed.MockPendleRouter[String(chainId)]
+  if (entry === undefined) {
+    return false
+  }
+  return checkIsDeployed(entry)
+}
+
+export const getMockRwaRouterAddress = (chainId: number): `0x${string}` => {
+  const entry = deployed.MockRwaRouter[String(chainId)]
+  if (entry === undefined) {
+    throw new Error(`MockRwaRouter not configured for chainId ${chainId}`)
+  }
+  if (!checkIsDeployed(entry)) {
+    throw new Error(
+      `MockRwaRouter on chainId ${chainId} is not deployed yet. ` +
+      `Run forge script DeployRobinhoodTestnet.s.sol and update contracts/deployed.json.`,
+    )
+  }
+  return entry.address as `0x${string}`
+}
+
+export const getMockRwaRouterExplorerUrl = (chainId: number): string => {
+  const entry = deployed.MockRwaRouter[String(chainId)]
+  if (entry === undefined) {
+    throw new Error(`MockRwaRouter not configured for chainId ${chainId}`)
+  }
+  return entry.blockExplorer
+}
+
+export const checkIsMockRwaRouterDeployed = (chainId: number): boolean => {
+  const entry = deployed.MockRwaRouter[String(chainId)]
   if (entry === undefined) {
     return false
   }
