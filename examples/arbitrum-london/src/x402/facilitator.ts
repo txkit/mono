@@ -25,9 +25,10 @@ import type { X402PaymentProof } from '@txkit/x402-adapter'
 // Demo merchant that receives the (stubbed) x402 payment. All-lowercase on
 // purpose: viem rejects a mixed-case non-checksummed address.
 export const X402_MERCHANT_ADDRESS = '0x000000000000000000000000000000000000c402' as const
-// Native testnet units; verify-only, nothing settles, so the unit is illustrative.
+// Verify-only demo: nothing settles on-chain, so asset + amount are illustrative
+// challenge values, not a real token transfer. Native = the Robinhood gas token.
 export const X402_ASSET = 'native' as const
-// 0.1 "mock USDC" framing (6 decimals) - illustrative amount for the paywall.
+// Illustrative challenge amount (100000 abstract units) shown in the paywall.
 export const X402_REQUIRED_AMOUNT = 100000n
 export const X402_RESOURCE = 'flow-c: RWA agent (Robinhood Chain testnet)'
 
@@ -141,13 +142,15 @@ export const signPayment = async (
  * X402PaymentProof (paymentReceipt = the signature, since settle is stubbed).
  */
 export const verifyPayment = async (signed: SignedPayment): Promise<VerifyResult> => {
+  const verifiedAt = nowSeconds()
+
   if (signed.payee.toLowerCase() !== X402_MERCHANT_ADDRESS.toLowerCase()) {
     return { ok: false, reason: 'payee is not the demo merchant' }
   }
   if (signed.amount < X402_REQUIRED_AMOUNT) {
     return { ok: false, reason: 'amount is below the required payment' }
   }
-  if (signed.validUntil <= nowSeconds()) {
+  if (signed.validUntil <= verifiedAt) {
     return { ok: false, reason: 'authorization expired' }
   }
 
@@ -186,7 +189,7 @@ export const verifyPayment = async (signed: SignedPayment): Promise<VerifyResult
     asset: X402_ASSET,
     amount: numberToHex(signed.amount),
     payee: signed.payee,
-    paidAt: nowSeconds(),
+    paidAt: verifiedAt,
     resource: X402_RESOURCE,
   }
 

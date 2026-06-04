@@ -11,7 +11,7 @@ import {
 const PAYER_KEY = '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d' as const
 const NONCE = ('0x' + '11'.repeat(32)) as `0x${string}`
 
-const buildSigned = (overrides: { amount?: bigint, validUntil?: number, key?: `0x${string}` } = {}) => {
+const buildSigned = (overrides: { amount?: bigint, validUntil?: number, signerPrivateKey?: `0x${string}` } = {}) => {
   return signPayment(
     {
       payee: X402_MERCHANT_ADDRESS,
@@ -19,7 +19,7 @@ const buildSigned = (overrides: { amount?: bigint, validUntil?: number, key?: `0
       validUntil: overrides.validUntil ?? Math.floor(Date.now() / 1000) + 600,
       nonce: NONCE,
     },
-    overrides.key ?? PAYER_KEY,
+    overrides.signerPrivateKey ?? PAYER_KEY,
   )
 }
 
@@ -66,6 +66,35 @@ describe('x402 facilitator', () => {
     expect(result.ok).toBe(false)
     if (!result.ok) {
       expect(result.reason).toContain('amount')
+    }
+  })
+
+  it('rejects a payment whose paymentRequirementsHash does not match the fields', async () => {
+    const signed = await buildSigned()
+    const tampered = { ...signed, paymentRequirementsHash: ('0x' + '99'.repeat(32)) as `0x${string}` }
+    const result = await verifyPayment(tampered)
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.reason).toContain('paymentRequirementsHash')
+    }
+  })
+
+  it('rejects a payment whose payee is not the demo merchant', async () => {
+    const signed = await signPayment(
+      {
+        payee: '0x2222222222222222222222222222222222222222',
+        amount: X402_REQUIRED_AMOUNT,
+        validUntil: Math.floor(Date.now() / 1000) + 600,
+        nonce: NONCE,
+      },
+      PAYER_KEY,
+    )
+    const result = await verifyPayment(signed)
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.reason).toContain('merchant')
     }
   })
 })

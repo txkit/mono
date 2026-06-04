@@ -34,9 +34,6 @@ const envSchema = z.object({
   // recovers ECDSA signatures and reverts InvalidSignature if mismatched.
   // TESTNET ONLY KEY - rotate before any mainnet usage.
   AGENT_SIGNER_PRIVATE_KEY: z.string().regex(/^0x[a-fA-F0-9]{64}$/).optional(),
-
-  // x402 facilitator - REQUIRED for /api/x402/*
-  X402_FACILITATOR_PRIVATE_KEY: z.string().regex(/^0x[a-fA-F0-9]{64}$/).optional(),
 })
 
 export type Env = z.infer<typeof envSchema>

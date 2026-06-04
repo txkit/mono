@@ -49,5 +49,6 @@ contract DeployRobinhoodTestnet is Script {
         console2.log("Router allow-listed on gate. Owner:", owner);
         console2.log("Agent signer:", agentSigner);
         console2.log("Chain:", block.chainid);
+        console2.log("Note: spendLimit is 0 (ETH value forwarding disabled). The mock RWA buy uses value=0; call setSpendLimit only if a value-bearing scenario is added.");
     }
 }

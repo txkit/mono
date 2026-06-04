@@ -256,6 +256,8 @@ export const buildRwaEnvelope = (
   const envelopeHash = computeReplayEnvelopeHash(ROBINHOOD_TESTNET_CHAIN_ID, inner, nonce)
   const policyGateAddress = getAgentPolicyGateAddress(ROBINHOOD_TESTNET_CHAIN_ID)
 
+  // Outer call wraps the inner action through AgentPolicyGate.executeEnvelope.
+  // Signature is filled by the caller (signEnvelope + attachAgentSignature).
   const outerCallData = encodeFunctionData({
     abi: AGENT_POLICY_GATE_ABI,
     functionName: 'executeEnvelope',
