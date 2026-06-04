@@ -22,6 +22,10 @@ const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' as const
 const PERMIT2 = '0x000000000022D473030F116dDEE9F6B43aC78BA3' as const
 const UNIVERSAL_ROUTER = '0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD' as const
 const DEADLINE = Math.floor(Date.now() / 1000) + 1800
+// §5.4: validity.notAfter MUST sit strictly below the earliest on-chain expiry
+// (here the Permit2 sigDeadline == DEADLINE) by a >=60s safety buffer, so a
+// consumer stops submitting before the on-chain deadline can lapse mid-flight.
+const NOT_AFTER = DEADLINE - 60
 
 /* --- Step 1: Permit2 signature envelope --- */
 
@@ -62,7 +66,7 @@ const permitContent: SignatureContent = {
     short: 'Permit Uniswap Universal Router to spend up to 1000 USDC',
     action: 'permit',
   },
-  validity: { notAfter: DEADLINE },
+  validity: { notAfter: NOT_AFTER },
 }
 
 const permit = createSignature(permitContent, {
@@ -82,7 +86,7 @@ const swapContent: EvmTxContent = {
       operation: 'call',
     },
   ],
-  validity: { notAfter: DEADLINE },
+  validity: { notAfter: NOT_AFTER },
   description: {
     short: 'Swap 1000 USDC for ETH via Uniswap',
     action: 'swap',

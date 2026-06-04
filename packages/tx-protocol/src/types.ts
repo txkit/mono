@@ -97,10 +97,9 @@ export type RiskAssessment = {
   scanners?: ScannerVerdict[]
 }
 
-export type Permissions = {
+export type PermissionContext = {
   context: HexBytes
   type: string
-  expiry?: number
 }
 
 export type PaymasterService = {
@@ -113,7 +112,7 @@ export type RequiredAccountType = 'eoa' | 'delegated-eoa' | 'erc-4337'
 export type Capabilities = {
   atomicRequired?: boolean
   paymasterService?: PaymasterService
-  permissions?: Permissions
+  permissions?: PermissionContext
   requiresAccountType?: RequiredAccountType
   [key: string]: unknown
 }
@@ -264,7 +263,7 @@ export type EvmCall = {
   to: HexAddress
   value?: HexQuantity
   data?: HexBytes
-  operation?: CallOperation
+  operation: CallOperation
   capabilities?: Record<string, unknown>
 }
 

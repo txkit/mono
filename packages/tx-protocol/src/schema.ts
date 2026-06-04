@@ -22,7 +22,7 @@ import type {
   Metadata,
   Origin,
   PaymasterService,
-  Permissions,
+  PermissionContext,
   PreparedEnvelope,
   Producer,
   ProducerSignature,
@@ -66,6 +66,10 @@ const decimalString = z
   .string()
   .regex(/^-?(0|[1-9]\d*)$/, 'must be a decimal integer as string')
 
+const positiveDecimalString = z
+  .string()
+  .regex(/^(0|[1-9]\d*)$/, 'must be a non-negative decimal integer as string')
+
 const rfc3339 = z
   .string()
   .regex(
@@ -91,7 +95,7 @@ export const producerSchema: z.ZodType<Producer> = z.object({
 })
 
 export const originSchema: z.ZodType<Origin> = z.object({
-  url: z.string().min(1),
+  url: z.string().url(),
   verifyStatus: z.enum([ 'VERIFIED', 'UNVERIFIED', 'MISMATCH' ]),
   attestation: z.string().optional(),
 })
@@ -118,8 +122,7 @@ export const riskAssessmentSchema: z.ZodType<RiskAssessment> = z.object({
 export const permissionsSchema = z.object({
   context: hexBytes,
   type: z.string().min(1),
-  expiry: z.number().int().positive().optional(),
-}) satisfies z.ZodType<Permissions>
+}) satisfies z.ZodType<PermissionContext>
 
 export const paymasterServiceSchema = z.object({
   url: z.string().min(1),
@@ -192,7 +195,7 @@ export const tokenMovementSchema = z.object({
   standard: tokenStandardSchema,
   symbol: z.string().min(1),
   decimals: z.number().int().min(0).max(77),
-  amount: decimalString,
+  amount: positiveDecimalString,
   tokenId: decimalString.optional(),
   kind: tokenMovementKindSchema,
   isUnlimited: z.boolean().optional(),
@@ -266,7 +269,7 @@ export const evmCallSchema = z.object({
   to: hexAddress,
   value: hexQuantity.optional(),
   data: hexBytes.optional(),
-  operation: callOperationSchema.optional(),
+  operation: callOperationSchema,
   capabilities: z.record(z.string(), z.unknown()).optional(),
 }) satisfies z.ZodType<EvmCall>
 
@@ -299,21 +302,51 @@ export const eip712TypeSchema: z.ZodType<Eip712Type> = z.object({
   type: z.string().min(1),
 })
 
-export const signatureContentSchema = z.object({
-  chain: caip2Chain,
-  chainId: z.number().int().positive().optional(),
-  from: hexAddress.optional(),
-  scheme: z.enum([ 'eip-712', 'personal-sign', 'siwe' ]),
-  domain: eip712DomainSchema.optional(),
-  types: z.record(z.string(), z.array(eip712TypeSchema)).optional(),
-  primaryType: z.string().optional(),
-  message: z.record(z.string(), z.unknown()).optional(),
-  messageText: z.string().optional(),
-  description: descriptionSchema,
-  metadata: metadataSchema.optional(),
-  validity: validitySchema.optional(),
-  erc6492: z.boolean().optional(),
-}) satisfies z.ZodType<SignatureContent>
+export const signatureContentSchema = z
+  .object({
+    chain: caip2Chain,
+    chainId: z.number().int().positive().optional(),
+    from: hexAddress.optional(),
+    scheme: z.enum([ 'eip-712', 'personal-sign', 'siwe' ]),
+    domain: eip712DomainSchema.optional(),
+    types: z.record(z.string(), z.array(eip712TypeSchema)).optional(),
+    primaryType: z.string().optional(),
+    message: z.record(z.string(), z.unknown()).optional(),
+    messageText: z.string().optional(),
+    description: descriptionSchema,
+    metadata: metadataSchema.optional(),
+    validity: validitySchema.optional(),
+    erc6492: z.boolean().optional(),
+  })
+  .superRefine((content, ctx) => {
+    /*
+     * Spec §6.2: scheme-required fields MUST be present. Without this
+     * refinement a 'siwe'/'personal-sign' request with no messageText, or
+     * an 'eip-712' request with no domain/message, would validate as OK and
+     * reach a wallet with nothing to render.
+     */
+    const requiresMessageText = content.scheme === 'personal-sign' || content.scheme === 'siwe'
+    if (requiresMessageText && content.messageText === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [ 'messageText' ],
+        message: `scheme '${content.scheme}' requires messageText`,
+      })
+    }
+
+    if (content.scheme === 'eip-712') {
+      const eip712RequiredFields = [ 'domain', 'types', 'primaryType', 'message' ] as const
+      for (const field of eip712RequiredFields) {
+        if (content[field] === undefined) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [ field ],
+            message: `scheme 'eip-712' requires ${field}`,
+          })
+        }
+      }
+    }
+  }) satisfies z.ZodType<SignatureContent>
 
 /* ======================================================================
  * Base envelope + discriminated union
@@ -332,29 +365,59 @@ const baseEnvelopeFields = {
   meta: z.record(z.string(), z.unknown()).optional(),
 }
 
-const _evmTxEnvelopeSchema = z.object({
-  ...baseEnvelopeFields,
-  kind: z.literal('evm-tx'),
-  content: evmTxContentSchema.refine((content) => content.calls.length === 1, {
-    message: "kind 'evm-tx' requires exactly one call; use 'evm-batch' for more",
-    path: [ 'calls' ],
-  }),
-})
+/*
+ * Spec §3.2: when producer.signature.coverage === 'content', the signature
+ * attests to `content` bytes alone, so envelope-level fields outside `content`
+ * (including `origin`) are NOT producer-attested. A content-coverage envelope
+ * that nonetheless carries `origin` invites a consumer to read a tampered
+ * origin as attested, so the spec forbids it: such an envelope MUST NOT
+ * include `origin`. To bind `origin`, the producer must use coverage 'envelope'.
+ */
+const refineContentCoverageOriginBan = (
+  envelope: { producer?: Producer; origin?: Origin },
+  ctx: z.RefinementCtx,
+): void => {
+  const hasContentCoverageWithOrigin =
+    envelope.producer?.signature?.coverage === 'content' && envelope.origin !== undefined
+  if (hasContentCoverageWithOrigin) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: [ 'origin' ],
+      message:
+        "producer.signature.coverage 'content' MUST NOT include origin (§3.2): content coverage does not attest origin; use coverage 'envelope' to bind it",
+    })
+  }
+}
 
-const _evmBatchEnvelopeSchema = z.object({
-  ...baseEnvelopeFields,
-  kind: z.literal('evm-batch'),
-  content: evmTxContentSchema.refine((content) => content.calls.length >= 2, {
-    message: "kind 'evm-batch' requires at least 2 calls; use 'evm-tx' for a single call",
-    path: [ 'calls' ],
-  }),
-})
+const _evmTxEnvelopeSchema = z
+  .object({
+    ...baseEnvelopeFields,
+    kind: z.literal('evm-tx'),
+    content: evmTxContentSchema.refine((content) => content.calls.length === 1, {
+      message: "kind 'evm-tx' requires exactly one call; use 'evm-batch' for more",
+      path: [ 'calls' ],
+    }),
+  })
+  .superRefine(refineContentCoverageOriginBan)
 
-const _signatureEnvelopeSchema = z.object({
-  ...baseEnvelopeFields,
-  kind: z.literal('signature'),
-  content: signatureContentSchema,
-})
+const _evmBatchEnvelopeSchema = z
+  .object({
+    ...baseEnvelopeFields,
+    kind: z.literal('evm-batch'),
+    content: evmTxContentSchema.refine((content) => content.calls.length >= 2, {
+      message: "kind 'evm-batch' requires at least 2 calls; use 'evm-tx' for a single call",
+      path: [ 'calls' ],
+    }),
+  })
+  .superRefine(refineContentCoverageOriginBan)
+
+const _signatureEnvelopeSchema = z
+  .object({
+    ...baseEnvelopeFields,
+    kind: z.literal('signature'),
+    content: signatureContentSchema,
+  })
+  .superRefine(refineContentCoverageOriginBan)
 
 export const evmTxEnvelopeSchema = _evmTxEnvelopeSchema satisfies z.ZodType<EvmTxEnvelope>
 export const evmBatchEnvelopeSchema = _evmBatchEnvelopeSchema satisfies z.ZodType<EvmBatchEnvelope>
@@ -370,8 +433,8 @@ export const preparedEnvelopeSchema = z.discriminatedUnion('kind', [
  * Kind awareness helpers
  * ==================================================================== */
 
-export const isImplementedKind = (value: string): boolean =>
+export const checkIsImplementedKind = (value: string): boolean =>
   (IMPLEMENTED_KINDS as readonly string[]).includes(value)
 
-export const isReservedKind = (value: string): boolean =>
+export const checkIsReservedKind = (value: string): boolean =>
   (RESERVED_KINDS as readonly string[]).includes(value)

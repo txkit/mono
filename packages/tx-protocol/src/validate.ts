@@ -1,11 +1,11 @@
-import { preparedEnvelopeSchema, isImplementedKind, isReservedKind } from './schema'
+import { preparedEnvelopeSchema, checkIsImplementedKind, checkIsReservedKind } from './schema'
 import type { PreparedEnvelope, ValidationIssue, ValidationResult } from './types'
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
+const checkIsRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
 
 const extractKind = (input: unknown): string | undefined => {
-  if (!isRecord(input)) {
+  if (!checkIsRecord(input)) {
     return undefined
   }
   const kind = input['kind']
@@ -13,11 +13,11 @@ const extractKind = (input: unknown): string | undefined => {
 }
 
 export const validateEnvelope = (input: unknown): ValidationResult<PreparedEnvelope> => {
-  const warnings: ValidationIssue[] = []
+  const postParseIssues: ValidationIssue[] = []
 
   const kind = extractKind(input)
-  if (typeof kind === 'string' && !isImplementedKind(kind)) {
-    if (isReservedKind(kind)) {
+  if (typeof kind === 'string' && !checkIsImplementedKind(kind)) {
+    if (checkIsReservedKind(kind)) {
       return {
         ok: false,
         error: `kind: '${kind}' is reserved for a future spec version and cannot be validated in v0.1`,
@@ -53,14 +53,26 @@ export const validateEnvelope = (input: unknown): ValidationResult<PreparedEnvel
 
   const value: PreparedEnvelope = parsed.data
 
-  const expiryWarning = checkExpiryAlignment(value, warnings)
-  if (expiryWarning) {
-    warnings.push(expiryWarning)
+  const expiryIssue = checkExpiryAlignment(value, postParseIssues)
+  if (expiryIssue) {
+    postParseIssues.push(expiryIssue)
   }
 
   if (value.kind === 'evm-tx' || value.kind === 'evm-batch') {
-    warnings.push(...deriveEvmAdvisories(value))
+    postParseIssues.push(...deriveEvmAdvisories(value))
   }
+
+  const errors = postParseIssues.filter((issue) => issue.severity === 'ERROR')
+  if (errors.length > 0) {
+    const primary = errors[0]!
+    return {
+      ok: false,
+      error: `${primary.path || 'root'}: ${primary.message}`,
+      issues: errors,
+    }
+  }
+
+  const warnings = postParseIssues.filter((issue) => issue.severity !== 'ERROR')
 
   return warnings.length > 0 ? { ok: true, value, warnings } : { ok: true, value }
 }
@@ -72,10 +84,10 @@ const checkExpiryAlignment = (
   if (!env.expiresAt) {
     return undefined
   }
-  if (env.kind === 'signature') {
+  const validityNotAfter = env.content.validity?.notAfter
+  if (typeof validityNotAfter !== 'number') {
     return undefined
   }
-  const validityNotAfter = env.content.validity.notAfter
   const envelopeExpiry = Math.floor(Date.parse(env.expiresAt) / 1000)
   if (!Number.isFinite(envelopeExpiry)) {
     return {
@@ -84,20 +96,48 @@ const checkExpiryAlignment = (
       severity: 'WARN',
     }
   }
-  if (envelopeExpiry !== validityNotAfter && !existing.find((warning) => warning.path === 'expiresAt')) {
+  const alreadyFlagged = existing.find((issue) => issue.path === 'expiresAt') !== undefined
+  if (envelopeExpiry !== validityNotAfter && !alreadyFlagged) {
     return {
       path: 'expiresAt',
-      message: 'envelope.expiresAt should equal content.validity.notAfter',
-      severity: 'WARN',
+      message: 'envelope.expiresAt must equal content.validity.notAfter',
+      severity: 'ERROR',
     }
   }
   return undefined
+}
+
+/**
+ * Parse the numeric chain id out of an `eip155:<n>` CAIP-2 chain string.
+ * Returns undefined for non-eip155 namespaces or non-numeric references.
+ */
+const parseEip155ChainId = (chain: string): number | undefined => {
+  const [ namespace, reference ] = chain.split(':')
+  if (namespace !== 'eip155' || reference === undefined) {
+    return undefined
+  }
+  if (!/^[1-9]\d*$/.test(reference)) {
+    return undefined
+  }
+  return Number(reference)
 }
 
 const deriveEvmAdvisories = (
   env: Extract<PreparedEnvelope, { kind: 'evm-tx' | 'evm-batch' }>,
 ): ValidationIssue[] => {
   const advisories: ValidationIssue[] = []
+
+  const { chain, chainId } = env.content
+  const chainReference = parseEip155ChainId(chain)
+  const chainIdsDisagree = chainId !== undefined && chainReference !== undefined && chainReference !== chainId
+  if (chainIdsDisagree) {
+    advisories.push({
+      path: 'content.chainId',
+      message: `content.chainId (${chainId}) disagrees with content.chain (${chain}); the CAIP-2 reference is authoritative`,
+      severity: 'WARN',
+    })
+  }
+
   env.content.calls.forEach((call, index) => {
     if (call.operation === 'delegatecall') {
       advisories.push({

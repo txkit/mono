@@ -320,3 +320,205 @@ describe('CALLS_STATUS taxonomy matches EIP-5792', () => {
     expect(CALLS_STATUS.PARTIALLY_REVERTED).toBe(600)
   })
 })
+
+/* ======================================================================
+ * Spec §6.2 - scheme-required fields on signature content (C1)
+ * ==================================================================== */
+
+describe('signature scheme-required fields', () => {
+  const baseSignatureFields = {
+    chain: 'eip155:1' as const,
+    from: USER,
+    description: { short: 'Sign in', action: 'other' as const },
+  }
+
+  it("rejects 'siwe' content without messageText", () => {
+    const content = { ...baseSignatureFields, scheme: 'siwe' } as never as SignatureContent
+    const result = validateEnvelope(createSignature(content))
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.issues.some((issue) => issue.path.includes('messageText'))).toBe(true)
+    }
+  })
+
+  it("rejects 'personal-sign' content without messageText", () => {
+    const content = { ...baseSignatureFields, scheme: 'personal-sign' } as never as SignatureContent
+    const result = validateEnvelope(createSignature(content))
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.issues.some((issue) => issue.path.includes('messageText'))).toBe(true)
+    }
+  })
+
+  it("accepts 'siwe' content once messageText is present", () => {
+    const content = {
+      ...baseSignatureFields,
+      scheme: 'siwe',
+      messageText: 'app.stakewise.io wants you to sign in with your Ethereum account',
+    } as never as SignatureContent
+    const result = validateEnvelope(createSignature(content))
+    expect(result.ok).toBe(true)
+  })
+
+  it("rejects 'eip-712' content without domain and message", () => {
+    const content = {
+      ...baseSignatureFields,
+      scheme: 'eip-712',
+      types: { Permit: [{ name: 'owner', type: 'address' }] },
+      primaryType: 'Permit',
+    } as never as SignatureContent
+    const result = validateEnvelope(createSignature(content))
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      const paths = result.issues.map((issue) => issue.path)
+      expect(paths.some((path) => path.includes('domain'))).toBe(true)
+      expect(paths.some((path) => path.includes('message'))).toBe(true)
+    }
+  })
+})
+
+/* ======================================================================
+ * Spec §3.2 - content-coverage signature MUST NOT include origin
+ * ==================================================================== */
+
+describe('content-coverage origin ban', () => {
+  const contentCoverageProducer = {
+    id: 'did:web:producer.example',
+    signature: {
+      scheme: 'eip-191',
+      signature: '0xabcdef',
+      coverage: 'content' as const,
+    },
+  }
+  const sampleOrigin = {
+    url: 'https://app.stakewise.io',
+    verifyStatus: 'VERIFIED' as const,
+  }
+
+  it("rejects an envelope with coverage 'content' that still carries origin", () => {
+    const env: PreparedEnvelope = {
+      ...evmTx(),
+      producer: contentCoverageProducer,
+      origin: sampleOrigin,
+    }
+    const result = validateEnvelope(env)
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.issues.some((issue) => issue.path.includes('origin'))).toBe(true)
+      expect(result.issues.some((issue) => issue.message.includes('§3.2'))).toBe(true)
+    }
+  })
+
+  it("accepts coverage 'envelope' together with origin", () => {
+    const env: PreparedEnvelope = {
+      ...evmTx(),
+      producer: {
+        ...contentCoverageProducer,
+        signature: { ...contentCoverageProducer.signature, coverage: 'envelope' },
+      },
+      origin: sampleOrigin,
+    }
+    const result = validateEnvelope(env)
+    expect(result.ok).toBe(true)
+  })
+
+  it("accepts coverage 'content' when origin is absent", () => {
+    const env: PreparedEnvelope = {
+      ...evmTx(),
+      producer: contentCoverageProducer,
+    }
+    const result = validateEnvelope(env)
+    expect(result.ok).toBe(true)
+  })
+})
+
+/* ======================================================================
+ * Spec §1.2 - expiresAt MUST equal content.validity.notAfter (C2)
+ * ==================================================================== */
+
+describe('expiresAt vs validity.notAfter alignment', () => {
+  it('rejects an evm-tx whose expiresAt differs from content.validity.notAfter', () => {
+    const mismatchedExpiry = new Date((notAfter + 600) * 1000).toISOString()
+    const env = createEvmTx(validEvmContent, { expiresAt: mismatchedExpiry })
+    const result = validateEnvelope(env)
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.issues.some((issue) => issue.message.includes('must equal'))).toBe(true)
+      expect(result.issues.some((issue) => issue.path === 'expiresAt')).toBe(true)
+    }
+  })
+
+  it('accepts an evm-tx whose expiresAt equals content.validity.notAfter', () => {
+    const alignedExpiry = new Date(notAfter * 1000).toISOString()
+    const env = createEvmTx(validEvmContent, { expiresAt: alignedExpiry })
+    const result = validateEnvelope(env)
+    expect(result.ok).toBe(true)
+  })
+})
+
+/* ======================================================================
+ * Spec §5.3 - operation is required on every EvmCall (C3)
+ * ==================================================================== */
+
+describe('required operation on EvmCall', () => {
+  it('rejects a call with operation omitted', () => {
+    const callWithoutOperation = {
+      to: GENESIS_VAULT,
+      value: '0xde0b6b3a7640000',
+      data: '0x6e553f65',
+    }
+    const env = evmTx({
+      ...validEvmContent,
+      calls: [ callWithoutOperation as never ],
+    })
+    const result = validateEnvelope(env)
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.issues.some((issue) => issue.path.includes('operation'))).toBe(true)
+    }
+  })
+})
+
+/* ======================================================================
+ * Reference-impl primitive tightening (C4)
+ * ==================================================================== */
+
+describe('amount and origin.url primitives', () => {
+  it("rejects a tokenMovement.amount of '-5'", () => {
+    const env = evmTx({
+      ...validEvmContent,
+      metadata: {
+        ...validEvmContent.metadata,
+        tokenMovements: [
+          {
+            token: 'native',
+            standard: 'native',
+            symbol: 'ETH',
+            decimals: 18,
+            amount: '-5',
+            kind: 'transfer',
+            from: USER,
+            to: GENESIS_VAULT,
+          },
+        ],
+      },
+    })
+    const result = validateEnvelope(env)
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.issues.some((issue) => issue.path.includes('amount'))).toBe(true)
+    }
+  })
+
+  it("rejects an origin.url of 'not-a-url'", () => {
+    const env: PreparedEnvelope = {
+      ...evmTx(),
+      origin: { url: 'not-a-url' as never, verifyStatus: 'VERIFIED' },
+    }
+    const result = validateEnvelope(env)
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.issues.some((issue) => issue.path.includes('url'))).toBe(true)
+    }
+  })
+})
