@@ -120,9 +120,11 @@ cast send $GATE_ARB "setSpendLimit(uint256)" 1000000000000000000 \
   --rpc-url arbitrum_sepolia --private-key $DEPLOYER_PRIVATE_KEY
 ```
 
-## 3. Deploy to Robinhood Chain testnet
+## 3. Deploy to Robinhood Chain testnet (sponsor bonus - real tx on a second chain)
 
-Gate only, no `--verify` (explorer verifier API not published as of 2026-05-26).
+Same shape as step 2 but on chainId 46630, no `--verify` (explorer verifier API not published as of 2026-05-26). Deploying the router here too lets `SmokeExecuteEnvelope` (step 7) land a real `executeEnvelope` tx on Robinhood - the only way to get a Robinhood tx hash while scenario C has no UI flow.
+
+### 3a. AgentPolicyGate
 
 ```bash
 forge script script/DeployRobinhoodTestnet.s.sol \
@@ -134,7 +136,25 @@ forge script script/DeployRobinhoodTestnet.s.sol \
 export GATE_ROBINHOOD=0x...   # paste from console
 ```
 
-No router and no allow-list needed on Robinhood until scenario C's envelope builder ships.
+### 3b. MockPendleRouter
+
+```bash
+forge script script/DeployMockPendleRouter.s.sol \
+  --rpc-url robinhood_testnet \
+  --broadcast
+```
+
+```bash
+export ROUTER_ROBINHOOD=0x...   # paste from console
+```
+
+### 3c. Allow-list the router on the gate (REQUIRED)
+
+```bash
+cast send $GATE_ROBINHOOD "setAllowedRecipient(address,bool)" $ROUTER_ROBINHOOD true \
+  --rpc-url robinhood_testnet \
+  --private-key $DEPLOYER_PRIVATE_KEY
+```
 
 ## 4. Wire the addresses into the app
 
@@ -217,6 +237,29 @@ Open `/flow-a`, ask the agent to prepare a Pendle yield swap. Expect:
 - the decoded inner action reads as `swapExactTokenForPt(...)` via `decoder-data/mock-pendle-router.json`.
 
 That is the recordable Loom path for scenario A.
+
+## 7. Capture real tx hashes (required - AI Agentic category)
+
+The UI sign button already lands a real `executeEnvelope` tx (the recordable Loom moment). For a reproducible, no-wallet artifact - and the only way to land a tx on Robinhood Chain, where scenario C has no UI yet - run the smoke script. It reproduces exactly what the dApp does: the agent signs an envelope, then it executes through the gate. The full path (deploy -> allow-list -> smoke tx) was rehearsed on a local anvil before shipping.
+
+Arbitrum Sepolia:
+
+```bash
+cd examples/arbitrum-london/contracts
+GATE_ADDRESS=$GATE_ARB ROUTER_ADDRESS=$ROUTER_ARB \
+forge script script/SmokeExecuteEnvelope.s.sol --rpc-url arbitrum_sepolia --broadcast
+```
+
+Robinhood Chain testnet (bonus):
+
+```bash
+GATE_ADDRESS=$GATE_ROBINHOOD ROUTER_ADDRESS=$ROUTER_ROBINHOOD \
+forge script script/SmokeExecuteEnvelope.s.sol --rpc-url robinhood_testnet --broadcast
+```
+
+The tx hash prints in the broadcast output and is saved to `broadcast/SmokeExecuteEnvelope.s.sol/<chainId>/run-latest.json` under `transactions[0].hash`. Paste both contract addresses and the tx hashes into the "Live on-chain" tables in `examples/arbitrum-london/README.md` - that is the verifiable proof judges check.
+
+The gate enforces the prerequisites on-chain: a signer-pair mismatch reverts `InvalidSignature`, a missing allow-list reverts `RecipientNotAllowed`. If the script succeeds, the demo path is sound.
 
 ## Gotchas captured during scaffolding
 

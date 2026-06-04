@@ -87,9 +87,8 @@ const exampleDescriptors: ReadonlyArray<RegistryDescriptor> = [
 
 const exampleRegistry = buildRegistry(exampleDescriptors)
 
-// Inferred shape matches @txkit/tx-decoder's Registry (Readonly<Record<string, RegistryDescriptor>>).
-// We avoid importing the Registry type because it is currently not exported
-// from the package barrel - shape-compatibility via spread is sufficient.
+// The Registry type is not exported from the @txkit/tx-decoder barrel yet, so
+// we merge by spread - the inferred shape is structurally compatible.
 const mergedRegistry = {
   ...BUILTIN_REGISTRY,
   ...exampleRegistry,

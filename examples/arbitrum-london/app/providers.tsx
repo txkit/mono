@@ -55,7 +55,6 @@ export const Providers = ({ children }: ProvidersProps) => {
     },
   }))
 
-
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>

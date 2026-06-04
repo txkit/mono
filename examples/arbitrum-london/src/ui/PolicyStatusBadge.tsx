@@ -6,9 +6,9 @@ type PolicyStatusBadgeProps = {
 }
 
 const STATUS_STYLES: Record<PolicyStatus, string> = {
-  allow: 'bg-[color:var(--color-success-bg)] text-[color:var(--color-success)] border-[color:var(--color-success)]',
-  warn: 'bg-[color:var(--color-warning-bg)] text-[color:var(--color-warning)] border-[color:var(--color-warning)]',
-  block: 'bg-[color:var(--color-error-bg)] text-[color:var(--color-error)] border-[color:var(--color-error)]',
+  allow: 'bg-success-bg text-success border-success',
+  warn: 'bg-warning-bg text-warning border-warning',
+  block: 'bg-error-bg text-error border-error',
 }
 
 const STATUS_LABELS: Record<PolicyStatus, string> = {
