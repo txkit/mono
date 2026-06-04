@@ -1,4 +1,3 @@
-import { privateKeyToAccount } from 'viem/accounts'
 import { describe, expect, it } from 'vitest'
 
 import {
