@@ -10,9 +10,11 @@ import { ChatMessage } from '@/src/ui/ChatMessage'
 import { EnvelopePreview } from '@/src/ui/EnvelopePreview'
 import { SequencerFeeRow } from '@/src/ui/SequencerFeeRow'
 
+import { AgentReasoning } from './AgentReasoning/AgentReasoning'
+import { PolicyChecklist } from './PolicyChecklist/PolicyChecklist'
 import { SignEnvelopeActions } from './SignEnvelopeActions'
 import { fetchDecoded, type DecodedCall } from './utils/fetchDecoded'
-import { formatChainLabel, formatExplorerBase, resolveReplyText } from './utils/formatters'
+import { formatChainLabel, formatExplorerBase, resolveReplyText, splitReasoningLines } from './utils/formatters'
 
 
 type Message = { id: string, role: 'user' | 'assistant', content: string }
@@ -151,15 +153,27 @@ export const PendleAgentChat = () => {
     </div>
   )
 
+  const latestAssistant = [ ...messages ].reverse().find((message) => message.role === 'assistant')
+  const isPrepared = envelope !== null
+  const reasoningLines = isPrepared && latestAssistant !== undefined
+    ? splitReasoningLines(latestAssistant.content)
+    : []
+  const transcriptMessages = messages.filter((message) => {
+    const isHoistedIntoReasoning = isPrepared && message.id === latestAssistant?.id
+    return !isHoistedIntoReasoning
+  })
+
   const messagesNode = messages.length === 0
     ? emptyStateNode
-    : messages.map((message) => (
+    : transcriptMessages.map((message) => (
       <ChatMessage key={message.id} role={message.role} content={message.content} />
     ))
 
-  const loadingNode = isLoading ? (
-    <div role="status" aria-live="polite" className="text-sm text-muted">Agent thinking&hellip;</div>
+  const reasoningNode = isLoading || isPrepared ? (
+    <AgentReasoning reasoningLines={reasoningLines} isPreparing={isLoading} isPrepared={isPrepared} />
   ) : null
+
+  const checklistNode = isPrepared ? <PolicyChecklist /> : null
 
   const errorNode = errorMessage !== null ? (
     <div role="alert" className="rounded-md border border-error bg-error-bg px-3 py-2 text-sm text-error">
@@ -208,11 +222,12 @@ export const PendleAgentChat = () => {
     <section className="space-y-4">
       <div className="space-y-3">
         {messagesNode}
-        {loadingNode}
       </div>
 
+      {reasoningNode}
       {errorNode}
       {previewNode}
+      {checklistNode}
       {actionsNode}
 
       <form onSubmit={handleSubmit} className="flex gap-2">
