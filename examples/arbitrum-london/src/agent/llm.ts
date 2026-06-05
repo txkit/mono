@@ -80,6 +80,7 @@ const runAnthropicTurn = async (params: RunAgentTurnParams): Promise<AgentTurn> 
   const completion = await anthropic.messages.create({
     model,
     max_tokens: MAX_TOKENS,
+    temperature: 0,
     system: systemPrompt,
     tools: [ tool ],
     messages: messages.map((message) => ({ role: message.role, content: message.content })),
@@ -153,6 +154,7 @@ const runGroqTurn = async (params: RunAgentTurnParams): Promise<AgentTurn> => {
     body: JSON.stringify({
       model,
       max_tokens: MAX_TOKENS,
+      temperature: 0,
       messages: openAiMessages,
       tools: [ openAiTool ],
       tool_choice: 'auto',
