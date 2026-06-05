@@ -21,9 +21,9 @@ the tables below are the judge-facing copy, filled in after deploy (see [`DEPLOY
 |---|---|
 | AgentPolicyGate | [`0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784`](https://sepolia.arbiscan.io/address/0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784) |
 | MockPendleRouter | [`0x92d8a5C349DF76aF764e91d6cb92101D2d8623C5`](https://sepolia.arbiscan.io/address/0x92d8a5C349DF76aF764e91d6cb92101D2d8623C5) |
-| Agent-executed tx (`executeEnvelope`) | [`0x__PENDING__`](https://sepolia.arbiscan.io/tx/0x__PENDING__) - filled after the demo run |
+| Agent-executed tx (`executeEnvelope`) | [`0x97ca441d66a1a934f94de1cde628cde145359f45e114270184894f35cadb9c3a`](https://sepolia.arbiscan.io/tx/0x97ca441d66a1a934f94de1cde628cde145359f45e114270184894f35cadb9c3a) |
 
-Both contracts were deployed 2026-06-05 (gate [deploy tx](https://sepolia.arbiscan.io/tx/0xfddcde74bc449d37035820faf1ddd42ffe2d953c04e3a96641df3048fc319f1d), router [deploy tx](https://sepolia.arbiscan.io/tx/0x003637ee7cc10942bd51455256d6f07e2731c20c0f8e6b043d31bf6312a90bb1)); the agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and the router is allow-listed on the gate. Capture the `executeEnvelope` tx via the demo flow (`/flow-a`) or the `SmokeExecuteEnvelope` script (see [`DEPLOY.md`](./DEPLOY.md)).
+Both contracts were deployed 2026-06-05 (gate [deploy tx](https://sepolia.arbiscan.io/tx/0xfddcde74bc449d37035820faf1ddd42ffe2d953c04e3a96641df3048fc319f1d), router [deploy tx](https://sepolia.arbiscan.io/tx/0x003637ee7cc10942bd51455256d6f07e2731c20c0f8e6b043d31bf6312a90bb1)); the agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and the router is allow-listed on the gate. The `executeEnvelope` tx above is a real `SmokeExecuteEnvelope` run (see [`DEPLOY.md`](./DEPLOY.md)) - same gate, same EIP-712 envelope the dApp signs; the `/flow-a` UI lands the same shape.
 
 ### Robinhood Chain testnet - chainId 46630 (sponsor bonus)
 
