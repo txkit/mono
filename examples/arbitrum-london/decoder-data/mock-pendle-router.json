@@ -1,8 +1,8 @@
 [
   {
     "chain": "eip155:421614",
-    "address": "0x0000000000000000000000000000000000000000",
-    "label": "MockPendleRouter (Buildathon, Arbitrum Sepolia - PENDING DEPLOY)",
+    "address": "0x92d8a5C349DF76aF764e91d6cb92101D2d8623C5",
+    "label": "MockPendleRouter (Buildathon, Arbitrum Sepolia)",
     "abi": [
       {
         "type": "function",

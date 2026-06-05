@@ -1,8 +1,8 @@
 [
   {
     "chain": "eip155:421614",
-    "address": "0x0000000000000000000000000000000000000000",
-    "label": "AgentPolicyGate (Buildathon, Arbitrum Sepolia - PENDING DEPLOY)",
+    "address": "0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784",
+    "label": "AgentPolicyGate (Buildathon, Arbitrum Sepolia)",
     "abi": [
       {
         "type": "function",

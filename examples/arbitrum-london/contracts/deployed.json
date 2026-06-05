@@ -1,10 +1,10 @@
 {
   "AgentPolicyGate": {
     "421614": {
-      "address": "0x__PENDING__",
-      "deployedAt": null,
-      "blockExplorer": "https://sepolia.arbiscan.io/address/0x__PENDING__",
-      "note": "Pending Mike deploy via forge script DeployArbSepolia.s.sol --broadcast --verify"
+      "address": "0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784",
+      "deployedAt": "2026-06-05",
+      "blockExplorer": "https://sepolia.arbiscan.io/address/0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784",
+      "note": "Deployed to Arbitrum Sepolia 2026-06-05. Tx: 0xfddcde74bc449d37035820faf1ddd42ffe2d953c04e3a96641df3048fc319f1d. Owner + agent signer: 0xEC6613578be203e23e360A3985EA1601435D5907"
     },
     "46630": {
       "address": "0x__PENDING__",
@@ -15,10 +15,10 @@
   },
   "MockPendleRouter": {
     "421614": {
-      "address": "0x__PENDING__",
-      "deployedAt": null,
-      "blockExplorer": "https://sepolia.arbiscan.io/address/0x__PENDING__",
-      "note": "Pending Mike deploy via forge script DeployMockPendleRouter.s.sol --broadcast. Allow-list required: cast send <gate> setAllowedRecipient(address,bool) <mock> true"
+      "address": "0x92d8a5C349DF76aF764e91d6cb92101D2d8623C5",
+      "deployedAt": "2026-06-05",
+      "blockExplorer": "https://sepolia.arbiscan.io/address/0x92d8a5C349DF76aF764e91d6cb92101D2d8623C5",
+      "note": "Deployed to Arbitrum Sepolia 2026-06-05. Tx: 0x003637ee7cc10942bd51455256d6f07e2731c20c0f8e6b043d31bf6312a90bb1. Allow-list via setAllowedRecipient on gate 0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784"
     }
   }
 }
