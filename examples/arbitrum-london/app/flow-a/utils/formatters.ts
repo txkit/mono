@@ -65,3 +65,16 @@ export const resolveReplyText = (reply: string | undefined, hasEnvelope: boolean
 
   return '(empty reply)'
 }
+
+/**
+ * Splits the agent's real reply into sentence-sized lines for the reasoning
+ * card. Pure text transform - it never invents content, it only breaks the
+ * actual reply on sentence boundaries so a one-or-two sentence reply reads as a
+ * short, honest reasoning list.
+ */
+export const splitReasoningLines = (text: string): string[] => {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+}
