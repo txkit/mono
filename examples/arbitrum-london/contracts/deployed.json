@@ -1,30 +1,30 @@
 {
   "AgentPolicyGate": {
     "421614": {
-      "address": "0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784",
+      "address": "0x3A9DaED4a43021df9adcF1d672F90014b25412A5",
       "deployedAt": "2026-06-05",
-      "blockExplorer": "https://sepolia.arbiscan.io/address/0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784",
-      "note": "Deployed to Arbitrum Sepolia 2026-06-05. Tx: 0xfddcde74bc449d37035820faf1ddd42ffe2d953c04e3a96641df3048fc319f1d. Owner + agent signer: 0xEC6613578be203e23e360A3985EA1601435D5907"
+      "blockExplorer": "https://sepolia.arbiscan.io/address/0x3A9DaED4a43021df9adcF1d672F90014b25412A5",
+      "note": "Deployed to Arbitrum Sepolia 2026-06-05 (solc 0.8.34, verified on Arbiscan). Tx: 0x9fb2415cd46ab88f4ef8c8b510c6b5541ec08868f012f840b2cc07797cf67714. Owner + agent signer: 0xEC6613578be203e23e360A3985EA1601435D5907. Recompiled from 0.8.28 + pinned evm_version=cancun to clear the generic Arbiscan compiler-bug notices (none applied: no transient storage, no storage arrays, via_ir off)."
     },
     "46630": {
-      "address": "0x03008A57b9f1FA575D891a26b70608381D1Ab19E",
+      "address": "0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35",
       "deployedAt": "2026-06-05",
-      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x03008A57b9f1FA575D891a26b70608381D1Ab19E",
-      "note": "Deployed to Robinhood Chain testnet 2026-06-05. Tx: 0x9dce4f1e054b1178d941b552b3d519781a043ae4d7f0636c538f40f63c2ead95. Owner + agent signer: 0xEC6613578be203e23e360A3985EA1601435D5907. Robinhood (Arbitrum Orbit) executes PUSH0/cancun bytecode - the forge EIP-3855 warning is a stale chain-id allowlist, not a runtime limit. executeEnvelope verified non-reverting via SmokeExecuteEnvelope tx 0xfe39ae63191998fb6af0c4fc9868aa7ad7b4c17a506f2f9a22ffee02f17fefcc"
+      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35",
+      "note": "Deployed to Robinhood Chain testnet 2026-06-05 (solc 0.8.34). Tx: 0x54764c3def25c5f6a0116a0dd069c1fb27ecd52891a9cdc5e04fa58a97e32ab1. Owner + agent signer: 0xEC6613578be203e23e360A3985EA1601435D5907. Robinhood (Arbitrum Orbit) runs cancun/PUSH0 bytecode; the forge EIP-3855 warning is a stale chain-id allowlist, not a runtime limit. executeEnvelope verified non-reverting (tx 0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c). Robinhood eth_estimateGas under-reports CREATE code-deposit, so deploy needs --gas-estimate-multiplier 300."
     }
   },
   "MockPendleRouter": {
     "421614": {
-      "address": "0x92d8a5C349DF76aF764e91d6cb92101D2d8623C5",
+      "address": "0xf94aaba9c0ED6b29F12d3F4eBBA8290427B6A069",
       "deployedAt": "2026-06-05",
-      "blockExplorer": "https://sepolia.arbiscan.io/address/0x92d8a5C349DF76aF764e91d6cb92101D2d8623C5",
-      "note": "Deployed to Arbitrum Sepolia 2026-06-05. Tx: 0x003637ee7cc10942bd51455256d6f07e2731c20c0f8e6b043d31bf6312a90bb1. Allow-list via setAllowedRecipient on gate 0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784"
+      "blockExplorer": "https://sepolia.arbiscan.io/address/0xf94aaba9c0ED6b29F12d3F4eBBA8290427B6A069",
+      "note": "Deployed to Arbitrum Sepolia 2026-06-05 (solc 0.8.34, verified on Arbiscan). Tx: 0x62829e10f6bc82b9dc0a5db97c79fe90601896dd522e3ad4adf0af313f956c5d. Allow-listed on gate 0x3A9DaED4a43021df9adcF1d672F90014b25412A5 via setAllowedRecipient (tx 0x878d85d9fb9be55291bb7b6005ba0ba66d071ad4e9043a19e74ea0d5eb20a710)."
     },
     "46630": {
-      "address": "0xDCF04578bD2C379dc6BaD97bD21A37aC65F53D51",
+      "address": "0x637f00246A9aaC315580632D206f86701F3F99b0",
       "deployedAt": "2026-06-05",
-      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0xDCF04578bD2C379dc6BaD97bD21A37aC65F53D51",
-      "note": "Deployed to Robinhood Chain testnet 2026-06-05. Tx: 0x78eab8464937b8dc29b5682179de1f20531b442428f2679f83967d35b6a54f61. Allow-listed on gate 0x03008A57b9f1FA575D891a26b70608381D1Ab19E via setAllowedRecipient (tx 0x26f3b1015bdd2250cc86995dee807f534105a49ca940a35660c647341f438d6f)"
+      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x637f00246A9aaC315580632D206f86701F3F99b0",
+      "note": "Deployed to Robinhood Chain testnet 2026-06-05 (solc 0.8.34). Tx: 0x047037c7acb4deebbbc74cf9157c2b9a43d742e74264ba5819a85f9af20ee99a. Allow-listed on gate 0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35 via setAllowedRecipient (tx 0x895b133fc37ba855c24bd99a51e3baa027e1c460a724c0eda6d2bd4ab28279ad)."
     }
   }
 }

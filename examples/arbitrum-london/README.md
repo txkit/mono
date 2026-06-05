@@ -19,21 +19,21 @@ the tables below are the judge-facing copy, filled in after deploy (see [`DEPLOY
 
 | What | Value |
 |---|---|
-| AgentPolicyGate | [`0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784`](https://sepolia.arbiscan.io/address/0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784) |
-| MockPendleRouter | [`0x92d8a5C349DF76aF764e91d6cb92101D2d8623C5`](https://sepolia.arbiscan.io/address/0x92d8a5C349DF76aF764e91d6cb92101D2d8623C5) |
-| Agent-executed tx (`executeEnvelope`) | [`0x97ca441d66a1a934f94de1cde628cde145359f45e114270184894f35cadb9c3a`](https://sepolia.arbiscan.io/tx/0x97ca441d66a1a934f94de1cde628cde145359f45e114270184894f35cadb9c3a) |
+| AgentPolicyGate | [`0x3A9DaED4a43021df9adcF1d672F90014b25412A5`](https://sepolia.arbiscan.io/address/0x3A9DaED4a43021df9adcF1d672F90014b25412A5) (verified) |
+| MockPendleRouter | [`0xf94aaba9c0ED6b29F12d3F4eBBA8290427B6A069`](https://sepolia.arbiscan.io/address/0xf94aaba9c0ED6b29F12d3F4eBBA8290427B6A069) (verified) |
+| Agent-executed tx (`executeEnvelope`) | [`0x7392f88bb20b33ba180c851d6b6791903b7f5c3585366bd996c9fc6b1b5085c2`](https://sepolia.arbiscan.io/tx/0x7392f88bb20b33ba180c851d6b6791903b7f5c3585366bd996c9fc6b1b5085c2) |
 
-Both contracts were deployed 2026-06-05 (gate [deploy tx](https://sepolia.arbiscan.io/tx/0xfddcde74bc449d37035820faf1ddd42ffe2d953c04e3a96641df3048fc319f1d), router [deploy tx](https://sepolia.arbiscan.io/tx/0x003637ee7cc10942bd51455256d6f07e2731c20c0f8e6b043d31bf6312a90bb1)); the agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and the router is allow-listed on the gate. The `executeEnvelope` tx above is a real `SmokeExecuteEnvelope` run (see [`DEPLOY.md`](./DEPLOY.md)) - same gate, same EIP-712 envelope the dApp signs; the `/flow-a` UI lands the same shape.
+Both contracts were deployed 2026-06-05 with **verified source on Arbiscan** (solc 0.8.34; gate [deploy tx](https://sepolia.arbiscan.io/tx/0x9fb2415cd46ab88f4ef8c8b510c6b5541ec08868f012f840b2cc07797cf67714), router [deploy tx](https://sepolia.arbiscan.io/tx/0x62829e10f6bc82b9dc0a5db97c79fe90601896dd522e3ad4adf0af313f956c5d)); the agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and the router is allow-listed on the gate. The `executeEnvelope` tx above is a real `SmokeExecuteEnvelope` run (see [`DEPLOY.md`](./DEPLOY.md)) - same gate, same EIP-712 envelope the dApp signs; the `/flow-a` UI lands the same shape.
 
 ### Robinhood Chain testnet - chainId 46630 (sponsor bonus)
 
 | What | Value |
 |---|---|
-| AgentPolicyGate | [`0x03008A57b9f1FA575D891a26b70608381D1Ab19E`](https://explorer.testnet.chain.robinhood.com/address/0x03008A57b9f1FA575D891a26b70608381D1Ab19E) |
-| MockPendleRouter | [`0xDCF04578bD2C379dc6BaD97bD21A37aC65F53D51`](https://explorer.testnet.chain.robinhood.com/address/0xDCF04578bD2C379dc6BaD97bD21A37aC65F53D51) |
-| Agent-executed tx (`executeEnvelope`) | [`0xfe39ae63191998fb6af0c4fc9868aa7ad7b4c17a506f2f9a22ffee02f17fefcc`](https://explorer.testnet.chain.robinhood.com/tx/0xfe39ae63191998fb6af0c4fc9868aa7ad7b4c17a506f2f9a22ffee02f17fefcc) |
+| AgentPolicyGate | [`0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35`](https://explorer.testnet.chain.robinhood.com/address/0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35) |
+| MockPendleRouter | [`0x637f00246A9aaC315580632D206f86701F3F99b0`](https://explorer.testnet.chain.robinhood.com/address/0x637f00246A9aaC315580632D206f86701F3F99b0) |
+| Agent-executed tx (`executeEnvelope`) | [`0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c`](https://explorer.testnet.chain.robinhood.com/tx/0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c) |
 
-Both contracts were deployed 2026-06-05 (gate [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x9dce4f1e054b1178d941b552b3d519781a043ae4d7f0636c538f40f63c2ead95), router [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x78eab8464937b8dc29b5682179de1f20531b442428f2679f83967d35b6a54f61)); the agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and the router is [allow-listed](https://explorer.testnet.chain.robinhood.com/tx/0x26f3b1015bdd2250cc86995dee807f534105a49ca940a35660c647341f438d6f) on the gate. The `executeEnvelope` tx above is a real `SmokeExecuteEnvelope` run - same gate, same EIP-712 envelope the dApp signs, full five-check path on-chain. Robinhood Chain (Arbitrum Orbit) runs the cancun/PUSH0 bytecode as-is; forge's EIP-3855 "might not work properly" warning is only a stale chain-id allowlist, not a runtime limit.
+Both contracts were deployed 2026-06-05 (solc 0.8.34; gate [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x54764c3def25c5f6a0116a0dd069c1fb27ecd52891a9cdc5e04fa58a97e32ab1), router [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x047037c7acb4deebbbc74cf9157c2b9a43d742e74264ba5819a85f9af20ee99a)); the agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and the router is [allow-listed](https://explorer.testnet.chain.robinhood.com/tx/0x895b133fc37ba855c24bd99a51e3baa027e1c460a724c0eda6d2bd4ab28279ad) on the gate. The `executeEnvelope` tx above is a real `SmokeExecuteEnvelope` run - same gate, same EIP-712 envelope the dApp signs, full five-check path on-chain. Robinhood Chain (Arbitrum Orbit) runs the cancun/PUSH0 bytecode as-is; forge's EIP-3855 "might not work properly" warning is only a stale chain-id allowlist, not a runtime limit (and its `eth_estimateGas` under-reports CREATE cost, so deploys use `--gas-estimate-multiplier 300`).
 
 ## What this proves
 

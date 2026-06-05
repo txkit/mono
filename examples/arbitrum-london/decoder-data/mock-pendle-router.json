@@ -1,7 +1,7 @@
 [
   {
     "chain": "eip155:421614",
-    "address": "0x92d8a5C349DF76aF764e91d6cb92101D2d8623C5",
+    "address": "0xf94aaba9c0ED6b29F12d3F4eBBA8290427B6A069",
     "label": "MockPendleRouter (Buildathon, Arbitrum Sepolia)",
     "abi": [
       {
@@ -42,7 +42,7 @@
   },
   {
     "chain": "eip155:46630",
-    "address": "0xDCF04578bD2C379dc6BaD97bD21A37aC65F53D51",
+    "address": "0x637f00246A9aaC315580632D206f86701F3F99b0",
     "label": "MockPendleRouter (Buildathon, Robinhood Chain testnet)",
     "abi": [
       {

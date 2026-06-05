@@ -6,7 +6,13 @@ test = 'test'
 script = 'script'
 cache_path = 'cache'
 
-solc = '0.8.28'
+solc = '0.8.34'
+# Pin cancun explicitly: solc's default evm_version can advance past it (e.g. prague),
+# and Arbitrum / Arbitrum-Orbit (Robinhood) target cancun. 0.8.34 clears the generic
+# 0.8.28 Arbiscan compiler-bug notices (TransientStorageClearingHelperCollision,
+# LostStorageArrayWriteOnSlotOverflow) - neither applied here (no transient storage,
+# no storage arrays, via_ir off), but a clean explorer page is better for reviewers.
+evm_version = 'cancun'
 optimizer = true
 optimizer_runs = 200
 via_ir = false

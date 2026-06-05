@@ -1,7 +1,7 @@
 [
   {
     "chain": "eip155:421614",
-    "address": "0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784",
+    "address": "0x3A9DaED4a43021df9adcF1d672F90014b25412A5",
     "label": "AgentPolicyGate (Buildathon, Arbitrum Sepolia)",
     "abi": [
       {
@@ -70,7 +70,7 @@
   },
   {
     "chain": "eip155:46630",
-    "address": "0x03008A57b9f1FA575D891a26b70608381D1Ab19E",
+    "address": "0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35",
     "label": "AgentPolicyGate (Buildathon, Robinhood Chain testnet)",
     "abi": [
       {
