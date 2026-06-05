@@ -108,35 +108,38 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
   const title = decoded?.clearSigning?.title ?? decoded?.functionName ?? 'Unknown action'
   const fields = decoded?.clearSigning?.fields ?? {}
   const argList = decoded?.args ?? []
+  const functionName = decoded?.functionName
 
   const badgeNode = policyStatus !== undefined
     ? <PolicyStatusBadge status={policyStatus} reason={policyReason} />
     : null
 
-  const argsNode = argList.length > 0
+  const callBlockNode = functionName !== undefined
     ? (
-      <details className="text-sm">
-        <summary className="cursor-pointer text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
-          Decoded arguments ({argList.length})
-        </summary>
-        <dl className="mt-3 grid gap-2">
-          {argList.map((arg) => (
-            <div key={arg.name} className="grid grid-cols-[140px_1fr] gap-2 font-mono text-xs">
-              <dt className="text-muted">{fields[arg.name] ?? arg.name}</dt>
-              <dd className="break-all">{stringifyValue(arg.value)}</dd>
-            </div>
-          ))}
-        </dl>
-      </details>
+      <div className="px-5 pt-4">
+        <p className="mb-2 text-xs uppercase tracking-wider text-muted">Decoded function call</p>
+        <div className="space-y-1 rounded-lg bg-card-sunken p-4 font-mono text-xs">
+          <div>
+            <span className="font-semibold text-accent">{functionName}</span>
+            <span className="text-muted">(</span>
+          </div>
+          <div className="space-y-1 pl-4">
+            {argList.map((arg, index) => (
+              <div key={arg.name} className="break-all">
+                <span className="text-muted">{fields[arg.name] ?? arg.name}:</span>{' '}
+                <span className="text-foreground">{stringifyValue(arg.value)}</span>
+                {index < argList.length - 1 ? <span className="text-muted">,</span> : null}
+              </div>
+            ))}
+          </div>
+          <div className="text-muted">)</div>
+        </div>
+      </div>
     )
     : null
 
   const feeNode = feeSlot !== undefined && feeSlot !== null
     ? <div className="px-5 py-4 border-t border-border">{feeSlot}</div>
-    : null
-
-  const argsContainerNode = argsNode !== null
-    ? <div className="px-5 pb-5 pt-4">{argsNode}</div>
     : null
 
   return (
@@ -151,10 +154,14 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
         <p className="text-sm text-muted">{innerLabel}</p>
       </div>
 
+      {callBlockNode}
+
       <div className="grid gap-3 text-sm px-5 py-4">
         <div className="flex justify-between gap-3">
           <span className="text-muted shrink-0">Chain</span>
-          <span className="font-mono">{chainLabel}</span>
+          <span className="inline-flex items-center rounded-md bg-accent/10 px-2 py-0.5 font-mono text-xs text-accent">
+            {chainLabel}
+          </span>
         </div>
         <div className="flex justify-between gap-3">
           <span className="text-muted shrink-0">Policy gate</span>
@@ -179,8 +186,6 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
       </div>
 
       {feeNode}
-
-      {argsContainerNode}
     </div>
   )
 }
