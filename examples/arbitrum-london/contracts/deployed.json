@@ -7,10 +7,10 @@
       "note": "Deployed to Arbitrum Sepolia 2026-06-05. Tx: 0xfddcde74bc449d37035820faf1ddd42ffe2d953c04e3a96641df3048fc319f1d. Owner + agent signer: 0xEC6613578be203e23e360A3985EA1601435D5907"
     },
     "46630": {
-      "address": "0x__PENDING__",
-      "deployedAt": null,
-      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x__PENDING__",
-      "note": "Pending Mike deploy via forge script DeployRobinhoodTestnet.s.sol --broadcast"
+      "address": "0x03008A57b9f1FA575D891a26b70608381D1Ab19E",
+      "deployedAt": "2026-06-05",
+      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x03008A57b9f1FA575D891a26b70608381D1Ab19E",
+      "note": "Deployed to Robinhood Chain testnet 2026-06-05. Tx: 0x9dce4f1e054b1178d941b552b3d519781a043ae4d7f0636c538f40f63c2ead95. Owner + agent signer: 0xEC6613578be203e23e360A3985EA1601435D5907. Robinhood (Arbitrum Orbit) executes PUSH0/cancun bytecode - the forge EIP-3855 warning is a stale chain-id allowlist, not a runtime limit. executeEnvelope verified non-reverting via SmokeExecuteEnvelope tx 0xfe39ae63191998fb6af0c4fc9868aa7ad7b4c17a506f2f9a22ffee02f17fefcc"
     }
   },
   "MockPendleRouter": {
@@ -19,6 +19,12 @@
       "deployedAt": "2026-06-05",
       "blockExplorer": "https://sepolia.arbiscan.io/address/0x92d8a5C349DF76aF764e91d6cb92101D2d8623C5",
       "note": "Deployed to Arbitrum Sepolia 2026-06-05. Tx: 0x003637ee7cc10942bd51455256d6f07e2731c20c0f8e6b043d31bf6312a90bb1. Allow-list via setAllowedRecipient on gate 0x8C696D9f12e83c9E36E9d64e973C064DF1ECe784"
+    },
+    "46630": {
+      "address": "0xDCF04578bD2C379dc6BaD97bD21A37aC65F53D51",
+      "deployedAt": "2026-06-05",
+      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0xDCF04578bD2C379dc6BaD97bD21A37aC65F53D51",
+      "note": "Deployed to Robinhood Chain testnet 2026-06-05. Tx: 0x78eab8464937b8dc29b5682179de1f20531b442428f2679f83967d35b6a54f61. Allow-listed on gate 0x03008A57b9f1FA575D891a26b70608381D1Ab19E via setAllowedRecipient (tx 0x26f3b1015bdd2250cc86995dee807f534105a49ca940a35660c647341f438d6f)"
     }
   }
 }

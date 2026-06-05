@@ -39,5 +39,46 @@
         }
       }
     }
+  },
+  {
+    "chain": "eip155:46630",
+    "address": "0xDCF04578bD2C379dc6BaD97bD21A37aC65F53D51",
+    "label": "MockPendleRouter (Buildathon, Robinhood Chain testnet)",
+    "abi": [
+      {
+        "type": "function",
+        "name": "swapExactTokenForPt",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "receiver", "type": "address" },
+          { "name": "ptOut", "type": "address" },
+          { "name": "amountIn", "type": "uint256" },
+          { "name": "minPtOut", "type": "uint256" }
+        ],
+        "outputs": [{ "name": "ptOutReturned", "type": "uint256" }]
+      },
+      {
+        "type": "event",
+        "name": "SwapExactTokenForPt",
+        "inputs": [
+          { "indexed": true, "name": "receiver", "type": "address" },
+          { "indexed": true, "name": "caller", "type": "address" },
+          { "indexed": true, "name": "ptOut", "type": "address" },
+          { "indexed": false, "name": "amountIn", "type": "uint256" },
+          { "indexed": false, "name": "ptOutReturned", "type": "uint256" }
+        ]
+      }
+    ],
+    "clearSigning": {
+      "swapExactTokenForPt": {
+        "title": "Pendle yield swap (mock router)",
+        "fields": {
+          "receiver": "Recipient of PT tokens",
+          "ptOut": "Pendle PT token to receive",
+          "amountIn": "Input amount (raw token units, 1:0.995 deterministic rate)",
+          "minPtOut": "Min PT out after declared slippage"
+        }
+      }
+    }
   }
 ]

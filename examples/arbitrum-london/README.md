@@ -29,9 +29,11 @@ Both contracts were deployed 2026-06-05 (gate [deploy tx](https://sepolia.arbisc
 
 | What | Value |
 |---|---|
-| AgentPolicyGate | [`0x__PENDING__`](https://explorer.testnet.chain.robinhood.com/address/0x__PENDING__) |
-| MockPendleRouter | [`0x__PENDING__`](https://explorer.testnet.chain.robinhood.com/address/0x__PENDING__) |
-| Agent-executed tx (`executeEnvelope`) | [`0x__PENDING__`](https://explorer.testnet.chain.robinhood.com/tx/0x__PENDING__) |
+| AgentPolicyGate | [`0x03008A57b9f1FA575D891a26b70608381D1Ab19E`](https://explorer.testnet.chain.robinhood.com/address/0x03008A57b9f1FA575D891a26b70608381D1Ab19E) |
+| MockPendleRouter | [`0xDCF04578bD2C379dc6BaD97bD21A37aC65F53D51`](https://explorer.testnet.chain.robinhood.com/address/0xDCF04578bD2C379dc6BaD97bD21A37aC65F53D51) |
+| Agent-executed tx (`executeEnvelope`) | [`0xfe39ae63191998fb6af0c4fc9868aa7ad7b4c17a506f2f9a22ffee02f17fefcc`](https://explorer.testnet.chain.robinhood.com/tx/0xfe39ae63191998fb6af0c4fc9868aa7ad7b4c17a506f2f9a22ffee02f17fefcc) |
+
+Both contracts were deployed 2026-06-05 (gate [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x9dce4f1e054b1178d941b552b3d519781a043ae4d7f0636c538f40f63c2ead95), router [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x78eab8464937b8dc29b5682179de1f20531b442428f2679f83967d35b6a54f61)); the agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and the router is [allow-listed](https://explorer.testnet.chain.robinhood.com/tx/0x26f3b1015bdd2250cc86995dee807f534105a49ca940a35660c647341f438d6f) on the gate. The `executeEnvelope` tx above is a real `SmokeExecuteEnvelope` run - same gate, same EIP-712 envelope the dApp signs, full five-check path on-chain. Robinhood Chain (Arbitrum Orbit) runs the cancun/PUSH0 bytecode as-is; forge's EIP-3855 "might not work properly" warning is only a stale chain-id allowlist, not a runtime limit.
 
 ## What this proves
 

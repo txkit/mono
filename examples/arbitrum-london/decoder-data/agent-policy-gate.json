@@ -70,8 +70,8 @@
   },
   {
     "chain": "eip155:46630",
-    "address": "0x0000000000000000000000000000000000000000",
-    "label": "AgentPolicyGate (Buildathon, Robinhood Chain testnet - PENDING DEPLOY)",
+    "address": "0x03008A57b9f1FA575D891a26b70608381D1Ab19E",
+    "label": "AgentPolicyGate (Buildathon, Robinhood Chain testnet)",
     "abi": [
       {
         "type": "function",
