@@ -33,5 +33,7 @@ arbitrum_sepolia = '${ARB_SEPOLIA_RPC_URL}'
 robinhood_testnet = '${ROBINHOOD_TESTNET_RPC_URL}'
 
 [etherscan]
-arbitrum_sepolia = { key = '${ARBISCAN_API_KEY}', url = 'https://api-sepolia.arbiscan.io/api' }
+# Etherscan API V2 unified endpoint (one key across chains, chainid resolved from --chain).
+# The legacy per-chain V1 url (api-sepolia.arbiscan.io/api) was deprecated in the 2025 V2 migration.
+arbitrum_sepolia = { key = '${ARBISCAN_API_KEY}' }
 # Robinhood Chain testnet explorer verification config to be added when API published
