@@ -10,8 +10,12 @@ import { z } from 'zod'
  * through the server.
  */
 const envSchema = z.object({
-  // Anthropic Claude Agent SDK - REQUIRED for /api/agent
+  // LLM for /api/agent - one of ANTHROPIC_API_KEY or GROQ_API_KEY is required.
+  // Anthropic Claude Agent SDK (preferred when set).
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  // Groq - free, OpenAI-compatible fallback used when no Anthropic key is set.
+  GROQ_API_KEY: z.string().min(1).optional(),
+  GROQ_MODEL: z.string().min(1).default('llama-3.3-70b-versatile'),
 
   // Arbitrum Sepolia
   ARB_SEPOLIA_RPC_URL: z

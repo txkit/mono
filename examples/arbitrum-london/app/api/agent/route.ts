@@ -7,6 +7,7 @@ import {
   buildPendleEnvelope,
   type DemoEnvelope,
 } from '@/src/agent/envelope-builder'
+import { runAgentTurn, type AgentProvider, type AgentTurn } from '@/src/agent/llm'
 import { signEnvelope } from '@/src/agent/signing'
 import {
   PENDLE_SYSTEM_PROMPT,
@@ -35,18 +36,19 @@ export const runtime = 'nodejs'
  *   -> { reply, envelope?, scenario, milestone }
  *
  * Pendle flow:
- *   1. Claude reads PENDLE_SYSTEM_PROMPT + receives PENDLE_TOOL_DEFINITION.
- *   2. If args are clear: Claude calls prepare_pendle_yield_swap.
+ *   1. The model reads PENDLE_SYSTEM_PROMPT + receives PENDLE_TOOL_DEFINITION.
+ *   2. If args are clear: it calls prepare_pendle_yield_swap.
  *   3. We validate via zod, buildPendleEnvelope, sign EIP-712 via signEnvelope,
  *      attach signature, return both the assistant's text reply (if any) and
  *      the signed envelope.
- *   4. If Claude asks for clarification (text only): return reply, no envelope.
+ *   4. If the model asks for clarification (text only): return reply, no envelope.
  *
  * RWA flow lands Phase 2 Day 10.
  *
- * The SDK is dynamically imported inside the handler so the route module
- * stays loadable even when ANTHROPIC_API_KEY is unset (better DX for the
- * first contributor cloning the repo).
+ * The model call is delegated to runAgentTurn (src/agent/llm.ts), which picks
+ * Anthropic Claude when ANTHROPIC_API_KEY is set and otherwise the free,
+ * OpenAI-compatible Groq endpoint when GROQ_API_KEY is set. Everything below the
+ * call is provider-agnostic.
  */
 const DEFAULT_RECEIVER = '0x000000000000000000000000000000000000dEaD' as const
 
@@ -54,28 +56,6 @@ type AgentRequestBody = {
   messages: Array<{ role: 'user' | 'assistant', content: string }>,
   scenario?: 'pendle' | 'rwa',
   receiverAddress?: `0x${string}`,
-}
-
-type ToolUseBlock = {
-  type: 'tool_use',
-  id: string,
-  name: string,
-  input: Record<string, unknown>,
-}
-
-type TextBlock = {
-  type: 'text',
-  text: string,
-}
-
-type ResponseContentBlock = ToolUseBlock | TextBlock | { type: string }
-
-const checkIsToolUseBlock = (block: ResponseContentBlock): block is ToolUseBlock => {
-  return block.type === 'tool_use'
-}
-
-const checkIsTextBlock = (block: ResponseContentBlock): block is TextBlock => {
-  return block.type === 'text'
 }
 
 export const POST = async (request: NextRequest) => {
@@ -123,62 +103,57 @@ export const POST = async (request: NextRequest) => {
     )
   }
 
-  const { ANTHROPIC_API_KEY, AGENT_SIGNER_PRIVATE_KEY } = env
+  const { ANTHROPIC_API_KEY, GROQ_API_KEY, GROQ_MODEL, AGENT_SIGNER_PRIVATE_KEY } = env
 
-  if (ANTHROPIC_API_KEY === undefined) {
+  let provider: AgentProvider | null = null
+  let apiKey: string | undefined
+  let model = ''
+  if (ANTHROPIC_API_KEY !== undefined) {
+    provider = 'anthropic'
+    apiKey = ANTHROPIC_API_KEY
+    model = 'claude-haiku-4-5'
+  } else if (GROQ_API_KEY !== undefined) {
+    provider = 'groq'
+    apiKey = GROQ_API_KEY
+    model = GROQ_MODEL
+  }
+
+  if (provider === null || apiKey === undefined) {
     return NextResponse.json(
       {
-        error: 'ANTHROPIC_API_KEY not set',
-        hint: 'Add ANTHROPIC_API_KEY to .env.local - see .env.example',
+        error: 'No LLM API key set',
+        hint:
+          'Set ANTHROPIC_API_KEY, or GROQ_API_KEY for the free Groq tier ' +
+          '(console.groq.com) - see .env.example.',
       },
       { status: 503 },
     )
   }
-
-  const { default: Anthropic } = await import('@anthropic-ai/sdk').catch(() => ({ default: null }))
-  if (Anthropic === null) {
-    return NextResponse.json(
-      {
-        error: '@anthropic-ai/sdk not installed',
-        hint: 'Run `pnpm install` in the workspace root to pull workspace deps',
-      },
-      { status: 503 },
-    )
-  }
-
-  const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY })
 
   const systemPrompt = scenario === 'rwa' ? RWA_SYSTEM_PROMPT : PENDLE_SYSTEM_PROMPT
   const toolDefinition = scenario === 'rwa' ? RWA_TOOL_DEFINITION : PENDLE_TOOL_DEFINITION
 
-  let completion
+  let turn: AgentTurn
   try {
-    completion = await anthropic.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 1024,
-      system: systemPrompt,
-      tools: [ toolDefinition ],
-      messages: messages.map((message) => ({
-        role: message.role,
-        content: message.content,
-      })),
+    turn = await runAgentTurn({
+      provider,
+      apiKey,
+      model,
+      systemPrompt,
+      tool: toolDefinition,
+      messages,
     })
   } catch (modelError) {
     return NextResponse.json(
-      { error: 'Anthropic call failed', detail: String(modelError) },
+      { error: 'Model call failed', detail: String(modelError) },
       { status: 502 },
     )
   }
 
-  const contentBlocks = completion.content as ResponseContentBlock[]
-  const textReply = contentBlocks
-    .filter(checkIsTextBlock)
-    .map((block) => block.text)
-    .join('\n')
-  const toolUseBlock = contentBlocks.find(checkIsToolUseBlock)
+  const { textReply, toolName, toolInput } = turn
 
-  // No tool call - Claude is asking for clarification or refusing.
-  if (toolUseBlock === undefined) {
+  // No tool call - the model is asking for clarification or refusing.
+  if (toolName === undefined) {
     return NextResponse.json({
       reply: textReply,
       scenario,
@@ -195,8 +170,6 @@ export const POST = async (request: NextRequest) => {
     )
   }
 
-  const { name: toolName, input: toolInput } = toolUseBlock
-
   if (toolName !== 'prepare_pendle_yield_swap') {
     return NextResponse.json(
       {
@@ -207,7 +180,7 @@ export const POST = async (request: NextRequest) => {
     )
   }
 
-  const argsParse = preparePendleYieldSwapArgs.safeParse(toolInput)
+  const argsParse = preparePendleYieldSwapArgs.safeParse(toolInput ?? {})
   if (!argsParse.success) {
     return NextResponse.json(
       {
