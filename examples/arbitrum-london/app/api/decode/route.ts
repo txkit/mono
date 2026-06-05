@@ -117,7 +117,7 @@ export const POST = async (request: NextRequest) => {
 
   try {
     const decoded = await decodeCall(
-      { chain, call: { to: call.to, data: call.data } },
+      { chain, call: { to: call.to, data: call.data, operation: 'call' } },
       { registry: mergedRegistry },
     )
 
