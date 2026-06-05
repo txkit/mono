@@ -473,8 +473,10 @@ git commit -m "feat(example): implement buildRwaEnvelope for scenario C"
 
 ### Task 6: x402 payment-authorization sign + verify (TDD)
 
+> **REUSE NOTE (decided 2026-06-04 after inspecting `@txkit/x402-adapter`):** Do NOT invent a standalone `PaymentAuthorization` type. The workspace package `@txkit/x402-adapter` already exports the canonical shapes `X402PaymentProof` / `X402Intent` + `attachX402Proof` / `attachX402Intent` / `extractX402`. The facilitator must PRODUCE an `X402PaymentProof` (its `paymentReceipt` field is documented as "Tx hash or signature receipt" - hold the EIP-712 signature there for the verify-only/stubbed-settle case; `paymentRequirementsHash` = the 402 challenge hash; map `chain` / `asset` / `amount` (hex) / `payee` / `paidAt`). Embed the proof in the RWA envelope via `attachX402Proof` so `EnvelopePreview` can surface it. The EIP-712 sign/verify crypto stays custom (the adapter does no crypto), but the data shapes are the canonical ones. This aligns Tasks 6/7/10/11 with the real package (precedent > invention) and demos `@txkit/x402-adapter`. The code blocks below still show the verify logic; swap the bespoke `PaymentAuthorization` for `X402PaymentProof` + a signed `X402Intent`-style challenge when implementing.
+
 **Files:**
-- Create: `src/x402/payment-authorization.ts` (EIP-712 types + sign + verify)
+- Create: `src/x402/payment-authorization.ts` (EIP-712 sign + verify, producing `X402PaymentProof`)
 - Test: `src/x402/payment-authorization.spec.ts`
 
 - [ ] **Step 1: Write the failing test** (`src/x402/payment-authorization.spec.ts`)
