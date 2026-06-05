@@ -50,3 +50,81 @@ body {
     cursor: pointer;
   }
 }
+
+/*
+ * Mask plumbing for the <Icon> component (src/ui/Icon.tsx). The icon shape is
+ * supplied per instance via `mask-image`; everything tints with `bg-current`,
+ * so an icon picks up whatever `text-*` color sits on it.
+ */
+.tx-icon-mask {
+  display: inline-block;
+  flex-shrink: 0;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+
+/*
+ * flow-a hero animations - the agent-reasoning, policy-gate and execution
+ * moments of the Pendle demo. Pure CSS keyframes (no Framer Motion); stagger is
+ * applied per element with an inline `animation-delay`. Every entrance keyframe
+ * uses `both` so an element holds its hidden start state until its delay fires
+ * and its visible end state afterwards.
+ */
+@keyframes tx-pulse-soft {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+@keyframes tx-enter-x {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes tx-enter-y {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tx-pop {
+  0% { opacity: 0; transform: scale(0.4) rotate(-90deg); }
+  60% { opacity: 1; transform: scale(1.1) rotate(0deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes tx-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes tx-typing-dot {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.6); opacity: 1; }
+}
+
+@keyframes tx-card-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.tx-anim-pulse { animation: tx-pulse-soft 2s ease-in-out infinite; }
+.tx-anim-enter-x { animation: tx-enter-x 0.35s ease-out both; }
+.tx-anim-enter-y { animation: tx-enter-y 0.35s ease-out both; }
+.tx-anim-pop { animation: tx-pop 0.45s ease-out both; }
+.tx-anim-spin { animation: tx-spin 1s linear infinite; }
+.tx-anim-typing { animation: tx-typing-dot 1s ease-in-out infinite; }
+.tx-anim-card-in { animation: tx-card-in 0.4s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-anim-pulse,
+  .tx-anim-enter-x,
+  .tx-anim-enter-y,
+  .tx-anim-pop,
+  .tx-anim-spin,
+  .tx-anim-typing,
+  .tx-anim-card-in {
+    animation: none;
+  }
+}
