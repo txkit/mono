@@ -9,6 +9,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import deployedJson from '@/contracts/deployed.json'
 import agentPolicyGateData from '@/decoder-data/agent-policy-gate.json'
 import mockPendleRouterData from '@/decoder-data/mock-pendle-router.json'
+import mockRwaRouterData from '@/decoder-data/mock-rwa-router.json'
 
 
 export const runtime = 'nodejs'
@@ -82,6 +83,10 @@ const exampleDescriptors: ReadonlyArray<RegistryDescriptor> = [
   ...resolveDescriptors(
     mockPendleRouterData as unknown as ReadonlyArray<RegistryDescriptor>,
     'MockPendleRouter',
+  ),
+  ...resolveDescriptors(
+    mockRwaRouterData as unknown as ReadonlyArray<RegistryDescriptor>,
+    'MockRwaRouter',
   ),
 ]
 

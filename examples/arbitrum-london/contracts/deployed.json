@@ -28,6 +28,12 @@
     }
   },
   "MockRwaRouter": {
+    "421614": {
+      "address": "0xDe3cBf69877f08661152F945F11399e3F7912eA9",
+      "deployedAt": "2026-06-08",
+      "blockExplorer": "https://sepolia.arbiscan.io/address/0xDe3cBf69877f08661152F945F11399e3F7912eA9",
+      "note": "Deployed to Arbitrum Sepolia 2026-06-08 (solc 0.8.34, verified on Arbiscan). Allow-listed on gate 0x3A9DaED4a43021df9adcF1d672F90014b25412A5 via setAllowedRecipient (tx 0xfbed5d388ce45229ebd46d1ded539587f7cdd91434cfeb8336e7dd41b17c8131). Real RWA buy executeEnvelope tx 0xf29e0d9f82f59d79dc6f65bd481976ec9c9eb70db8119283d7eeb6e7fb6fd3ea (status 0x1, RwaPurchased + EnvelopeExecuted events)."
+    },
     "46630": {
       "address": "0x__PENDING__",
       "deployedAt": null,
