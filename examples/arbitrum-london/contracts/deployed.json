@@ -35,10 +35,10 @@
       "note": "Deployed to Arbitrum Sepolia 2026-06-08 (solc 0.8.34, verified on Arbiscan). Allow-listed on gate 0x3A9DaED4a43021df9adcF1d672F90014b25412A5 via setAllowedRecipient (tx 0xfbed5d388ce45229ebd46d1ded539587f7cdd91434cfeb8336e7dd41b17c8131). Real RWA buy executeEnvelope tx 0xf29e0d9f82f59d79dc6f65bd481976ec9c9eb70db8119283d7eeb6e7fb6fd3ea (status 0x1, RwaPurchased + EnvelopeExecuted events)."
     },
     "46630": {
-      "address": "0x__PENDING__",
-      "deployedAt": null,
-      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x__PENDING__",
-      "note": "Pending Mike deploy via forge script DeployRobinhoodTestnet.s.sol --broadcast (deploys gate + router + allow-list)"
+      "address": "0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C",
+      "deployedAt": "2026-06-08",
+      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C",
+      "note": "Deployed to Robinhood Chain testnet 2026-06-08 (solc 0.8.34). Deploy via forge create --gas-limit 3000000 (Robinhood eth_estimateGas under-reports CREATE; forge-script gas-estimate-multiplier did not apply in this version). Deploy tx 0x71d5845579675e88c1e3117c2b62c2cdbc95df811df4bfe4e53360b8ea0a8bca. Allow-listed on gate 0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35 (tx 0x24e05fdfa050524bb471d9bc5669ef2d55915afa34d65b2c4f3aec512911fd92). Real RWA buy executeEnvelope (TSLA x5) tx 0xff64404144bdaea4e08c94e973166af180b29fed621b1e3632757703e9b080fa (status 0x1, RwaPurchased + EnvelopeExecuted; broadcast via cast send --gas-limit 1500000 because forge script gas handling is unreliable on Orbit)."
     }
   }
 }

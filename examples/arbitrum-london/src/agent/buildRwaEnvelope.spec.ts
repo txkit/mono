@@ -40,7 +40,7 @@ describe('buildRwaEnvelope', () => {
     const envelope = buildRwaEnvelope({ asset: 'TSLA', amount: 5 }, RECEIVER)
 
     expect(envelope.kind).toBe('evm-tx')
-    expect(envelope.chain).toBe('eip155:421614')
+    expect(envelope.chain).toBe('eip155:46630')
     expect(envelope.inner.to.toLowerCase()).toBe(RWA_ROUTER)
     expect(envelope.call.value).toBe('0x0')
 

@@ -36,5 +36,43 @@
         }
       }
     }
+  },
+  {
+    "chain": "eip155:46630",
+    "address": "0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C",
+    "label": "MockRwaRouter (Buildathon, Robinhood Chain testnet)",
+    "abi": [
+      {
+        "type": "function",
+        "name": "buy",
+        "stateMutability": "nonpayable",
+        "inputs": [
+          { "name": "receiver", "type": "address" },
+          { "name": "ticker", "type": "bytes32" },
+          { "name": "amount", "type": "uint256" }
+        ],
+        "outputs": []
+      },
+      {
+        "type": "event",
+        "name": "RwaPurchased",
+        "inputs": [
+          { "indexed": true, "name": "receiver", "type": "address" },
+          { "indexed": true, "name": "caller", "type": "address" },
+          { "indexed": true, "name": "ticker", "type": "bytes32" },
+          { "indexed": false, "name": "amount", "type": "uint256" }
+        ]
+      }
+    ],
+    "clearSigning": {
+      "buy": {
+        "title": "Buy mock RWA position",
+        "fields": {
+          "receiver": "Address credited with the mock holding",
+          "ticker": "Asset ticker (bytes32, e.g. TSLA)",
+          "amount": "Whole-token quantity (mock units)"
+        }
+      }
+    }
   }
 ]

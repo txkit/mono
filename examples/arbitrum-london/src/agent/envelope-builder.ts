@@ -1,6 +1,6 @@
 import { encodeAbiParameters, encodeFunctionData, keccak256, stringToHex, type Hex } from 'viem'
 
-import { ARBITRUM_SEPOLIA_CHAIN_ID } from '@/src/chains'
+import { ARBITRUM_SEPOLIA_CHAIN_ID, ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import {
   getAgentPolicyGateAddress,
   getMockPendleRouterAddress,
@@ -224,7 +224,7 @@ const MOCK_RWA_ROUTER_ABI = [
 ] as const
 
 /**
- * Build a mock RWA-buy envelope for Scenario C on Arbitrum Sepolia.
+ * Build a mock RWA-buy envelope for Scenario C on Robinhood Chain testnet.
  * Mirrors buildPendleEnvelope: the inner call is MockRwaRouter.buy, the outer
  * call wraps it through AgentPolicyGate.executeEnvelope, and the caller signs
  * the EIP-712 digest via signEnvelope() + attachAgentSignature().
@@ -233,7 +233,7 @@ export const buildRwaEnvelope = (
   args: PrepareRwaBuyArgs,
   receiverAddress: `0x${string}`,
 ): DemoEnvelope => {
-  const routerAddress = getMockRwaRouterAddress(ARBITRUM_SEPOLIA_CHAIN_ID)
+  const routerAddress = getMockRwaRouterAddress(ROBINHOOD_TESTNET_CHAIN_ID)
   const ticker = stringToHex(args.asset, { size: 32 })
   const amount = BigInt(args.amount)
 
@@ -253,8 +253,8 @@ export const buildRwaEnvelope = (
   }
 
   const nonce = generateNonce()
-  const envelopeHash = computeReplayEnvelopeHash(ARBITRUM_SEPOLIA_CHAIN_ID, inner, nonce)
-  const policyGateAddress = getAgentPolicyGateAddress(ARBITRUM_SEPOLIA_CHAIN_ID)
+  const envelopeHash = computeReplayEnvelopeHash(ROBINHOOD_TESTNET_CHAIN_ID, inner, nonce)
+  const policyGateAddress = getAgentPolicyGateAddress(ROBINHOOD_TESTNET_CHAIN_ID)
 
   // Outer call wraps the inner action through AgentPolicyGate.executeEnvelope.
   // Signature is filled by the caller (signEnvelope + attachAgentSignature).
@@ -266,7 +266,7 @@ export const buildRwaEnvelope = (
 
   return {
     kind: 'evm-tx',
-    chain: `eip155:${ARBITRUM_SEPOLIA_CHAIN_ID}`,
+    chain: `eip155:${ROBINHOOD_TESTNET_CHAIN_ID}`,
     call: {
       to: policyGateAddress,
       data: outerCallData,
