@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import '@txkit/themes/base'
 import '@txkit/themes/dark'
+import '@txkit/react/styles.css'
 import './globals.css'
 import { Providers } from './providers'
 

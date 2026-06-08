@@ -1,55 +1,22 @@
 'use client'
 
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { ConnectWallet } from '@txkit/react'
 
+import { arbitrumSepolia } from '@/src/chains'
 
-const formatAddress = (address: string): string => {
-  return `${address.slice(0, 6)}…${address.slice(-4)}`
-}
 
 /**
- * Minimal wallet connect for the demo, on the example's own wagmi v2 instance
- * (the injected / MetaMask connector configured in providers). Kept native
- * instead of @txkit/react ConnectWallet because that package targets wagmi v3
- * and this example runs wagmi v2, so the two WagmiContexts would not match.
+ * Client boundary for the header connect control. flow-a/page.tsx is a server
+ * component and @txkit/react ships without a 'use client' banner, so ConnectWallet
+ * (and its hooks + error boundary) must be imported from inside a client module.
  *
- * Chain is not pinned here: SignEnvelopeActions sends executeEnvelope with the
- * envelope chainId, so wagmi prompts a network switch at sign time if needed.
+ * This renders the real @txkit/react <ConnectWallet />, reading the embedded
+ * TxKitProvider mounted in providers.tsx on the shared wagmi instance. chainId is
+ * pinned to Arbitrum Sepolia (this scenario's chain) so the button surfaces
+ * txKit's wrong-network UX if the wallet is elsewhere; executeEnvelope still
+ * switches at sign time.
  */
 export const WalletConnectButton = () => {
-  const { address, isConnected } = useAccount()
-  const { connect, connectors, isPending } = useConnect()
-  const { disconnect } = useDisconnect()
 
-  const handleConnect = () => {
-    const connector = connectors[0]
-    if (connector !== undefined) {
-      connect({ connector })
-    }
-  }
-
-  if (isConnected && address !== undefined) {
-
-    return (
-      <button
-        type="button"
-        onClick={() => disconnect()}
-        title="Disconnect"
-        className="rounded-md border border-border px-3 py-1.5 font-mono text-xs text-foreground hover:border-border-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-      >
-        {formatAddress(address)}
-      </button>
-    )
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={handleConnect}
-      disabled={isPending}
-      className="rounded-md bg-accent px-4 py-1.5 text-xs text-accent-text hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
-    >
-      {isPending ? 'Connecting...' : 'Connect Wallet'}
-    </button>
-  )
+  return <ConnectWallet chainId={arbitrumSepolia.id} size="compact" />
 }

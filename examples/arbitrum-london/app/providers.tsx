@@ -1,6 +1,7 @@
 'use client'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { TxKitProvider } from '@txkit/react'
 import { useState, type ReactNode } from 'react'
 import { http } from 'viem'
 import { WagmiProvider, createConfig } from 'wagmi'
@@ -43,10 +44,10 @@ type ProvidersProps = {
  * Client-side root provider. Keeps QueryClient stable across renders via
  * useState so React strict-mode double-invokes do not throw the cache away.
  *
- * Native wagmi v2 + react-query. We do NOT mount @txkit/react's TxKitProvider:
- * that package targets wagmi v3 and this example runs wagmi v2, so its
- * WagmiContext would not match (MissingWagmiProviderError). The demo's wallet
- * connect is a small native button (WalletConnectButton) on this same wagmi.
+ * wagmi v3 + react-query, with @txkit/react's TxKitProvider mounted in embedded
+ * mode: it reuses this outer WagmiProvider + QueryClient (no internal
+ * createConfig) so the demo's <ConnectWallet /> is the real txKit component on
+ * the same wagmi instance. theme is pinned dark to match the tx-dark layout.
  */
 export const Providers = ({ children }: ProvidersProps) => {
   const [ queryClient ] = useState(() => new QueryClient({
@@ -61,7 +62,9 @@ export const Providers = ({ children }: ProvidersProps) => {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <TxKitProvider embedded config={{ theme: 'dark' }}>
+          {children}
+        </TxKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   )
