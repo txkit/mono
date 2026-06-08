@@ -26,5 +26,13 @@
       "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x637f00246A9aaC315580632D206f86701F3F99b0",
       "note": "Deployed to Robinhood Chain testnet 2026-06-05 (solc 0.8.34). Tx: 0x047037c7acb4deebbbc74cf9157c2b9a43d742e74264ba5819a85f9af20ee99a. Allow-listed on gate 0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35 via setAllowedRecipient (tx 0x895b133fc37ba855c24bd99a51e3baa027e1c460a724c0eda6d2bd4ab28279ad)."
     }
+  },
+  "MockRwaRouter": {
+    "46630": {
+      "address": "0x__PENDING__",
+      "deployedAt": null,
+      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x__PENDING__",
+      "note": "Pending Mike deploy via forge script DeployRobinhoodTestnet.s.sol --broadcast (deploys gate + router + allow-list)"
+    }
   }
 }

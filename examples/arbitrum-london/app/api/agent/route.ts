@@ -1,13 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import type { Hex } from 'viem'
 
-import { ARBITRUM_SEPOLIA_CHAIN_ID } from '@/src/chains'
+import type { X402PaymentProof } from '@txkit/x402-adapter'
+
+import { ARBITRUM_SEPOLIA_CHAIN_ID, ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import {
   attachAgentSignature,
   buildPendleEnvelope,
+  buildRwaEnvelope,
   type DemoEnvelope,
 } from '@/src/agent/envelope-builder'
-import { runAgentTurn, type AgentProvider, type AgentTurn } from '@/src/agent/llm'
 import { signEnvelope } from '@/src/agent/signing'
 import {
   PENDLE_SYSTEM_PROMPT,
@@ -17,38 +19,38 @@ import {
   PENDLE_TOOL_DEFINITION,
   RWA_TOOL_DEFINITION,
   preparePendleYieldSwapArgs,
+  prepareRwaBuyArgs,
 } from '@/src/agent/tools'
 import {
   checkIsAgentPolicyGateDeployed,
   checkIsMockPendleRouterDeployed,
+  checkIsMockRwaRouterDeployed,
   getAgentPolicyGateAddress,
 } from '@/src/config/deployed'
 import { getEnv } from '@/src/config/env'
+import { verifyPayment, type SignedPaymentBody } from '@/src/x402/facilitator'
 
 
 export const runtime = 'nodejs'
 
 /**
- * Phase 1 Day 5 milestone: tool-use loop + EIP-712 envelope signing.
+ * Agent tool-use loop + EIP-712 envelope signing for both buildathon scenarios.
  *
- * V1 contract:
- *   POST /api/agent { messages, scenario?, receiverAddress? }
- *   -> { reply, envelope?, scenario, milestone }
+ *   POST /api/agent { messages, scenario?, receiverAddress?, payment? }
+ *   -> { reply, envelope?, scenario, x402Proof? }
  *
- * Pendle flow:
- *   1. The model reads PENDLE_SYSTEM_PROMPT + receives PENDLE_TOOL_DEFINITION.
- *   2. If args are clear: it calls prepare_pendle_yield_swap.
- *   3. We validate via zod, buildPendleEnvelope, sign EIP-712 via signEnvelope,
- *      attach signature, return both the assistant's text reply (if any) and
- *      the signed envelope.
- *   4. If the model asks for clarification (text only): return reply, no envelope.
+ * Pendle (scenario A, Arbitrum Sepolia): Claude reads PENDLE_SYSTEM_PROMPT +
+ * PENDLE_TOOL_DEFINITION; on a prepare_pendle_yield_swap call we validate via
+ * zod, buildPendleEnvelope, sign EIP-712, and return the signed envelope. A
+ * text-only reply is a clarification (no envelope).
  *
- * RWA flow lands Phase 2 Day 10.
+ * RWA (scenario C, Robinhood Chain testnet): gated behind the self-hosted x402
+ * facilitator - the request must carry a `payment` that re-verifies here (no
+ * payment, no model spend). A prepare_rwa_buy call builds + signs an RWA
+ * envelope and returns it alongside the canonical X402PaymentProof.
  *
- * The model call is delegated to runAgentTurn (src/agent/llm.ts), which picks
- * Anthropic Claude when ANTHROPIC_API_KEY is set and otherwise the free,
- * OpenAI-compatible Groq endpoint when GROQ_API_KEY is set. Everything below the
- * call is provider-agnostic.
+ * The SDK is dynamically imported inside the handler so the route module stays
+ * loadable even when ANTHROPIC_API_KEY is unset (better DX for the first clone).
  */
 const DEFAULT_RECEIVER = '0x000000000000000000000000000000000000dEaD' as const
 
@@ -56,6 +58,29 @@ type AgentRequestBody = {
   messages: Array<{ role: 'user' | 'assistant', content: string }>,
   scenario?: 'pendle' | 'rwa',
   receiverAddress?: `0x${string}`,
+  payment?: SignedPaymentBody,
+}
+
+type ToolUseBlock = {
+  type: 'tool_use',
+  id: string,
+  name: string,
+  input: Record<string, unknown>,
+}
+
+type TextBlock = {
+  type: 'text',
+  text: string,
+}
+
+type ResponseContentBlock = ToolUseBlock | TextBlock | { type: string }
+
+const checkIsToolUseBlock = (block: ResponseContentBlock): block is ToolUseBlock => {
+  return block.type === 'tool_use'
+}
+
+const checkIsTextBlock = (block: ResponseContentBlock): block is TextBlock => {
+  return block.type === 'text'
 }
 
 export const POST = async (request: NextRequest) => {
@@ -66,7 +91,7 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { messages, scenario = 'pendle', receiverAddress = DEFAULT_RECEIVER } = body
+  const { messages, scenario = 'pendle', receiverAddress = DEFAULT_RECEIVER, payment } = body
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: 'messages must be a non-empty array' }, { status: 400 })
@@ -93,6 +118,53 @@ export const POST = async (request: NextRequest) => {
     }
   }
 
+  // Scenario C is gated behind the self-hosted x402 facilitator. Re-verify the
+  // signed payment here (the /api/x402 verify is stateless, so a client could hit
+  // this route directly) and skip the model entirely on any failure - no payment,
+  // no Claude spend.
+  let x402Proof: X402PaymentProof | undefined
+  if (scenario === 'rwa') {
+    const isGateDeployed = checkIsAgentPolicyGateDeployed(ROBINHOOD_TESTNET_CHAIN_ID)
+    const isRouterDeployed = checkIsMockRwaRouterDeployed(ROBINHOOD_TESTNET_CHAIN_ID)
+    const isScenarioReady = isGateDeployed && isRouterDeployed
+    if (!isScenarioReady) {
+      return NextResponse.json(
+        {
+          error: 'Contracts not deployed yet',
+          hint:
+            'AgentPolicyGate / MockRwaRouter are still placeholder addresses on ' +
+            'Robinhood Chain testnet. Deploy them (see DEPLOY.md) and update contracts/deployed.json.',
+        },
+        { status: 503 },
+      )
+    }
+    if (payment === undefined) {
+      return NextResponse.json(
+        {
+          error: 'Payment required',
+          hint: 'Pay the x402 challenge (POST /api/x402) before invoking the RWA agent.',
+        },
+        { status: 402 },
+      )
+    }
+    let verifyResult
+    try {
+      verifyResult = await verifyPayment({ ...payment, amount: BigInt(payment.amount) })
+    } catch (paymentError) {
+      return NextResponse.json(
+        { error: 'Invalid payment payload', detail: String(paymentError) },
+        { status: 400 },
+      )
+    }
+    if (!verifyResult.ok) {
+      return NextResponse.json(
+        { error: 'Payment verification failed', detail: verifyResult.reason },
+        { status: 402 },
+      )
+    }
+    x402Proof = verifyResult.proof
+  }
+
   let env
   try {
     env = getEnv()
@@ -103,45 +175,45 @@ export const POST = async (request: NextRequest) => {
     )
   }
 
-  const { ANTHROPIC_API_KEY, GROQ_API_KEY, GROQ_MODEL, AGENT_SIGNER_PRIVATE_KEY } = env
+  const { ANTHROPIC_API_KEY, AGENT_SIGNER_PRIVATE_KEY } = env
 
-  let provider: AgentProvider | null = null
-  let apiKey: string | undefined
-  let model = ''
-  if (ANTHROPIC_API_KEY !== undefined) {
-    provider = 'anthropic'
-    apiKey = ANTHROPIC_API_KEY
-    model = 'claude-haiku-4-5'
-  } else if (GROQ_API_KEY !== undefined) {
-    provider = 'groq'
-    apiKey = GROQ_API_KEY
-    model = GROQ_MODEL
-  }
-
-  if (provider === null || apiKey === undefined) {
+  if (ANTHROPIC_API_KEY === undefined) {
     return NextResponse.json(
       {
-        error: 'No LLM API key set',
-        hint:
-          'Set ANTHROPIC_API_KEY, or GROQ_API_KEY for the free Groq tier ' +
-          '(console.groq.com) - see .env.example.',
+        error: 'ANTHROPIC_API_KEY not set',
+        hint: 'Add ANTHROPIC_API_KEY to .env.local - see .env.example',
       },
       { status: 503 },
     )
   }
 
+  const { default: Anthropic } = await import('@anthropic-ai/sdk').catch(() => ({ default: null }))
+  if (Anthropic === null) {
+    return NextResponse.json(
+      {
+        error: '@anthropic-ai/sdk not installed',
+        hint: 'Run `pnpm install` in the workspace root to pull workspace deps',
+      },
+      { status: 503 },
+    )
+  }
+
+  const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY })
+
   const systemPrompt = scenario === 'rwa' ? RWA_SYSTEM_PROMPT : PENDLE_SYSTEM_PROMPT
   const toolDefinition = scenario === 'rwa' ? RWA_TOOL_DEFINITION : PENDLE_TOOL_DEFINITION
 
-  let turn: AgentTurn
+  let completion
   try {
-    turn = await runAgentTurn({
-      provider,
-      apiKey,
-      model,
-      systemPrompt,
-      tool: toolDefinition,
-      messages,
+    completion = await anthropic.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 1024,
+      system: systemPrompt,
+      tools: [ toolDefinition ],
+      messages: messages.map((message) => ({
+        role: message.role,
+        content: message.content,
+      })),
     })
   } catch (modelError) {
     return NextResponse.json(
@@ -150,58 +222,65 @@ export const POST = async (request: NextRequest) => {
     )
   }
 
-  const { textReply, toolName, toolInput } = turn
+  const contentBlocks = completion.content as ResponseContentBlock[]
+  const textReply = contentBlocks
+    .filter(checkIsTextBlock)
+    .map((block) => block.text)
+    .join('\n')
+  const toolUseBlock = contentBlocks.find(checkIsToolUseBlock)
 
-  // No tool call - the model is asking for clarification or refusing.
-  if (toolName === undefined) {
+  // No tool call - Claude is asking for clarification or refusing.
+  if (toolUseBlock === undefined) {
     return NextResponse.json({
       reply: textReply,
       scenario,
     })
   }
 
-  if (scenario !== 'pendle') {
-    return NextResponse.json(
-      {
-        error: 'RWA scenario not implemented yet',
-        detail: 'The RWA scenario is not implemented in this build.',
-      },
-      { status: 501 },
-    )
-  }
+  const { name: toolName, input: toolInput } = toolUseBlock
 
-  if (toolName !== 'prepare_pendle_yield_swap') {
+  const expectedTool = scenario === 'rwa' ? 'prepare_rwa_buy' : 'prepare_pendle_yield_swap'
+  if (toolName !== expectedTool) {
     return NextResponse.json(
       {
         error: `Unexpected tool call: ${toolName}`,
-        detail: 'Only prepare_pendle_yield_swap is wired in the Pendle scenario.',
+        detail: `Only ${expectedTool} is wired in the ${scenario} scenario.`,
       },
       { status: 502 },
     )
   }
 
-  const argsParse = preparePendleYieldSwapArgs.safeParse(toolInput ?? {})
-  if (!argsParse.success) {
-    return NextResponse.json(
-      {
-        error: 'Invalid tool args from Claude',
-        detail: argsParse.error.flatten(),
-        rawInput: toolInput,
-      },
-      { status: 422 },
-    )
-  }
-
+  // Build the envelope with the scenario's zod schema + builder. The builders
+  // throw a clear error before deploy (getMock*RouterAddress), surfaced as 503.
+  const chainId = scenario === 'rwa' ? ROBINHOOD_TESTNET_CHAIN_ID : ARBITRUM_SEPOLIA_CHAIN_ID
   let envelope: DemoEnvelope
   try {
-    envelope = buildPendleEnvelope(argsParse.data, receiverAddress)
+    if (scenario === 'rwa') {
+      const rwaArgs = prepareRwaBuyArgs.safeParse(toolInput)
+      if (!rwaArgs.success) {
+        return NextResponse.json(
+          { error: 'Invalid tool args from Claude', detail: rwaArgs.error.flatten(), rawInput: toolInput },
+          { status: 422 },
+        )
+      }
+      envelope = buildRwaEnvelope(rwaArgs.data, receiverAddress)
+    } else {
+      const pendleArgs = preparePendleYieldSwapArgs.safeParse(toolInput)
+      if (!pendleArgs.success) {
+        return NextResponse.json(
+          { error: 'Invalid tool args from Claude', detail: pendleArgs.error.flatten(), rawInput: toolInput },
+          { status: 422 },
+        )
+      }
+      envelope = buildPendleEnvelope(pendleArgs.data, receiverAddress)
+    }
   } catch (buildError) {
     return NextResponse.json(
       {
         error: 'Envelope build failed',
         detail: String(buildError),
         hint:
-          'Most often this means MockPendleRouter or AgentPolicyGate is not deployed yet. ' +
+          'Most often this means the scenario contracts are not deployed yet. ' +
           'Run the forge scripts and update contracts/deployed.json.',
       },
       { status: 503 },
@@ -224,13 +303,13 @@ export const POST = async (request: NextRequest) => {
 
   let signedEnvelope: DemoEnvelope
   try {
-    const gateAddress = getAgentPolicyGateAddress(ARBITRUM_SEPOLIA_CHAIN_ID)
+    const gateAddress = getAgentPolicyGateAddress(chainId)
     const signature = await signEnvelope({
       envelopeHash: meta.envelopeHash,
       to: inner.to,
       data: inner.data,
       value: BigInt(inner.value),
-      chainId: ARBITRUM_SEPOLIA_CHAIN_ID,
+      chainId,
       gateAddress,
       signerPrivateKey: AGENT_SIGNER_PRIVATE_KEY as Hex,
     })
@@ -246,5 +325,6 @@ export const POST = async (request: NextRequest) => {
     reply: textReply,
     envelope: signedEnvelope,
     scenario,
+    x402Proof,
   })
 }

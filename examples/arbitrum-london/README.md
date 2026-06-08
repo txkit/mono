@@ -32,8 +32,11 @@ Both contracts were deployed 2026-06-05 with **verified source on Arbiscan** (so
 | AgentPolicyGate | [`0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35`](https://explorer.testnet.chain.robinhood.com/address/0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35) |
 | MockPendleRouter | [`0x637f00246A9aaC315580632D206f86701F3F99b0`](https://explorer.testnet.chain.robinhood.com/address/0x637f00246A9aaC315580632D206f86701F3F99b0) |
 | Agent-executed tx (`executeEnvelope`) | [`0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c`](https://explorer.testnet.chain.robinhood.com/tx/0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c) |
+| MockRwaRouter | pending deploy - see DEPLOY.md |
 
-Both contracts were deployed 2026-06-05 (solc 0.8.34; gate [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x54764c3def25c5f6a0116a0dd069c1fb27ecd52891a9cdc5e04fa58a97e32ab1), router [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x047037c7acb4deebbbc74cf9157c2b9a43d742e74264ba5819a85f9af20ee99a)); the agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and the router is [allow-listed](https://explorer.testnet.chain.robinhood.com/tx/0x895b133fc37ba855c24bd99a51e3baa027e1c460a724c0eda6d2bd4ab28279ad) on the gate. The `executeEnvelope` tx above is a real `SmokeExecuteEnvelope` run - same gate, same EIP-712 envelope the dApp signs, full five-check path on-chain. Robinhood Chain (Arbitrum Orbit) runs the cancun/PUSH0 bytecode as-is; forge's EIP-3855 "might not work properly" warning is only a stale chain-id allowlist, not a runtime limit (and its `eth_estimateGas` under-reports CREATE cost, so deploys use `--gas-estimate-multiplier 300`).
+AgentPolicyGate and MockPendleRouter were deployed 2026-06-05 (solc 0.8.34; gate [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x54764c3def25c5f6a0116a0dd069c1fb27ecd52891a9cdc5e04fa58a97e32ab1), router [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x047037c7acb4deebbbc74cf9157c2b9a43d742e74264ba5819a85f9af20ee99a)); the agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and the router is [allow-listed](https://explorer.testnet.chain.robinhood.com/tx/0x895b133fc37ba855c24bd99a51e3baa027e1c460a724c0eda6d2bd4ab28279ad) on the gate. The `executeEnvelope` tx above is a real `SmokeExecuteEnvelope` run - same gate, same EIP-712 envelope the dApp signs, full five-check path on-chain. Robinhood Chain (Arbitrum Orbit) runs the cancun/PUSH0 bytecode as-is; forge's EIP-3855 "might not work properly" warning is only a stale chain-id allowlist, not a runtime limit (and its `eth_estimateGas` under-reports CREATE cost, so deploys use `--gas-estimate-multiplier 300`).
+
+MockRwaRouter is the Scenario C contract (RWA buy via x402-gated agent). Deploy with `forge script script/DeployRobinhoodTestnet.s.sol --broadcast` and fill `contracts/deployed.json` to activate the full RWA flow.
 
 ## What this proves
 
@@ -61,5 +64,7 @@ transaction.
 - Scenario A is live end to end. The swap target is a deterministic `MockPendleRouter` (flat
   1:0.995, no token custody) so the gate path executes on a testnet without funding real input
   tokens - real plumbing, mock payload.
-- Scenario C's UI is a placeholder; the policy-gate execution is still proven on Robinhood Chain
-  via the `SmokeExecuteEnvelope` script (same gate, same envelope shape, real tx).
+- Scenario C's UI is a placeholder; the backend wiring (x402 facilitator, buildRwaEnvelope,
+  MockRwaRouter ABI) is implemented in this build. The policy-gate execution is proven on
+  Robinhood Chain via the `SmokeExecuteEnvelope` script (same gate, same envelope shape, real tx).
+  Deploy MockRwaRouter and update `contracts/deployed.json` to activate the full RWA flow.

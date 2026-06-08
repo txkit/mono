@@ -66,6 +66,7 @@ export const resolveReplyText = (reply: string | undefined, hasEnvelope: boolean
   return '(empty reply)'
 }
 
+
 /**
  * Splits the agent's real reply into sentence-sized lines for the reasoning
  * card. Pure text transform - it never invents content, it only breaks the

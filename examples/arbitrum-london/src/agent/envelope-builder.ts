@@ -1,9 +1,10 @@
-import { encodeAbiParameters, encodeFunctionData, keccak256, type Hex } from 'viem'
+import { encodeAbiParameters, encodeFunctionData, keccak256, stringToHex, type Hex } from 'viem'
 
-import { ARBITRUM_SEPOLIA_CHAIN_ID } from '@/src/chains'
+import { ARBITRUM_SEPOLIA_CHAIN_ID, ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import {
   getAgentPolicyGateAddress,
   getMockPendleRouterAddress,
+  getMockRwaRouterAddress,
 } from '@/src/config/deployed'
 
 import { AGENT_POLICY_GATE_ABI } from './policy-gate-abi'
@@ -205,13 +206,78 @@ export const attachAgentSignature = (
 }
 
 /**
- * Placeholder RWA envelope builder for Scenario C. Implementation lands
- * Phase 2 Day 10. For now returns a structured error so the API route
- * can respond with a clear "not implemented yet" instead of a runtime crash.
+ * MockRwaRouter ABI subset (only the function we call). Matches
+ * examples/arbitrum-london/contracts/src/MockRwaRouter.sol.
+ */
+const MOCK_RWA_ROUTER_ABI = [
+  {
+    type: 'function',
+    name: 'buy',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'receiver', type: 'address' },
+      { name: 'ticker', type: 'bytes32' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [],
+  },
+] as const
+
+/**
+ * Build a mock RWA-buy envelope for Scenario C on Robinhood Chain testnet.
+ * Mirrors buildPendleEnvelope: the inner call is MockRwaRouter.buy, the outer
+ * call wraps it through AgentPolicyGate.executeEnvelope, and the caller signs
+ * the EIP-712 digest via signEnvelope() + attachAgentSignature().
  */
 export const buildRwaEnvelope = (
-  _args: PrepareRwaBuyArgs,
-  _receiverAddress: `0x${string}`,
+  args: PrepareRwaBuyArgs,
+  receiverAddress: `0x${string}`,
 ): DemoEnvelope => {
-  throw new Error('RWA envelope builder is not implemented in this build.')
+  const routerAddress = getMockRwaRouterAddress(ROBINHOOD_TESTNET_CHAIN_ID)
+  const ticker = stringToHex(args.asset, { size: 32 })
+  const amount = BigInt(args.amount)
+
+  const innerCallData = encodeFunctionData({
+    abi: MOCK_RWA_ROUTER_ABI,
+    functionName: 'buy',
+    args: [ receiverAddress, ticker, amount ],
+  })
+  const innerValueHex = '0x0' as `0x${string}`
+  const innerLabel = `RWA: buy ${args.amount} ${args.asset} (mock router)`
+
+  const inner = {
+    to: routerAddress,
+    data: innerCallData,
+    value: innerValueHex,
+    label: innerLabel,
+  }
+
+  const nonce = generateNonce()
+  const envelopeHash = computeReplayEnvelopeHash(ROBINHOOD_TESTNET_CHAIN_ID, inner, nonce)
+  const policyGateAddress = getAgentPolicyGateAddress(ROBINHOOD_TESTNET_CHAIN_ID)
+
+  // Outer call wraps the inner action through AgentPolicyGate.executeEnvelope.
+  // Signature is filled by the caller (signEnvelope + attachAgentSignature).
+  const outerCallData = encodeFunctionData({
+    abi: AGENT_POLICY_GATE_ABI,
+    functionName: 'executeEnvelope',
+    args: [ envelopeHash, '0x' as Hex, inner.to, inner.data, BigInt(inner.value) ],
+  })
+
+  return {
+    kind: 'evm-tx',
+    chain: `eip155:${ROBINHOOD_TESTNET_CHAIN_ID}`,
+    call: {
+      to: policyGateAddress,
+      data: outerCallData,
+      value: innerValueHex,
+    },
+    inner,
+    meta: {
+      envelopeHash,
+      nonce: nonce.toString(),
+      validity: { notAfter: Math.floor(Date.now() / 1000) + TWO_HOURS_SECONDS },
+      builder: 'arbitrum-london-buildathon',
+    },
+  }
 }
