@@ -6,14 +6,16 @@ Transaction Envelope. The user reviews a typed, decoded, fee-previewed summary. 
 `AgentPolicyGate` enforces the policy - recipient allow-list, spend cap, replay protection, and
 EIP-712 agent-signer binding - before anything executes.
 
-- **Scenario A (live):** Pendle yield swap on Arbitrum Sepolia.
-- **Scenario C (roadmap):** x402-paid RWA agent on Robinhood Chain testnet.
+- **Scenario A (live):** Pendle yield swap on Arbitrum Sepolia (`/flow-a`).
+- **Scenario C (live):** x402-paid RWA stock buy on Robinhood Chain testnet (`/flow-c`).
 
 ## Live on-chain
 
 Real, verifiable artifacts - the AI Agentic category requires real tx hashes, not preview-only
 flows. Machine-readable addresses live in [`contracts/deployed.json`](./contracts/deployed.json);
-the tables below are the judge-facing copy, filled in after deploy (see [`DEPLOY.md`](./DEPLOY.md)).
+the tables below are the judge-facing copy. Both scenarios run on both chains: Pendle is the live
+UI on Arbitrum (with a Robinhood proof tx), RWA is the live UI on Robinhood (with an Arbitrum
+proof tx). Every `executeEnvelope` below returned status 0x1.
 
 ### Arbitrum Sepolia - chainId 421614
 
@@ -21,22 +23,35 @@ the tables below are the judge-facing copy, filled in after deploy (see [`DEPLOY
 |---|---|
 | AgentPolicyGate | [`0x3A9DaED4a43021df9adcF1d672F90014b25412A5`](https://sepolia.arbiscan.io/address/0x3A9DaED4a43021df9adcF1d672F90014b25412A5) (verified) |
 | MockPendleRouter | [`0xf94aaba9c0ED6b29F12d3F4eBBA8290427B6A069`](https://sepolia.arbiscan.io/address/0xf94aaba9c0ED6b29F12d3F4eBBA8290427B6A069) (verified) |
-| Agent-executed tx (`executeEnvelope`) | [`0x7392f88bb20b33ba180c851d6b6791903b7f5c3585366bd996c9fc6b1b5085c2`](https://sepolia.arbiscan.io/tx/0x7392f88bb20b33ba180c851d6b6791903b7f5c3585366bd996c9fc6b1b5085c2) |
+| MockRwaRouter | [`0xDe3cBf69877f08661152F945F11399e3F7912eA9`](https://sepolia.arbiscan.io/address/0xDe3cBf69877f08661152F945F11399e3F7912eA9) (verified) |
+| Pendle `executeEnvelope` | [`0x7392f88bb20b33ba180c851d6b6791903b7f5c3585366bd996c9fc6b1b5085c2`](https://sepolia.arbiscan.io/tx/0x7392f88bb20b33ba180c851d6b6791903b7f5c3585366bd996c9fc6b1b5085c2) |
+| RWA buy `executeEnvelope` (TSLA x5) | [`0xf29e0d9f82f59d79dc6f65bd481976ec9c9eb70db8119283d7eeb6e7fb6fd3ea`](https://sepolia.arbiscan.io/tx/0xf29e0d9f82f59d79dc6f65bd481976ec9c9eb70db8119283d7eeb6e7fb6fd3ea) |
 
-Both contracts were deployed 2026-06-05 with **verified source on Arbiscan** (solc 0.8.34; gate [deploy tx](https://sepolia.arbiscan.io/tx/0x9fb2415cd46ab88f4ef8c8b510c6b5541ec08868f012f840b2cc07797cf67714), router [deploy tx](https://sepolia.arbiscan.io/tx/0x62829e10f6bc82b9dc0a5db97c79fe90601896dd522e3ad4adf0af313f956c5d)); the agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and the router is allow-listed on the gate. The `executeEnvelope` tx above is a real `SmokeExecuteEnvelope` run (see [`DEPLOY.md`](./DEPLOY.md)) - same gate, same EIP-712 envelope the dApp signs; the `/flow-a` UI lands the same shape.
+Contracts deployed 2026-06-05 / 2026-06-08 with **verified source on Arbiscan** (solc 0.8.34). The
+agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and both routers are allow-listed on
+the gate. Each `executeEnvelope` is a real `SmokeExecuteEnvelope` / `SmokeRwaBuy` run - the same
+gate and the same EIP-712 envelope shape the dApp signs. Pendle is the live `/flow-a` UI; the RWA
+buy here is the bonus proof that the same envelope path generalises to a second action.
 
-### Robinhood Chain testnet - chainId 46630 (sponsor bonus)
+### Robinhood Chain testnet - chainId 46630 (sponsor)
 
 | What | Value |
 |---|---|
 | AgentPolicyGate | [`0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35`](https://explorer.testnet.chain.robinhood.com/address/0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35) |
 | MockPendleRouter | [`0x637f00246A9aaC315580632D206f86701F3F99b0`](https://explorer.testnet.chain.robinhood.com/address/0x637f00246A9aaC315580632D206f86701F3F99b0) |
-| Agent-executed tx (`executeEnvelope`) | [`0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c`](https://explorer.testnet.chain.robinhood.com/tx/0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c) |
-| MockRwaRouter | pending deploy - see DEPLOY.md |
+| MockRwaRouter | [`0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C`](https://explorer.testnet.chain.robinhood.com/address/0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C) |
+| Pendle `executeEnvelope` | [`0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c`](https://explorer.testnet.chain.robinhood.com/tx/0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c) |
+| RWA buy `executeEnvelope` (TSLA x5) | [`0xff64404144bdaea4e08c94e973166af180b29fed621b1e3632757703e9b080fa`](https://explorer.testnet.chain.robinhood.com/tx/0xff64404144bdaea4e08c94e973166af180b29fed621b1e3632757703e9b080fa) |
 
-AgentPolicyGate and MockPendleRouter were deployed 2026-06-05 (solc 0.8.34; gate [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x54764c3def25c5f6a0116a0dd069c1fb27ecd52891a9cdc5e04fa58a97e32ab1), router [deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x047037c7acb4deebbbc74cf9157c2b9a43d742e74264ba5819a85f9af20ee99a)); the agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and the router is [allow-listed](https://explorer.testnet.chain.robinhood.com/tx/0x895b133fc37ba855c24bd99a51e3baa027e1c460a724c0eda6d2bd4ab28279ad) on the gate. The `executeEnvelope` tx above is a real `SmokeExecuteEnvelope` run - same gate, same EIP-712 envelope the dApp signs, full five-check path on-chain. Robinhood Chain (Arbitrum Orbit) runs the cancun/PUSH0 bytecode as-is; forge's EIP-3855 "might not work properly" warning is only a stale chain-id allowlist, not a runtime limit (and its `eth_estimateGas` under-reports CREATE cost, so deploys use `--gas-estimate-multiplier 300`).
-
-MockRwaRouter is the Scenario C contract (RWA buy via x402-gated agent). Deploy with `forge script script/DeployRobinhoodTestnet.s.sol --broadcast` and fill `contracts/deployed.json` to activate the full RWA flow.
+Contracts deployed 2026-06-05 / 2026-06-08 (solc 0.8.34); the agent signer is
+`0xEC6613578be203e23e360A3985EA1601435D5907` and both routers are allow-listed on the gate. The RWA
+buy on Robinhood is the live `/flow-c` UI; Pendle here is the proof tx. Robinhood Chain (Arbitrum
+Orbit) runs the cancun/PUSH0 bytecode as-is - forge's EIP-3855 "might not work properly" warning is
+a stale chain-id allowlist, not a runtime limit. Its `eth_estimateGas` under-reports CREATE and
+L1-data cost and forge script does not honour its gas flags here, so the RWA router was deployed
+with `forge create --gas-limit 3000000` ([deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x71d5845579675e88c1e3117c2b62c2cdbc95df811df4bfe4e53360b8ea0a8bca),
+[allow-list tx](https://explorer.testnet.chain.robinhood.com/tx/0x24e05fdfa050524bb471d9bc5669ef2d55915afa34d65b2c4f3aec512911fd92))
+and the RWA `executeEnvelope` was broadcast via `cast send --gas-limit` from the dry-run calldata.
 
 ## What this proves
 
@@ -49,22 +64,25 @@ MockRwaRouter is the Scenario C contract (RWA buy via x402-gated agent). Deploy 
    declared value, envelope not already used, recipient allow-listed, value within the spend cap,
    and the EIP-712 signature recovers to the configured agent signer.
 
-The verification layer - not agent autonomy - is the point. It scales to any agent and any
-transaction.
+The verification layer - not agent autonomy - is the point. It scales to any agent, any action
+(yield swap, RWA buy), and any Arbitrum Orbit chain.
 
 ## Run it
 
 - **Deploy + capture tx hashes:** [`DEPLOY.md`](./DEPLOY.md) - one funded testnet key, copy-paste.
-- **Local dev:** `pnpm dev`, then open `/flow-a`. Until the contracts are deployed the flow runs
-  in preview mode (a banner explains, and the agent call is skipped so it spends nothing).
-- **Contracts:** `cd contracts && forge test` (20 tests).
+- **Local dev:** `pnpm dev`, then open `/flow-a` (Pendle, Arbitrum) or `/flow-c` (x402-paid RWA,
+  Robinhood). Until the contracts are deployed a flow runs in preview mode (a banner explains, and
+  the agent call is skipped so it spends nothing).
+- **Contracts:** `cd contracts && forge test` (25 tests).
 
 ## Honest scope
 
 - Scenario A is live end to end. The swap target is a deterministic `MockPendleRouter` (flat
   1:0.995, no token custody) so the gate path executes on a testnet without funding real input
   tokens - real plumbing, mock payload.
-- Scenario C's UI is a placeholder; the backend wiring (x402 facilitator, buildRwaEnvelope,
-  MockRwaRouter ABI) is implemented in this build. The policy-gate execution is proven on
-  Robinhood Chain via the `SmokeExecuteEnvelope` script (same gate, same envelope shape, real tx).
-  Deploy MockRwaRouter and update `contracts/deployed.json` to activate the full RWA flow.
+- Scenario C is live end to end on Robinhood Chain: an x402 paywall (real EIP-712 payment-auth
+  verify with signer recovery; settlement honestly stubbed on testnet, no on-chain transfer), the
+  agent prepares the RWA buy, and the gate executes it on-chain. The buy target is a deterministic
+  `MockRwaRouter` (holdings ledger + `RwaPurchased` event, no real equity custody).
+- x402 replay protection is expiry-bounded for the single demo session; a durable nonce store is
+  out of scope.
