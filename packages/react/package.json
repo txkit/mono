@@ -90,7 +90,7 @@
     "wagmi": ">=3"
   },
   "devDependencies": {
-    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query": "^5.101.0",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.0.0",
     "postcss": "^8.5.15",
@@ -99,7 +99,7 @@
     "react-dom": "^19.2.7",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
-    "viem": "^2.52.0",
+    "viem": "^2.52.2",
     "wagmi": "^3.6.5"
   },
   "sideEffects": [
