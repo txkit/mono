@@ -23,7 +23,7 @@ export const preparePendleYieldSwapArgs = z.object({
     .string()
     .regex(/^\d+$/)
     .describe('Amount in tokenIn raw units (no decimals)'),
-  slippageBps: z
+  slippageBps: z.coerce
     .number()
     .int()
     .min(1)
@@ -38,7 +38,7 @@ export const prepareRwaBuyArgs = z.object({
   asset: z
     .enum([ 'TSLA', 'AMZN', 'PLTR' ])
     .describe('Mock RWA ticker available on Robinhood Chain testnet faucet'),
-  amount: z
+  amount: z.coerce
     .number()
     .int()
     .positive()
@@ -61,7 +61,7 @@ export const PENDLE_TOOL_DEFINITION = {
       tokenIn: { type: 'string', pattern: '^0x[a-fA-F0-9]{40}$' },
       tokenOut: { type: 'string', pattern: '^0x[a-fA-F0-9]{40}$' },
       amountIn: { type: 'string', pattern: '^\\d+$' },
-      slippageBps: { type: 'integer', minimum: 1, maximum: 1000 },
+      slippageBps: { type: 'string', pattern: '^\\d+$' },
     },
     required: [ 'tokenIn', 'tokenOut', 'amountIn' ],
   },
@@ -75,7 +75,7 @@ export const RWA_TOOL_DEFINITION = {
     type: 'object',
     properties: {
       asset: { type: 'string', enum: [ 'TSLA', 'AMZN', 'PLTR' ] },
-      amount: { type: 'integer', minimum: 1 },
+      amount: { type: 'string', pattern: '^\\d+$' },
     },
     required: [ 'asset', 'amount' ],
   },

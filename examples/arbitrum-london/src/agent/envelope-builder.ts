@@ -1,4 +1,4 @@
-import { encodeAbiParameters, encodeFunctionData, keccak256, stringToHex, type Hex } from 'viem'
+import { encodeAbiParameters, encodeFunctionData, getAddress, keccak256, stringToHex, type Hex } from 'viem'
 
 import { ARBITRUM_SEPOLIA_CHAIN_ID, ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import {
@@ -123,14 +123,21 @@ export const buildPendleEnvelope = (
   const slippageMultiplier = 10000n - BigInt(args.slippageBps)
   const minPtOut = (amountInBigInt * slippageMultiplier) / 10000n
 
+  // Normalise model-supplied token addresses to EIP-55 checksum form. The agent
+  // echoes addresses from the system prompt verbatim, which may not be correctly
+  // checksummed (the PT placeholders are not); viem's encoder rejects a bad
+  // checksum. Lowercasing first makes getAddress recompute a valid checksum.
+  const tokenIn = getAddress(args.tokenIn.toLowerCase())
+  const tokenOut = getAddress(args.tokenOut.toLowerCase())
+
   const innerCallData = encodeFunctionData({
     abi: MOCK_PENDLE_ROUTER_ABI,
     functionName: 'swapExactTokenForPt',
-    args: [ receiverAddress, args.tokenOut as `0x${string}`, amountInBigInt, minPtOut ],
+    args: [ receiverAddress, tokenOut, amountInBigInt, minPtOut ],
   })
   const innerValueHex = '0x0' as `0x${string}`
   const innerLabel =
-    `Pendle: swap ${args.amountIn} of ${args.tokenIn} for PT ${args.tokenOut} (min ${minPtOut.toString()})`
+    `Pendle: swap ${args.amountIn} of ${tokenIn} for PT ${tokenOut} (min ${minPtOut.toString()})`
 
   const inner = {
     to: routerAddress,

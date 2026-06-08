@@ -17,6 +17,18 @@ const envSchema = z.object({
   GROQ_API_KEY: z.string().min(1).optional(),
   GROQ_MODEL: z.string().min(1).default('llama-3.3-70b-versatile'),
 
+  // kie.ai unified API - Anthropic Messages-compatible Claude endpoint (Bearer
+  // auth, https://api.kie.ai/claude/v1/messages). Note: kie ignores tool_choice
+  // auto/any for haiku + sonnet (they emit text only); only opus honors it, so
+  // opus is the default. kie is the paid fallback - free Groq is the primary.
+  KIE_AI_API_KEY: z.string().min(1).optional(),
+  KIE_CLAUDE_MODEL: z.string().min(1).default('claude-opus-4-5'),
+
+  // LLM provider preference for /api/agent, tried in order with fallback. Free
+  // Groq first by default so kie.ai credits stay untouched; flip to "kie,groq"
+  // to record on Claude with Groq as the safety net. Unkeyed providers are skipped.
+  LLM_PROVIDER_ORDER: z.string().min(1).default('groq,kie'),
+
   // Arbitrum Sepolia
   ARB_SEPOLIA_RPC_URL: z
     .string()

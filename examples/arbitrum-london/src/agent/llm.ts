@@ -7,18 +7,19 @@ import type Anthropic from '@anthropic-ai/sdk'
  * who produced the tool call, so this module is the only place that knows about
  * a specific LLM vendor.
  *
- * Two providers:
+ * Three providers:
+ *   - groq: the free, OpenAI-compatible Groq endpoint (a plain fetch). Any
+ *     OpenAI-compatible host (Gemini, OpenRouter) slots in by swapping the URL.
+ *   - kie: kie.ai's Anthropic Messages-compatible Claude endpoint (a plain fetch
+ *     with Bearer auth - the SDK's extra headers trip kie's gateway with a 403).
  *   - anthropic: Claude via @anthropic-ai/sdk (dynamically imported so the route
  *     stays loadable without the key/SDK).
- *   - groq: the free, OpenAI-compatible Groq endpoint (no extra dependency - a
- *     plain fetch). Any OpenAI-compatible host (Gemini, OpenRouter) would slot in
- *     the same way by swapping the base URL.
  *
  * The tool is described once in Anthropic shape (tools.ts) and translated to the
  * OpenAI function shape for Groq, so there is a single source of truth.
  */
 
-export type AgentProvider = 'anthropic' | 'groq'
+export type AgentProvider = 'anthropic' | 'groq' | 'kie'
 
 export type AgentTurn = {
   textReply: string,
@@ -41,6 +42,7 @@ type RunAgentTurnParams = {
 }
 
 const GROQ_BASE_URL = 'https://api.groq.com/openai/v1'
+const KIE_CLAUDE_URL = 'https://api.kie.ai/claude/v1/messages'
 const MAX_TOKENS = 1024
 
 // ----- Anthropic (Claude) -----
@@ -67,6 +69,20 @@ const checkIsAnthropicText = (block: AnthropicBlock): block is AnthropicTextBloc
   return block.type === 'text'
 }
 
+const blocksToTurn = (blocks: AnthropicBlock[]): AgentTurn => {
+  const textReply = blocks
+    .filter(checkIsAnthropicText)
+    .map((block) => block.text)
+    .join('\n')
+  const toolUse = blocks.find(checkIsAnthropicToolUse)
+
+  return {
+    textReply,
+    toolName: toolUse?.name,
+    toolInput: toolUse?.input,
+  }
+}
+
 const runAnthropicTurn = async (params: RunAgentTurnParams): Promise<AgentTurn> => {
   const { apiKey, model, systemPrompt, tool, messages } = params
 
@@ -86,18 +102,43 @@ const runAnthropicTurn = async (params: RunAgentTurnParams): Promise<AgentTurn> 
     messages: messages.map((message) => ({ role: message.role, content: message.content })),
   })
 
-  const blocks = completion.content as AnthropicBlock[]
-  const textReply = blocks
-    .filter(checkIsAnthropicText)
-    .map((block) => block.text)
-    .join('\n')
-  const toolUse = blocks.find(checkIsAnthropicToolUse)
+  return blocksToTurn(completion.content as AnthropicBlock[])
+}
 
-  return {
-    textReply,
-    toolName: toolUse?.name,
-    toolInput: toolUse?.input,
+/**
+ * kie.ai's Anthropic Messages-compatible Claude endpoint. Plain fetch with
+ * Bearer auth - @anthropic-ai/sdk sends x-stainless-* / user-agent headers that
+ * kie's gateway blocks with a 403, while the bare Messages request works and
+ * returns the same content blocks.
+ */
+const runKieTurn = async (params: RunAgentTurnParams): Promise<AgentTurn> => {
+  const { apiKey, model, systemPrompt, tool, messages } = params
+
+  const response = await fetch(KIE_CLAUDE_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'anthropic-version': '2023-06-01',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: MAX_TOKENS,
+      temperature: 0,
+      system: systemPrompt,
+      tools: [ tool ],
+      messages: messages.map((message) => ({ role: message.role, content: message.content })),
+    }),
+  })
+
+  if (!response.ok) {
+    const detail = await response.text()
+    throw new Error(`kie.ai call failed: ${response.status} ${detail.slice(0, 200)}`)
   }
+
+  const json = (await response.json()) as { content?: AnthropicBlock[] }
+
+  return blocksToTurn(json.content ?? [])
 }
 
 // ----- Groq (OpenAI-compatible) -----
@@ -181,6 +222,9 @@ const runGroqTurn = async (params: RunAgentTurnParams): Promise<AgentTurn> => {
 export const runAgentTurn = async (params: RunAgentTurnParams): Promise<AgentTurn> => {
   if (params.provider === 'groq') {
     return runGroqTurn(params)
+  }
+  if (params.provider === 'kie') {
+    return runKieTurn(params)
   }
 
   return runAnthropicTurn(params)

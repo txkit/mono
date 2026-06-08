@@ -10,6 +10,7 @@ import {
   buildRwaEnvelope,
   type DemoEnvelope,
 } from '@/src/agent/envelope-builder'
+import { runAgentTurn, type AgentProvider, type AgentTurn } from '@/src/agent/llm'
 import { signEnvelope } from '@/src/agent/signing'
 import {
   PENDLE_SYSTEM_PROMPT,
@@ -27,7 +28,7 @@ import {
   checkIsMockRwaRouterDeployed,
   getAgentPolicyGateAddress,
 } from '@/src/config/deployed'
-import { getEnv } from '@/src/config/env'
+import { getEnv, type Env } from '@/src/config/env'
 import { verifyPayment, type SignedPaymentBody } from '@/src/x402/facilitator'
 
 
@@ -39,7 +40,7 @@ export const runtime = 'nodejs'
  *   POST /api/agent { messages, scenario?, receiverAddress?, payment? }
  *   -> { reply, envelope?, scenario, x402Proof? }
  *
- * Pendle (scenario A, Arbitrum Sepolia): Claude reads PENDLE_SYSTEM_PROMPT +
+ * Pendle (scenario A, Arbitrum Sepolia): the agent reads PENDLE_SYSTEM_PROMPT +
  * PENDLE_TOOL_DEFINITION; on a prepare_pendle_yield_swap call we validate via
  * zod, buildPendleEnvelope, sign EIP-712, and return the signed envelope. A
  * text-only reply is a clarification (no envelope).
@@ -49,8 +50,9 @@ export const runtime = 'nodejs'
  * payment, no model spend). A prepare_rwa_buy call builds + signs an RWA
  * envelope and returns it alongside the canonical X402PaymentProof.
  *
- * The SDK is dynamically imported inside the handler so the route module stays
- * loadable even when ANTHROPIC_API_KEY is unset (better DX for the first clone).
+ * The LLM is provider-agnostic (src/agent/llm.ts). LLM_PROVIDER_ORDER sets the
+ * preference - free Groq first by default to protect kie.ai credits - and the
+ * route falls through to the next configured provider on failure.
  */
 const DEFAULT_RECEIVER = '0x000000000000000000000000000000000000dEaD' as const
 
@@ -61,26 +63,35 @@ type AgentRequestBody = {
   payment?: SignedPaymentBody,
 }
 
-type ToolUseBlock = {
-  type: 'tool_use',
-  id: string,
-  name: string,
-  input: Record<string, unknown>,
+type LlmCandidate = {
+  provider: AgentProvider,
+  apiKey: string,
+  model: string,
 }
 
-type TextBlock = {
-  type: 'text',
-  text: string,
-}
+const KNOWN_PROVIDERS: AgentProvider[] = [ 'groq', 'kie', 'anthropic' ]
 
-type ResponseContentBlock = ToolUseBlock | TextBlock | { type: string }
+/**
+ * Build the ordered list of usable LLM providers from env. LLM_PROVIDER_ORDER
+ * sets the preference (free Groq first by default to protect kie.ai credits); a
+ * provider with no key is dropped. The route tries them in order, falling
+ * through to the next on failure.
+ */
+const resolveProviderChain = (env: Env): LlmCandidate[] => {
+  const registry: Record<AgentProvider, { apiKey: string | undefined, model: string }> = {
+    groq: { apiKey: env.GROQ_API_KEY, model: env.GROQ_MODEL },
+    kie: { apiKey: env.KIE_AI_API_KEY, model: env.KIE_CLAUDE_MODEL },
+    anthropic: { apiKey: env.ANTHROPIC_API_KEY, model: 'claude-haiku-4-5' },
+  }
 
-const checkIsToolUseBlock = (block: ResponseContentBlock): block is ToolUseBlock => {
-  return block.type === 'tool_use'
-}
+  const order = env.LLM_PROVIDER_ORDER
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter((entry): entry is AgentProvider => KNOWN_PROVIDERS.includes(entry as AgentProvider))
 
-const checkIsTextBlock = (block: ResponseContentBlock): block is TextBlock => {
-  return block.type === 'text'
+  return order
+    .map((provider) => ({ provider, ...registry[provider] }))
+    .filter((candidate): candidate is LlmCandidate => candidate.apiKey !== undefined)
 }
 
 export const POST = async (request: NextRequest) => {
@@ -98,8 +109,8 @@ export const POST = async (request: NextRequest) => {
   }
 
   // Cost guard: skip the model call entirely when the scenario A contracts are
-  // not live yet. The envelope cannot be built without them, so calling Claude
-  // here would spend an API request for nothing. The deploy-pending banner
+  // not live yet. The envelope cannot be built without them, so calling the
+  // model here would spend an API request for nothing. The deploy-pending banner
   // already tells the user they are in preview mode.
   if (scenario === 'pendle') {
     const isGateDeployed = checkIsAgentPolicyGateDeployed(ARBITRUM_SEPOLIA_CHAIN_ID)
@@ -121,7 +132,7 @@ export const POST = async (request: NextRequest) => {
   // Scenario C is gated behind the self-hosted x402 facilitator. Re-verify the
   // signed payment here (the /api/x402 verify is stateless, so a client could hit
   // this route directly) and skip the model entirely on any failure - no payment,
-  // no Claude spend.
+  // no model spend.
   let x402Proof: X402PaymentProof | undefined
   if (scenario === 'rwa') {
     const isGateDeployed = checkIsAgentPolicyGateDeployed(ROBINHOOD_TESTNET_CHAIN_ID)
@@ -175,69 +186,58 @@ export const POST = async (request: NextRequest) => {
     )
   }
 
-  const { ANTHROPIC_API_KEY, AGENT_SIGNER_PRIVATE_KEY } = env
+  const { AGENT_SIGNER_PRIVATE_KEY } = env
+  const providerChain = resolveProviderChain(env)
 
-  if (ANTHROPIC_API_KEY === undefined) {
+  if (providerChain.length === 0) {
     return NextResponse.json(
       {
-        error: 'ANTHROPIC_API_KEY not set',
-        hint: 'Add ANTHROPIC_API_KEY to .env.local - see .env.example',
+        error: 'No LLM provider configured',
+        hint: 'Set GROQ_API_KEY (free) or KIE_AI_API_KEY in .env.local - see .env.example',
       },
       { status: 503 },
     )
   }
-
-  const { default: Anthropic } = await import('@anthropic-ai/sdk').catch(() => ({ default: null }))
-  if (Anthropic === null) {
-    return NextResponse.json(
-      {
-        error: '@anthropic-ai/sdk not installed',
-        hint: 'Run `pnpm install` in the workspace root to pull workspace deps',
-      },
-      { status: 503 },
-    )
-  }
-
-  const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY })
 
   const systemPrompt = scenario === 'rwa' ? RWA_SYSTEM_PROMPT : PENDLE_SYSTEM_PROMPT
   const toolDefinition = scenario === 'rwa' ? RWA_TOOL_DEFINITION : PENDLE_TOOL_DEFINITION
+  const conversation = messages.map((message) => ({ role: message.role, content: message.content }))
 
-  let completion
-  try {
-    completion = await anthropic.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 1024,
-      system: systemPrompt,
-      tools: [ toolDefinition ],
-      messages: messages.map((message) => ({
-        role: message.role,
-        content: message.content,
-      })),
-    })
-  } catch (modelError) {
+  // Try providers in order; on failure fall through to the next configured one.
+  let turn: AgentTurn | undefined
+  let lastError: unknown
+  for (const candidate of providerChain) {
+    try {
+      turn = await runAgentTurn({
+        provider: candidate.provider,
+        apiKey: candidate.apiKey,
+        model: candidate.model,
+        systemPrompt,
+        tool: toolDefinition,
+        messages: conversation,
+      })
+      break
+    } catch (modelError) {
+      lastError = modelError
+    }
+  }
+
+  if (turn === undefined) {
     return NextResponse.json(
-      { error: 'Model call failed', detail: String(modelError) },
+      { error: 'Model call failed', detail: String(lastError) },
       { status: 502 },
     )
   }
 
-  const contentBlocks = completion.content as ResponseContentBlock[]
-  const textReply = contentBlocks
-    .filter(checkIsTextBlock)
-    .map((block) => block.text)
-    .join('\n')
-  const toolUseBlock = contentBlocks.find(checkIsToolUseBlock)
+  const { textReply, toolName, toolInput } = turn
 
-  // No tool call - Claude is asking for clarification or refusing.
-  if (toolUseBlock === undefined) {
+  // No tool call - the model is asking for clarification or refusing.
+  if (toolName === undefined || toolInput === undefined) {
     return NextResponse.json({
       reply: textReply,
       scenario,
     })
   }
-
-  const { name: toolName, input: toolInput } = toolUseBlock
 
   const expectedTool = scenario === 'rwa' ? 'prepare_rwa_buy' : 'prepare_pendle_yield_swap'
   if (toolName !== expectedTool) {
@@ -259,7 +259,7 @@ export const POST = async (request: NextRequest) => {
       const rwaArgs = prepareRwaBuyArgs.safeParse(toolInput)
       if (!rwaArgs.success) {
         return NextResponse.json(
-          { error: 'Invalid tool args from Claude', detail: rwaArgs.error.flatten(), rawInput: toolInput },
+          { error: 'Invalid tool args from agent', detail: rwaArgs.error.flatten(), rawInput: toolInput },
           { status: 422 },
         )
       }
@@ -268,7 +268,7 @@ export const POST = async (request: NextRequest) => {
       const pendleArgs = preparePendleYieldSwapArgs.safeParse(toolInput)
       if (!pendleArgs.success) {
         return NextResponse.json(
-          { error: 'Invalid tool args from Claude', detail: pendleArgs.error.flatten(), rawInput: toolInput },
+          { error: 'Invalid tool args from agent', detail: pendleArgs.error.flatten(), rawInput: toolInput },
           { status: 422 },
         )
       }
