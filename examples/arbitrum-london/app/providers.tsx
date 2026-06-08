@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { http } from 'viem'
 import { WagmiProvider, createConfig } from 'wagmi'
+import { injected } from 'wagmi/connectors'
 
 import { arbitrumSepolia, robinhoodTestnet } from '@/src/chains'
 
@@ -26,6 +27,7 @@ const robinhoodTestnetTransport = robinhoodTestnetRpcUrl !== undefined ? http(ro
 
 const wagmiConfig = createConfig({
   chains: [ arbitrumSepolia, robinhoodTestnet ],
+  connectors: [ injected() ],
   transports: {
     [arbitrumSepolia.id]: arbitrumSepoliaTransport,
     [robinhoodTestnet.id]: robinhoodTestnetTransport,
@@ -41,9 +43,10 @@ type ProvidersProps = {
  * Client-side root provider. Keeps QueryClient stable across renders via
  * useState so React strict-mode double-invokes do not throw the cache away.
  *
- * TxKitProvider goes here once @txkit/react publishes a stable provider
- * surface for v0.2 - for now we wrap with wagmi + react-query only and
- * let individual components opt into TxKit context as it stabilises.
+ * Native wagmi v2 + react-query. We do NOT mount @txkit/react's TxKitProvider:
+ * that package targets wagmi v3 and this example runs wagmi v2, so its
+ * WagmiContext would not match (MissingWagmiProviderError). The demo's wallet
+ * connect is a small native button (WalletConnectButton) on this same wagmi.
  */
 export const Providers = ({ children }: ProvidersProps) => {
   const [ queryClient ] = useState(() => new QueryClient({

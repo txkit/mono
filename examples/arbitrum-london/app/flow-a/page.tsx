@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { DeployPendingBanner } from '@/src/ui/DeployPendingBanner'
 
 import { PendleAgentChat } from './PendleAgentChat'
+import { WalletConnectButton } from './WalletConnectButton'
 
 
 /**
@@ -13,7 +14,10 @@ const FlowA = () => {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12 space-y-8">
-      <Link href="/" className="text-sm opacity-70 hover:opacity-100">&larr; Back</Link>
+      <div className="flex items-center justify-between gap-4">
+        <Link href="/" className="text-sm opacity-70 hover:opacity-100">&larr; Back</Link>
+        <WalletConnectButton />
+      </div>
 
       <header>
         <p className="text-xs uppercase tracking-wider text-accent mb-2">
