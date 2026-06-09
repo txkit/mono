@@ -13,7 +13,7 @@ import { WalletConnectButton } from '@/src/ui/WalletConnectButton'
 const Home = () => {
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-16">
+    <main className="mx-auto max-w-3xl px-6 py-12">
       <div className="mb-10 flex items-center justify-end">
         <WalletConnectButton />
       </div>
