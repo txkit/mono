@@ -17,7 +17,7 @@ import { CONNECTION_TIMEOUT_MS, QR_TIMEOUT_MS } from '../components/ConnectWalle
 
 
 /** Wallet connection state machine states */
-export type WalletState = 'disconnected' | 'connecting' | 'connected' | 'wrong-chain' | 'error'
+export type WalletState = 'disconnected' | 'reconnecting' | 'connecting' | 'connected' | 'wrong-chain' | 'error'
 
 export type UseWalletStateOptions = {
   /** Force specific chain. Shows wrong-chain state if mismatch */
@@ -67,17 +67,20 @@ export type UseWalletStateReturn = {
   isPending: boolean
   /** True when connecting has exceeded timeout threshold */
   isTimedOut: boolean
+  /** True while the native balance query is loading - drives a reserved-width skeleton */
+  isBalanceLoading: boolean
 }
 
 const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateReturn => {
   const { chainId, showBalance = true, showEns = true, connectingConnectorId } = options
 
   const [ isTimedOut, setTimedOut ] = useState(false)
+  const [ isMounted, setMounted ] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const { mutate: disconnect } = useDisconnect()
   const { mutate: switchChain } = useSwitchChain()
-  const { address, isConnected, chainId: connectedChainId, chain, connector } = useConnection()
+  const { address, isConnected, chainId: connectedChainId, chain, connector, isReconnecting } = useConnection()
   const connectors = useConnectors()
   const { mutate: connect, isPending, error: connectError } = useConnect()
 
@@ -97,6 +100,10 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
     return () => clearTimeout(timeoutRef.current)
   }, [ isPending, timeoutMs ])
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const { data: ensName } = useEnsName({
     address,
     chainId: 1,
@@ -109,7 +116,7 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
     query: { enabled: showEns && Boolean(ensName) },
   })
 
-  const { data: balanceData } = useBalance({
+  const { data: balanceData, isLoading: isBalanceLoading } = useBalance({
     address,
     query: { enabled: showBalance && Boolean(address) },
   })
@@ -141,8 +148,13 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
     if (isConnected) {
       return 'connected'
     }
+    // Before mount (SSR/hydration) and while wagmi restores a prior session,
+    // show the skeleton instead of flashing the disconnected "Connect" label.
+    if (!isMounted || isReconnecting) {
+      return 'reconnecting'
+    }
     return 'disconnected'
-  }, [ connectError, isPending, isConnected, isUserRejection, chainId, connectedChainId ])
+  }, [ connectError, isPending, isConnected, isUserRejection, chainId, connectedChainId, isMounted, isReconnecting ])
 
   const formattedBalance = useMemo(() => {
     if (!balanceData) {
@@ -183,6 +195,7 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
     error: isUserRejection ? null : connectError,
     isPending,
     isTimedOut,
+    isBalanceLoading,
   }
 }
 

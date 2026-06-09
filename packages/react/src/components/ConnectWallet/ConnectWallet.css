@@ -288,6 +288,17 @@
   letter-spacing: 0.01em;
 }
 
+/* Reserved-width pulse shown in the balance slot until the balance query
+   resolves, so the connected button does not widen when the value arrives. */
+.tx-cw-balance-skeleton {
+  width: 48px;
+  height: 12px;
+  border-radius: var(--tx-radius-sm);
+  background: linear-gradient(90deg, var(--tx-skeleton-from) 25%, var(--tx-skeleton-to) 50%, var(--tx-skeleton-from) 75%);
+  background-size: 200% 100%;
+  animation: tx-shimmer var(--tx-duration-breathe) linear infinite;
+}
+
 /* Dot loading animation */
 
 .tx-cw-dots {
@@ -1181,6 +1192,7 @@ a.tx-cw-dropdown-identity-link:focus-visible {
   .tx-cw-copy-check,
   .tx-cw-skeleton-avatar,
   .tx-cw-skeleton-text,
+  .tx-cw-balance-skeleton,
   .tx-cw-qr-skeleton,
   .tx-cw-button[data-state="error"],
   .tx-cw-connecting-icon::before,

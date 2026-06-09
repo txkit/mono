@@ -34,6 +34,7 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = (props) => {
     recentIds,
     connectingWallet,
     isTimedOut,
+    isBalanceLoading,
     mergedLabels,
     showAvatar,
     showBalance,
@@ -54,9 +55,30 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = (props) => {
   } as const
 
   const isInitializing = connectors.length === 0
+  const showSkeleton = isInitializing || state === 'reconnecting'
 
   const isConnectedLike = state === 'connected' || state === 'wrong-chain'
   const ariaHaspopup = isConnectedLike ? 'menu' as const : 'dialog' as const
+
+  const balanceValueNode = showBalance && formattedBalance
+    ? <span className="tx-cw-balance">{formattedBalance}</span>
+    : null
+  const balanceSkeletonNode = showBalance && !formattedBalance && isBalanceLoading
+    ? <span className="tx-cw-balance-skeleton" aria-hidden="true" />
+    : null
+  const fiatNode = showFiat && fiatBalance
+    ? <span className="tx-cw-fiat">{fiatBalance}</span>
+    : null
+  const hasBalanceContent = Boolean(balanceValueNode || balanceSkeletonNode || fiatNode)
+  const balanceWrapNode = hasBalanceContent
+    ? (
+      <span className="tx-cw-balance-wrap">
+        {balanceValueNode}
+        {balanceSkeletonNode}
+        {fiatNode}
+      </span>
+    )
+    : null
 
   return (
   <>
@@ -66,18 +88,18 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = (props) => {
       className="tx-cw-button"
       data-state={isInitializing ? 'initializing' : state}
       onClick={onButtonClick}
-      disabled={state === 'connecting' || isInitializing}
+      disabled={state === 'connecting' || showSkeleton}
       aria-haspopup={ariaHaspopup}
       aria-expanded={panel !== 'closed'}
       aria-controls={panelControlsMap[panel]}
-      aria-busy={state === 'connecting' || isInitializing}
+      aria-busy={state === 'connecting' || showSkeleton}
     >
       {
-        isInitializing && <SkeletonPulse />
+        showSkeleton && <SkeletonPulse />
       }
 
       {
-        !isInitializing && state === 'connecting' && <DotLoader />
+        !showSkeleton && state === 'connecting' && <DotLoader />
       }
 
       {
@@ -91,14 +113,7 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = (props) => {
               )
             }
             <span className="tx-cw-address">{resolvedDisplayAddress}</span>
-            {
-              ((showBalance && formattedBalance) || (showFiat && fiatBalance)) && (
-                <span className="tx-cw-balance-wrap">
-                  {showBalance && formattedBalance && <span className="tx-cw-balance">{formattedBalance}</span>}
-                  {showFiat && fiatBalance && <span className="tx-cw-fiat">{fiatBalance}</span>}
-                </span>
-              )
-            }
+            {balanceWrapNode}
             {
               state === 'wrong-chain' && (
                 <span
@@ -113,7 +128,7 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = (props) => {
       }
 
       {
-        !isInitializing && buttonLabel && <span>{buttonLabel}</span>
+        !showSkeleton && buttonLabel && <span>{buttonLabel}</span>
       }
     </button>
 

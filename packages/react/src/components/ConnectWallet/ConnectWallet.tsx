@@ -79,6 +79,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
     displayAddress,
     balanceDecimals,
     formattedBalance,
+    isBalanceLoading,
   } = useWalletState({
     chainId,
     showEns,
@@ -291,6 +292,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
               recentIds={recentIds}
               connectingWallet={connectingWallet}
               isTimedOut={isTimedOut}
+              isBalanceLoading={isBalanceLoading}
               mergedLabels={mergedLabels}
               size={size}
               variant={variant}

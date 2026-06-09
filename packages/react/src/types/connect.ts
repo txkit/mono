@@ -75,6 +75,7 @@ export type ConnectWalletDefaultProps = {
   recentIds: string[]
   connectingWallet: string | undefined
   isTimedOut: boolean
+  isBalanceLoading: boolean
   mergedLabels: Required<ConnectWalletLabels>
   size: 'default' | 'compact'
   variant: 'default' | 'outline' | 'ghost' | 'soft'
