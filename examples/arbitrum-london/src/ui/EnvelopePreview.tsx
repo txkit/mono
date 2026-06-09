@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 
-import { CopyableValue } from './CopyableValue'
+import { ExplorerValue } from './ExplorerValue'
 import { PolicyStatusBadge, type PolicyStatus } from './PolicyStatusBadge'
 
 
@@ -180,15 +180,15 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
         </div>
         <div className="flex justify-between gap-3">
           <span className="text-muted shrink-0">Policy gate</span>
-          <CopyableValue value={toAddress} display={formatAddress(toAddress)} explorerUrl={buildExplorerUrl(explorerBaseUrl, toAddress)} />
+          <ExplorerValue value={toAddress} display={formatAddress(toAddress)} explorerUrl={buildExplorerUrl(explorerBaseUrl, toAddress)} />
         </div>
         <div className="flex justify-between gap-3">
           <span className="text-muted shrink-0">Inner target</span>
-          <CopyableValue value={innerToAddress} display={formatAddress(innerToAddress)} explorerUrl={buildExplorerUrl(explorerBaseUrl, innerToAddress)} />
+          <ExplorerValue value={innerToAddress} display={formatAddress(innerToAddress)} explorerUrl={buildExplorerUrl(explorerBaseUrl, innerToAddress)} />
         </div>
         <div className="flex justify-between gap-3">
           <span className="text-muted shrink-0">Envelope hash</span>
-          <CopyableValue value={envelopeHash} display={formatAddress(envelopeHash)} />
+          <ExplorerValue value={envelopeHash} display={formatAddress(envelopeHash)} />
         </div>
         <div className="flex justify-between gap-3">
           <span className="text-muted shrink-0">Expires in</span>

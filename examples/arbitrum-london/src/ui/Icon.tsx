@@ -8,6 +8,7 @@ export type IconName =
   | 'github'
   | 'git-pull-request'
   | 'message-square'
+  | 'external-link'
 
 type IconProps = {
   name: IconName,
@@ -21,6 +22,7 @@ const ICON_SOURCES: Record<IconName, string> = {
   'github': "url('/icons/github.svg')",
   'git-pull-request': "url('/icons/git-pull-request.svg')",
   'message-square': "url('/icons/message-square.svg')",
+  'external-link': "url('/icons/external-link.svg')",
 }
 
 /**
