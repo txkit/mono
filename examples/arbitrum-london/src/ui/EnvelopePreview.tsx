@@ -28,6 +28,7 @@ type EnvelopePreviewProps = {
   envelopeHash: `0x${string}`,
   validityNotAfter: number,
   decoded?: DecodedCallShape,
+  innerData?: `0x${string}`,
   policyStatus?: PolicyStatus,
   policyReason?: string,
   explorerBaseUrl?: string,
@@ -87,6 +88,7 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
     envelopeHash,
     validityNotAfter,
     decoded,
+    innerData,
     policyStatus,
     policyReason,
     explorerBaseUrl,
@@ -138,6 +140,18 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
     )
     : null
 
+  const rawHexNode = innerData !== undefined ? (
+    <details className="px-5 pb-1">
+      <summary className="cursor-pointer text-xs text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
+        Show raw calldata
+      </summary>
+      <div className="mt-2 rounded-lg bg-card-sunken p-3 font-mono text-xs break-all">
+        <p className="mb-1 text-warning">Without txKit, this opaque hex is all the agent asks you to sign:</p>
+        <span className="text-muted">{innerData}</span>
+      </div>
+    </details>
+  ) : null
+
   const feeNode = feeSlot !== undefined && feeSlot !== null
     ? <div className="px-5 py-4 border-t border-border">{feeSlot}</div>
     : null
@@ -155,6 +169,7 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
       </div>
 
       {callBlockNode}
+      {rawHexNode}
 
       <div className="grid gap-3 text-sm px-5 py-4">
         <div className="flex justify-between gap-3">

@@ -57,8 +57,9 @@ export const PolicyChecklist = () => {
         ))}
       </ul>
 
-      <div className="mt-4 border-t border-border pt-4">
-        <p className="text-center text-xs text-muted">This envelope satisfies all policy-gate checks</p>
+      <div className="mt-4 border-t border-border pt-4 text-center text-xs">
+        <span className="font-semibold text-foreground">5 invariants</span>
+        <span className="text-muted"> - enforced by the contract, not the AI</span>
       </div>
     </div>
   )

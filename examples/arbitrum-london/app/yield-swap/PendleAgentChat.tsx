@@ -216,6 +216,7 @@ export const PendleAgentChat = () => {
       envelopeHash={envelope.meta.envelopeHash}
       validityNotAfter={envelope.meta.validity.notAfter}
       decoded={decodedForPreview}
+      innerData={envelope.inner.data}
       policyStatus="allow"
       policyReason="signed by agent, within policy gate limits"
       explorerBaseUrl={formatExplorerBase(envelopeChainId)}
