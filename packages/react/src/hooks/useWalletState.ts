@@ -75,7 +75,7 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
   const { chainId, showBalance = true, showEns = true, connectingConnectorId } = options
 
   const [ isTimedOut, setTimedOut ] = useState(false)
-  const [ isMounted, setMounted ] = useState(false)
+  const [ isSettled, setSettled ] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const { mutate: disconnect } = useDisconnect()
@@ -101,7 +101,13 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
   }, [ isPending, timeoutMs ])
 
   useEffect(() => {
-    setMounted(true)
+    // Hold the skeleton for a short grace window so a returning user never
+    // flashes the disconnected "Connect" label in the one-render gap before
+    // wagmi's reconnect starts. A genuine connection resolves earlier via
+    // isConnected, so connected wallets are not delayed by this.
+    const settleTimer = setTimeout(() => setSettled(true), 350)
+
+    return () => clearTimeout(settleTimer)
   }, [])
 
   const { data: ensName } = useEnsName({
@@ -148,13 +154,14 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
     if (isConnected) {
       return 'connected'
     }
-    // Before mount (SSR/hydration) and while wagmi restores a prior session,
-    // show the skeleton instead of flashing the disconnected "Connect" label.
-    if (!isMounted || isReconnecting) {
+    // During the post-mount grace window (SSR/hydration plus the reconnect gap)
+    // and while wagmi restores a prior session, show the skeleton instead of
+    // flashing the disconnected "Connect" label.
+    if (!isSettled || isReconnecting) {
       return 'reconnecting'
     }
     return 'disconnected'
-  }, [ connectError, isPending, isConnected, isUserRejection, chainId, connectedChainId, isMounted, isReconnecting ])
+  }, [ connectError, isPending, isConnected, isUserRejection, chainId, connectedChainId, isSettled, isReconnecting ])
 
   const formattedBalance = useMemo(() => {
     if (!balanceData) {
