@@ -1,11 +1,9 @@
-import Link from 'next/link'
-
 import { ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import {
   checkIsAgentPolicyGateDeployed,
   checkIsMockRwaRouterDeployed,
 } from '@/src/config/deployed'
-import { WalletConnectButton } from '@/src/ui/WalletConnectButton'
+import { DemoHeader } from '@/src/ui/DemoHeader'
 
 import { RwaAgentChat } from './RwaAgentChat'
 
@@ -72,10 +70,7 @@ const FlowC = () => {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12 space-y-8">
-      <div className="flex items-center justify-between gap-4">
-        <Link href="/" className="text-sm opacity-70 hover:opacity-100">&larr; Back</Link>
-        <WalletConnectButton chainId={ROBINHOOD_TESTNET_CHAIN_ID} />
-      </div>
+      <DemoHeader current="rwa-buy" chainId={ROBINHOOD_TESTNET_CHAIN_ID} />
 
       <header>
         <p className="text-xs uppercase tracking-wider text-accent mb-2">
@@ -93,17 +88,6 @@ const FlowC = () => {
       <RobinhoodDeployPendingBanner />
 
       <RwaAgentChat />
-
-      <Link
-        href="/yield-swap"
-        className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-5 hover:border-accent transition-colors"
-      >
-        <div>
-          <p className="text-xs uppercase tracking-wider text-muted">Next demo</p>
-          <p className="text-lg font-semibold">Pendle yield swap</p>
-        </div>
-        <span className="text-xl text-accent" aria-hidden="true">&rarr;</span>
-      </Link>
 
       <footer className="border-t border-border pt-6 text-xs opacity-60">
         <p>

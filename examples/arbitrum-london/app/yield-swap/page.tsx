@@ -1,8 +1,6 @@
-import Link from 'next/link'
-
 import { arbitrumSepolia } from '@/src/chains'
+import { DemoHeader } from '@/src/ui/DemoHeader'
 import { DeployPendingBanner } from '@/src/ui/DeployPendingBanner'
-import { WalletConnectButton } from '@/src/ui/WalletConnectButton'
 
 import { PendleAgentChat } from './PendleAgentChat'
 
@@ -15,10 +13,7 @@ const FlowA = () => {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12 space-y-8">
-      <div className="flex items-center justify-between gap-4">
-        <Link href="/" className="text-sm opacity-70 hover:opacity-100">&larr; Back</Link>
-        <WalletConnectButton chainId={arbitrumSepolia.id} />
-      </div>
+      <DemoHeader current="yield-swap" chainId={arbitrumSepolia.id} />
 
       <header>
         <p className="text-xs uppercase tracking-wider text-accent mb-2">
@@ -36,17 +31,6 @@ const FlowA = () => {
       <DeployPendingBanner />
 
       <PendleAgentChat />
-
-      <Link
-        href="/rwa-buy"
-        className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-5 hover:border-accent transition-colors"
-      >
-        <div>
-          <p className="text-xs uppercase tracking-wider text-muted">Next demo</p>
-          <p className="text-lg font-semibold">x402 RWA agent</p>
-        </div>
-        <span className="text-xl text-accent" aria-hidden="true">&rarr;</span>
-      </Link>
 
       <footer className="border-t border-border pt-6 text-xs opacity-60 space-y-1">
         <p>
