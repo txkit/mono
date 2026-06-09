@@ -25,8 +25,8 @@ export const DemoHeader = (props: DemoHeaderProps) => {
   return (
     <header className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-2 sm:gap-4">
-        <Link href="/" className="font-mono font-semibold tracking-tight hover:text-accent transition-colors">
-          txKit
+        <Link href="/" className="text-sm text-muted hover:text-foreground transition-colors">
+          Home
         </Link>
         <nav className="flex items-center gap-1">
           {DEMO_TABS.map((tab) => {
