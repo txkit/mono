@@ -2,7 +2,10 @@
 
 import { ConnectWallet } from '@txkit/react'
 
-import { arbitrumSepolia } from '@/src/chains'
+
+type WalletConnectButtonProps = {
+  chainId: number,
+}
 
 
 /**
@@ -12,11 +15,11 @@ import { arbitrumSepolia } from '@/src/chains'
  *
  * This renders the real @txkit/react <ConnectWallet />, reading the embedded
  * TxKitProvider mounted in providers.tsx on the shared wagmi instance. chainId is
- * pinned to Arbitrum Sepolia (this scenario's chain) so the button surfaces
- * txKit's wrong-network UX if the wallet is elsewhere; executeEnvelope still
- * switches at sign time.
+ * pinned to the scenario's chain (Arbitrum Sepolia for flow-a, Robinhood Chain
+ * for flow-c) so the button surfaces txKit's wrong-network connect + switch UX
+ * when the wallet is on another chain.
  */
-export const WalletConnectButton = () => {
+export const WalletConnectButton = ({ chainId }: WalletConnectButtonProps) => {
 
-  return <ConnectWallet chainId={arbitrumSepolia.id} size="compact" />
+  return <ConnectWallet chainId={chainId} size="compact" />
 }

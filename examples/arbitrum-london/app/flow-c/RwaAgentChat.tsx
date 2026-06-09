@@ -1,7 +1,7 @@
 'use client'
 
 import { type FormEvent, useState } from 'react'
-import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi'
+import { useAccount, usePublicClient, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi'
 
 // ArbitrumChainId covers eip155:42161 | eip155:421614 | eip155:42170 only.
 // Robinhood Chain (eip155:46630) is an Arbitrum Orbit chain but is NOT in that
@@ -11,6 +11,7 @@ import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wa
 // infrastructure anyway (L1 calldata posting cost vs Robinhood's own sequencer).
 
 import type { DemoEnvelope } from '@/src/agent/envelope-builder'
+import { ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import { ChatMessage } from '@/src/ui/ChatMessage'
 import { EnvelopePreview } from '@/src/ui/EnvelopePreview'
 import type { SignedPaymentBody } from '@/src/x402/facilitator'
@@ -76,6 +77,7 @@ export const RwaAgentChat = () => {
   }
 
   const { address: connectedAddress, isConnected } = useAccount()
+  const publicClient = usePublicClient({ chainId: ROBINHOOD_TESTNET_CHAIN_ID })
   const {
     sendTransaction,
     data: txHash,
@@ -138,14 +140,28 @@ export const RwaAgentChat = () => {
     }
   }
 
-  const handleSignTransaction = () => {
+  const handleSignTransaction = async () => {
     if (envelope === null || !isConnected) {
       return
     }
 
     const { call, chain } = envelope
     const chainId = Number(chain.split(':')[1])
-    sendTransaction({ to: call.to, data: call.data, value: BigInt(call.value), chainId })
+
+    // Robinhood Chain is Arbitrum Orbit and shares Arbitrum's base-fee model, so
+    // a tight maxFeePerGas can land just under base fee and the RPC rejects the
+    // tx. Read the live fee and double the cap for headroom: the cap is a
+    // ceiling, not the price, so the tx still pays only the prevailing base fee.
+    const fees = await publicClient?.estimateFeesPerGas().catch(() => undefined)
+
+    sendTransaction({
+      to: call.to,
+      data: call.data,
+      value: BigInt(call.value),
+      chainId,
+      maxFeePerGas: fees ? fees.maxFeePerGas * 2n : undefined,
+      maxPriorityFeePerGas: fees ? fees.maxPriorityFeePerGas : undefined,
+    })
   }
 
   const handleReject = () => {

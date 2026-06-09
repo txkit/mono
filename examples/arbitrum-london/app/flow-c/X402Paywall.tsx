@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useAccount, useSignTypedData } from 'wagmi'
+import { useAccount, useChainId, useSignTypedData, useSwitchChain } from 'wagmi'
 import { keccak256, toBytes } from 'viem'
 
+import { ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import {
   X402_DOMAIN,
   X402_MERCHANT_ADDRESS,
@@ -54,6 +55,8 @@ export const X402Paywall = (props: X402PaywallProps) => {
   const { onUnlocked } = props
 
   const { address: connectedAddress, isConnected } = useAccount()
+  const activeChainId = useChainId()
+  const { switchChainAsync } = useSwitchChain()
 
   const [ isPending, setIsPending ] = useState(false)
   const [ errorMessage, setErrorMessage ] = useState<string | null>(null)
@@ -81,6 +84,14 @@ export const X402Paywall = (props: X402PaywallProps) => {
     setErrorMessage(null)
 
     try {
+      // The x402 EIP-712 domain is bound to Robinhood Chain (46630). MetaMask
+      // rejects signTypedData when its active chain differs ("provided chainId
+      // must match the active chainId"), so switch the wallet first. switchChain
+      // also triggers wallet_addEthereumChain when the chain is not yet known.
+      if (activeChainId !== ROBINHOOD_TESTNET_CHAIN_ID) {
+        await switchChainAsync({ chainId: ROBINHOOD_TESTNET_CHAIN_ID })
+      }
+
       const fetched = await fetchRequirements()
       if (fetched !== null) {
         setRequirements(fetched)

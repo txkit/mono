@@ -1,6 +1,6 @@
 import { Icon } from '@/src/ui/Icon'
 
-import { formatTxExplorerUrl, resolveExplorerLabel } from './utils/formatters'
+import { formatTxExplorerUrl, resolveExplorerLabel, resolveSendErrorText } from './utils/formatters'
 
 
 type SignEnvelopeActionsProps = {
@@ -13,7 +13,7 @@ type SignEnvelopeActionsProps = {
   sendError: Error | null,
   envelopeChainId: number | null,
   onReject: () => void,
-  onSign: () => void,
+  onSign: () => void | Promise<void>,
 }
 
 /**
@@ -56,8 +56,8 @@ export const SignEnvelopeActions = (props: SignEnvelopeActionsProps) => {
   ) : null
 
   const sendErrorNode = sendError !== null ? (
-    <div role="alert" className="rounded-md border border-error bg-error-bg px-3 py-2 text-xs text-error">
-      {sendError.message}
+    <div role="alert" className="rounded-md border border-error bg-error-bg px-3 py-2 text-xs text-error break-words">
+      {resolveSendErrorText(sendError)}
     </div>
   ) : null
 

@@ -1,11 +1,12 @@
 'use client'
 
 import { type FormEvent, useState } from 'react'
-import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi'
+import { useAccount, usePublicClient, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi'
 
 import type { ArbitrumChainId } from '@txkit/arbitrum-adapter'
 
 import type { DemoEnvelope } from '@/src/agent/envelope-builder'
+import { ARBITRUM_SEPOLIA_CHAIN_ID } from '@/src/chains'
 import { ChatMessage } from '@/src/ui/ChatMessage'
 import { EnvelopePreview } from '@/src/ui/EnvelopePreview'
 import { SequencerFeeRow } from '@/src/ui/SequencerFeeRow'
@@ -61,6 +62,7 @@ export const PendleAgentChat = () => {
   }
 
   const { address: connectedAddress, isConnected } = useAccount()
+  const publicClient = usePublicClient({ chainId: ARBITRUM_SEPOLIA_CHAIN_ID })
   const {
     sendTransaction,
     data: txHash,
@@ -113,14 +115,29 @@ export const PendleAgentChat = () => {
     }
   }
 
-  const handleSignTransaction = () => {
+  const handleSignTransaction = async () => {
     if (envelope === null || !isConnected) {
       return
     }
 
     const { call, chain } = envelope
     const chainId = Number(chain.split(':')[1])
-    sendTransaction({ to: call.to, data: call.data, value: BigInt(call.value), chainId })
+
+    // Arbitrum's base fee can rise between fee estimation and submission, so a
+    // tight maxFeePerGas lands just under base fee and the RPC rejects the tx
+    // ("max fee per gas less than block base fee"). Read the live fee and double
+    // the cap for headroom: the cap is a ceiling, not the price, so the tx still
+    // pays only the prevailing base fee and the extra headroom costs nothing.
+    const fees = await publicClient?.estimateFeesPerGas().catch(() => undefined)
+
+    sendTransaction({
+      to: call.to,
+      data: call.data,
+      value: BigInt(call.value),
+      chainId,
+      maxFeePerGas: fees ? fees.maxFeePerGas * 2n : undefined,
+      maxPriorityFeePerGas: fees ? fees.maxPriorityFeePerGas : undefined,
+    })
   }
 
   const handleReject = () => {
@@ -148,7 +165,8 @@ export const PendleAgentChat = () => {
         <span className="font-mono text-foreground">Swap 100 USDC for PT-stETH</span>
       </p>
       <p className="text-xs text-muted mt-2">
-        The agent calls prepare_pendle_yield_swap, you review the decoded envelope, then sign in your wallet.
+        PT-stETH is a Pendle Principal Token - a fixed-yield position. The agent calls
+        prepare_pendle_yield_swap, you review the decoded envelope, then sign in your wallet.
       </p>
     </div>
   )
@@ -174,6 +192,14 @@ export const PendleAgentChat = () => {
   ) : null
 
   const checklistNode = isPrepared ? <PolicyChecklist /> : null
+
+  const mockNoticeNode = isPrepared ? (
+    <div className="rounded-md border border-border bg-card/40 px-3 py-2 text-xs text-muted">
+      <span className="font-medium text-foreground">Testnet demo - real enforcement, mock settlement.</span>{' '}
+      All 5 AgentPolicyGate checks execute on-chain (verifiable on Arbiscan). The swap router is a mock,
+      so no tokens move - the demo proves the verification layer, not the DEX.
+    </div>
+  ) : null
 
   const errorNode = errorMessage !== null ? (
     <div role="alert" className="rounded-md border border-error bg-error-bg px-3 py-2 text-sm text-error">
@@ -228,6 +254,7 @@ export const PendleAgentChat = () => {
       {errorNode}
       {previewNode}
       {checklistNode}
+      {mockNoticeNode}
       {actionsNode}
 
       <form onSubmit={handleSubmit} className="flex gap-2">

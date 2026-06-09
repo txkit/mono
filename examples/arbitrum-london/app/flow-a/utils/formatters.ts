@@ -79,3 +79,20 @@ export const splitReasoningLines = (text: string): string[] => {
     .map((part) => part.trim())
     .filter((part) => part.length > 0)
 }
+
+
+/**
+ * Reduce a wallet/RPC error to one readable line for the UI. viem errors carry
+ * a clean one-line `shortMessage` (the fee-cap or user-rejected reason); the
+ * full `message` is a several-hundred-character dump that includes raw calldata
+ * and overflows the layout. Prefer shortMessage, else the capped first line.
+ */
+export const resolveSendErrorText = (error: Error): string => {
+  const { shortMessage } = error as Error & { shortMessage?: string }
+  if (shortMessage !== undefined && shortMessage.length > 0) {
+    return shortMessage
+  }
+
+  const [ firstLine ] = error.message.split('\n')
+  return firstLine.length > 160 ? `${firstLine.slice(0, 160)}...` : firstLine
+}

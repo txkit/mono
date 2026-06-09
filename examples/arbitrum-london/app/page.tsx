@@ -3,9 +3,9 @@ import Link from 'next/link'
 
 /**
  * Landing page for the Buildathon demo. Leads with the txKit value prop and
- * the ERC-8265 credential, then a primary call-to-action into the working
- * Pendle flow (Scenario A). Scenario C (RWA on Robinhood) is shown as a
- * roadmap card, honestly labelled, so judges go straight to the live demo.
+ * the ERC-8265 credential, then two live-demo cards: the Pendle yield swap on
+ * Arbitrum Sepolia and the x402-paid RWA agent on Robinhood Chain. Both are
+ * deployed and execute real envelopes on-chain.
  */
 const Home = () => {
 
@@ -41,11 +41,10 @@ const Home = () => {
         >
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs uppercase tracking-wider text-success font-mono">Live demo</span>
-            <span className="text-xs uppercase tracking-wider text-muted">Scenario A</span>
           </div>
           <h2 className="text-2xl font-semibold mb-2">Pendle yield swap</h2>
           <p className="text-muted mb-4">
-            Agent rotates yield by swapping a base token for Pendle PT on
+            Agent swaps a base token for a fixed-yield Pendle PT position on
             Arbitrum Sepolia. Envelope decoded with
             <code className="font-mono bg-card-sunken px-1 rounded mx-1">@txkit/tx-decoder</code>,
             executed via AgentPolicyGate.
@@ -55,14 +54,17 @@ const Home = () => {
 
         <Link
           href="/flow-c"
-          className="rounded-lg border border-dashed border-border bg-card/40 p-6 hover:border-border-hover transition-colors"
+          className="rounded-lg border border-border bg-card p-6 hover:border-accent transition-colors"
         >
-          <p className="text-xs uppercase tracking-wider text-muted font-mono mb-2">Roadmap - Phase 2</p>
-          <h2 className="text-xl font-semibold mb-2 text-muted">x402 RWA agent</h2>
-          <p className="text-sm text-muted">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs uppercase tracking-wider text-success font-mono">Live demo</span>
+          </div>
+          <h2 className="text-xl font-semibold mb-2">x402 RWA agent</h2>
+          <p className="text-sm text-muted mb-4">
             x402-paid agent buying tokenised equity on Robinhood Chain testnet.
-            Multi-chain envelope flow, landing next.
+            Multi-chain envelope flow, same policy gate.
           </p>
+          <p className="text-sm text-accent">Open demo &rarr;</p>
         </Link>
       </section>
 

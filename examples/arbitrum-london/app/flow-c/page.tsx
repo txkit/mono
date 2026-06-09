@@ -5,6 +5,7 @@ import {
   checkIsAgentPolicyGateDeployed,
   checkIsMockRwaRouterDeployed,
 } from '@/src/config/deployed'
+import { WalletConnectButton } from '../flow-a/WalletConnectButton'
 import { RwaAgentChat } from './RwaAgentChat'
 
 
@@ -70,11 +71,14 @@ const FlowC = () => {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12 space-y-8">
-      <Link href="/" className="text-sm opacity-70 hover:opacity-100">&larr; Back</Link>
+      <div className="flex items-center justify-between gap-4">
+        <Link href="/" className="text-sm opacity-70 hover:opacity-100">&larr; Back</Link>
+        <WalletConnectButton chainId={ROBINHOOD_TESTNET_CHAIN_ID} />
+      </div>
 
       <header>
         <p className="text-xs uppercase tracking-wider text-accent mb-2">
-          Scenario C - Robinhood Chain testnet (46630)
+          Robinhood Chain testnet (46630)
         </p>
         <h1 className="text-3xl font-bold mb-3">x402-paid RWA agent</h1>
         <p className="opacity-80">

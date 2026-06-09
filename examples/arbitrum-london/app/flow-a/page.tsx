@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { arbitrumSepolia } from '@/src/chains'
 import { DeployPendingBanner } from '@/src/ui/DeployPendingBanner'
 
 import { PendleAgentChat } from './PendleAgentChat'
@@ -16,18 +17,19 @@ const FlowA = () => {
     <main className="mx-auto max-w-3xl px-6 py-12 space-y-8">
       <div className="flex items-center justify-between gap-4">
         <Link href="/" className="text-sm opacity-70 hover:opacity-100">&larr; Back</Link>
-        <WalletConnectButton />
+        <WalletConnectButton chainId={arbitrumSepolia.id} />
       </div>
 
       <header>
         <p className="text-xs uppercase tracking-wider text-accent mb-2">
-          Scenario A - Arbitrum Sepolia
+          Arbitrum Sepolia
         </p>
         <h1 className="text-3xl font-bold mb-3">Pendle yield swap</h1>
         <p className="opacity-80">
-          Tell the agent which token you want to rotate into PT. It prepares
-          a typed envelope through a mock Pendle router, you review the
-          decoded preview, then sign once via AgentPolicyGate.executeEnvelope.
+          Tell the agent which token to swap into a Pendle PT (Principal Token -
+          a fixed-yield position). It prepares a typed envelope through a mock
+          Pendle router, you review the decoded preview, then sign once via
+          AgentPolicyGate.executeEnvelope.
         </p>
       </header>
 
