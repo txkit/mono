@@ -2,9 +2,9 @@ import Link from 'next/link'
 
 import { arbitrumSepolia } from '@/src/chains'
 import { DeployPendingBanner } from '@/src/ui/DeployPendingBanner'
+import { WalletConnectButton } from '@/src/ui/WalletConnectButton'
 
 import { PendleAgentChat } from './PendleAgentChat'
-import { WalletConnectButton } from './WalletConnectButton'
 
 
 /**

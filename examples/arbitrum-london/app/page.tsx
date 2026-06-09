@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { WalletConnectButton } from '@/src/ui/WalletConnectButton'
+
 
 /**
  * Landing page for the Buildathon demo. Leads with the txKit value prop and
@@ -11,6 +13,10 @@ const Home = () => {
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-16">
+      <div className="mb-10 flex items-center justify-end">
+        <WalletConnectButton />
+      </div>
+
       <header className="mb-16">
         <p className="text-sm uppercase tracking-wider text-accent mb-3">
           txKit - Arbitrum Open House London Buildathon
@@ -34,10 +40,10 @@ const Home = () => {
         </a>
       </header>
 
-      <section className="grid gap-6 md:grid-cols-3 mb-16">
+      <section className="grid gap-6 md:grid-cols-2 mb-16">
         <Link
           href="/yield-swap"
-          className="md:col-span-2 rounded-lg border border-border bg-card p-6 hover:border-accent transition-colors"
+          className="rounded-lg border border-border bg-card p-6 hover:border-accent transition-colors"
         >
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs uppercase tracking-wider text-success font-mono">Live demo</span>
@@ -59,8 +65,8 @@ const Home = () => {
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xs uppercase tracking-wider text-success font-mono">Live demo</span>
           </div>
-          <h2 className="text-xl font-semibold mb-2">x402 RWA agent</h2>
-          <p className="text-sm text-muted mb-4">
+          <h2 className="text-2xl font-semibold mb-2">x402 RWA agent</h2>
+          <p className="text-muted mb-4">
             x402-paid agent buying tokenised equity on Robinhood Chain testnet.
             Same policy gate, a second Arbitrum Orbit chain.
           </p>

@@ -262,6 +262,28 @@ export const RwaAgentChat = () => {
     />
   ) : null
 
+  // Once an envelope is on screen the next action is Reject or Sign, not more
+  // chatting, so the composer is hidden during review and returns on reject.
+  const chatFormNode = isPrepared ? null : (
+    <form onSubmit={handleSubmit} className="flex gap-2">
+      <input
+        aria-label="Describe an RWA purchase"
+        className="flex-1 rounded-md border border-border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent"
+        placeholder={inputPlaceholder}
+        value={input}
+        onChange={(event) => patchState({ input: event.target.value })}
+        disabled={isLoading || !isConnected}
+      />
+      <button
+        type="submit"
+        disabled={isLoading || !isConnected || input.trim().length === 0}
+        className="rounded-md bg-accent px-4 py-2 text-sm text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
+      >
+        Send
+      </button>
+    </form>
+  )
+
   return (
     <section className="space-y-4">
       <div className="space-y-3">
@@ -273,24 +295,7 @@ export const RwaAgentChat = () => {
       {previewNode}
       {checklistNode}
       {actionsNode}
-
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          aria-label="Describe an RWA purchase"
-          className="flex-1 rounded-md border border-border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent"
-          placeholder={inputPlaceholder}
-          value={input}
-          onChange={(event) => patchState({ input: event.target.value })}
-          disabled={isLoading || !isConnected}
-        />
-        <button
-          type="submit"
-          disabled={isLoading || !isConnected || input.trim().length === 0}
-          className="rounded-md bg-accent px-4 py-2 text-sm text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
-        >
-          Send
-        </button>
-      </form>
+      {chatFormNode}
     </section>
   )
 }
