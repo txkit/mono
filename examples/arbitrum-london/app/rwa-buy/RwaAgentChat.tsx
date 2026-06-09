@@ -51,8 +51,12 @@ const INITIAL_STATE: ChatState = {
   decodedInner: null,
 }
 
-/** Canonical example prompt offered as a one-click chip under the composer. */
-const SUGGESTED_PROMPT = 'Buy 5 TSLA'
+/** Example prompts offered as one-click chips under the composer. */
+const SUGGESTED_PROMPTS = [
+  'Buy 5 TSLA',
+  'Buy 3 AMZN',
+  'Buy 10 PLTR',
+]
 
 /**
  * Scenario C client: x402-gated Claude tool-use loop + one-click sign on
@@ -179,7 +183,7 @@ export const RwaAgentChat = () => {
   const isBusySendingTx = isSigning || isConfirming
   const envelopeChainId = envelope !== null ? Number(envelope.chain.split(':')[1]) : null
   const inputPlaceholder = isConnected
-    ? 'Buy 5 TSLA...'
+    ? 'Buy a tokenised stock...'
     : 'Connect your wallet to start...'
 
   const decodedForPreview = decodedInner !== null
@@ -290,14 +294,20 @@ export const RwaAgentChat = () => {
           Send
         </button>
       </form>
-      <button
-        type="button"
-        onClick={() => patchState({ input: SUGGESTED_PROMPT })}
-        disabled={isLoading || !isConnected}
-        className="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-xs font-mono text-muted transition-colors hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {SUGGESTED_PROMPT}
-      </button>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-muted">Try:</span>
+        {SUGGESTED_PROMPTS.map((prompt) => (
+          <button
+            key={prompt}
+            type="button"
+            onClick={() => patchState({ input: prompt })}
+            disabled={isLoading || !isConnected}
+            className="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-xs font-mono text-muted transition-colors hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {prompt}
+          </button>
+        ))}
+      </div>
     </div>
   )
 

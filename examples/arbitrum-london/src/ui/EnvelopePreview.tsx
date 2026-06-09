@@ -141,7 +141,7 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
     : null
 
   const rawHexNode = innerData !== undefined ? (
-    <details className="px-5 pb-1">
+    <details className="px-5 pt-2 pb-1">
       <summary className="cursor-pointer text-xs text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
         Show raw calldata
       </summary>
@@ -196,9 +196,9 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
             {formatExpiry(remainingSeconds)}{' '}
             <span
               className="text-xs text-muted opacity-70"
-              title="Producer-declared validity window. This minimal demo gate does not enforce expiry on-chain - it is not one of the five gate checks."
+              title="Producer-declared validity window. On this testnet demo gate it is advisory; in production the policy gate enforces the deadline on-chain as a hard limit."
             >
-              (advisory)
+              (advisory on testnet)
             </span>
           </span>
         </div>
