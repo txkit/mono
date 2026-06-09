@@ -62,7 +62,7 @@ const Home = () => {
           <h2 className="text-xl font-semibold mb-2">x402 RWA agent</h2>
           <p className="text-sm text-muted mb-4">
             x402-paid agent buying tokenised equity on Robinhood Chain testnet.
-            Multi-chain envelope flow, same policy gate.
+            Same policy gate, a second Arbitrum Orbit chain.
           </p>
           <p className="text-sm text-accent">Open demo &rarr;</p>
         </Link>
