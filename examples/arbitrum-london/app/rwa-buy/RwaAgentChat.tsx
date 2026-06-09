@@ -95,7 +95,7 @@ export const RwaAgentChat = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const trimmed = input.trim()
-    if (trimmed.length === 0 || isLoading || paymentBody === null) {
+    if (trimmed.length === 0 || isLoading || paymentBody === null || !isConnected) {
       return
     }
 
@@ -175,6 +175,9 @@ export const RwaAgentChat = () => {
 
   const isBusySendingTx = isSigning || isConfirming
   const envelopeChainId = envelope !== null ? Number(envelope.chain.split(':')[1]) : null
+  const inputPlaceholder = isConnected
+    ? 'Buy 5 TSLA...'
+    : 'Connect your wallet to start...'
 
   const decodedForPreview = decodedInner !== null
     ? {
@@ -275,14 +278,14 @@ export const RwaAgentChat = () => {
         <input
           aria-label="Describe an RWA purchase"
           className="flex-1 rounded-md border border-border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent"
-          placeholder="Buy 5 TSLA..."
+          placeholder={inputPlaceholder}
           value={input}
           onChange={(event) => patchState({ input: event.target.value })}
-          disabled={isLoading}
+          disabled={isLoading || !isConnected}
         />
         <button
           type="submit"
-          disabled={isLoading || input.trim().length === 0}
+          disabled={isLoading || !isConnected || input.trim().length === 0}
           className="rounded-md bg-accent px-4 py-2 text-sm text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
         >
           Send

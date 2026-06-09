@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useAccount, useChainId, useSignTypedData, useSwitchChain } from 'wagmi'
 import { keccak256, toBytes } from 'viem'
 
@@ -64,7 +64,7 @@ export const X402Paywall = (props: X402PaywallProps) => {
 
   const { signTypedDataAsync } = useSignTypedData()
 
-  const fetchRequirements = async (): Promise<RequirementsShape | null> => {
+  const fetchRequirements = useCallback(async (): Promise<RequirementsShape | null> => {
     try {
       const response = await fetch('/api/x402')
       const json = (await response.json()) as RequirementsShape
@@ -72,7 +72,25 @@ export const X402Paywall = (props: X402PaywallProps) => {
     } catch {
       return null
     }
-  }
+  }, [])
+
+  // Load the payment requirements on mount so the price (amount + asset +
+  // network) is visible before the user commits to "Pay and unlock", instead
+  // of only appearing mid-flow after the first click.
+  useEffect(() => {
+    let cancelled = false
+    const loadRequirements = async () => {
+      const fetched = await fetchRequirements()
+      if (!cancelled && fetched !== null) {
+        setRequirements(fetched)
+      }
+    }
+    void loadRequirements()
+
+    return () => {
+      cancelled = true
+    }
+  }, [ fetchRequirements ])
 
   const handlePayAndUnlock = async () => {
     if (!isConnected || connectedAddress === undefined) {

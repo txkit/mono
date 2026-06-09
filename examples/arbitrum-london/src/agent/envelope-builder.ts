@@ -1,4 +1,4 @@
-import { encodeAbiParameters, encodeFunctionData, getAddress, keccak256, stringToHex, type Hex } from 'viem'
+import { encodeAbiParameters, encodeFunctionData, formatUnits, getAddress, keccak256, stringToHex, type Hex } from 'viem'
 
 import { ARBITRUM_SEPOLIA_CHAIN_ID, ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import {
@@ -103,6 +103,45 @@ const generateNonce = (): bigint => {
 }
 
 /**
+ * Known Arbitrum Sepolia testnet tokens the yield agent can name (mirrors
+ * src/agent/system-prompt.ts). Used only to render a human envelope label
+ * ("Swap 100 USDC for PT-stETH") from the agent's structured args - the
+ * decoded on-chain call args stay raw. Keys are lowercased addresses.
+ */
+const KNOWN_TOKENS: Record<string, { symbol: string, decimals: number }> = {
+  '0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d': { symbol: 'USDC', decimals: 6 },
+  '0x980b62da83eff3d4576c647993b0c1d7faf17c73': { symbol: 'WETH', decimals: 18 },
+  '0x000000000000000000000000000000000000de01': { symbol: 'PT-stETH', decimals: 18 },
+  '0x000000000000000000000000000000000000de02': { symbol: 'PT-USDC', decimals: 18 },
+}
+
+/**
+ * Build the human swap summary from the agent's structured args. Falls back to
+ * the raw amount + address for unknown tokens so the label is always honest.
+ * The mock router is unit-preserving (1:0.995 on raw units), so minPtOut shares
+ * tokenIn's decimal scale and is formatted with tokenIn decimals when known.
+ */
+const formatSwapLabel = (
+  tokenIn: `0x${string}`,
+  tokenOut: `0x${string}`,
+  amountInRaw: string,
+  minPtOut: bigint,
+): string => {
+  const tokenInInfo = KNOWN_TOKENS[tokenIn.toLowerCase()] || null
+  const tokenOutInfo = KNOWN_TOKENS[tokenOut.toLowerCase()] || null
+
+  const amountInLabel = tokenInInfo !== null
+    ? `${formatUnits(BigInt(amountInRaw), tokenInInfo.decimals)} ${tokenInInfo.symbol}`
+    : `${amountInRaw} of ${tokenIn}`
+  const tokenOutLabel = tokenOutInfo !== null ? tokenOutInfo.symbol : `PT ${tokenOut}`
+  const minOutLabel = tokenInInfo !== null
+    ? `${formatUnits(minPtOut, tokenInInfo.decimals)} ${tokenOutLabel}`
+    : minPtOut.toString()
+
+  return `Swap ${amountInLabel} for ${tokenOutLabel} (min ${minOutLabel})`
+}
+
+/**
  * Build a Pendle yield-swap envelope. Returns the envelope with a
  * placeholder signature - the caller (server-side /api/agent route) signs
  * the EIP-712 digest via signEnvelope() and re-encodes the outer call data
@@ -136,8 +175,7 @@ export const buildPendleEnvelope = (
     args: [ receiverAddress, tokenOut, amountInBigInt, minPtOut ],
   })
   const innerValueHex = '0x0' as `0x${string}`
-  const innerLabel =
-    `Pendle: swap ${args.amountIn} of ${tokenIn} for PT ${tokenOut} (min ${minPtOut.toString()})`
+  const innerLabel = formatSwapLabel(tokenIn, tokenOut, args.amountIn, minPtOut)
 
   const inner = {
     to: routerAddress,
