@@ -1,7 +1,13 @@
 import type { CSSProperties } from 'react'
 
 
-export type IconName = 'brain' | 'shield' | 'check-circle'
+export type IconName =
+  | 'brain'
+  | 'shield'
+  | 'check-circle'
+  | 'github'
+  | 'git-pull-request'
+  | 'message-square'
 
 type IconProps = {
   name: IconName,
@@ -12,6 +18,9 @@ const ICON_SOURCES: Record<IconName, string> = {
   'brain': "url('/icons/brain.svg')",
   'shield': "url('/icons/shield.svg')",
   'check-circle': "url('/icons/check-circle.svg')",
+  'github': "url('/icons/github.svg')",
+  'git-pull-request': "url('/icons/git-pull-request.svg')",
+  'message-square': "url('/icons/message-square.svg')",
 }
 
 /**

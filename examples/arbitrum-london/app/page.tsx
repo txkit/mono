@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { Icon } from '@/src/ui/Icon'
 import { WalletConnectButton } from '@/src/ui/WalletConnectButton'
 
 
@@ -75,23 +76,35 @@ const Home = () => {
       </section>
 
       <footer className="border-t border-border pt-8 text-sm text-muted">
-        <p className="mb-2">
-          Source:{' '}
-          <a className="underline hover:text-foreground" href="https://github.com/txkit/mono">
-            github.com/txkit/mono
-          </a>
-          {' '}- ERC PR:{' '}
-          <a className="underline hover:text-foreground" href="https://github.com/ethereum/ERCs/pull/1753">
-            ethereum/ERCs#1753
-          </a>
-          {' '}- Discussion:{' '}
+        <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2">
           <a
-            className="underline hover:text-foreground"
-            href="https://ethereum-magicians.org/t/erc-8265-prepared-transaction-envelope/28557"
+            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+            href="https://github.com/txkit/mono"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            Ethereum Magicians thread 28557
+            <Icon name="github" className="size-4" />
+            txKit/mono
           </a>
-        </p>
+          <a
+            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+            href="https://github.com/ethereum/ERCs/pull/1753"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Icon name="git-pull-request" className="size-4" />
+            ERC-8265 (PR #1753)
+          </a>
+          <a
+            className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+            href="https://ethereum-magicians.org/t/erc-8265-prepared-transaction-envelope/28557"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Icon name="message-square" className="size-4" />
+            Magicians discussion
+          </a>
+        </div>
         <p>Built for the Arbitrum Open House London Buildathon, due June 14 2026</p>
       </footer>
     </main>

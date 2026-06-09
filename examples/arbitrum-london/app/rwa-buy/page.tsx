@@ -94,6 +94,17 @@ const FlowC = () => {
 
       <RwaAgentChat />
 
+      <Link
+        href="/yield-swap"
+        className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-5 hover:border-accent transition-colors"
+      >
+        <div>
+          <p className="text-xs uppercase tracking-wider text-muted">Next demo</p>
+          <p className="text-lg font-semibold">Pendle yield swap</p>
+        </div>
+        <span className="text-xl text-accent" aria-hidden="true">&rarr;</span>
+      </Link>
+
       <footer className="border-t border-border pt-6 text-xs opacity-60">
         <p>
           x402 payment: verify is real (EIP-712 signer recovery), settle is stubbed

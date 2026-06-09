@@ -37,6 +37,17 @@ const FlowA = () => {
 
       <PendleAgentChat />
 
+      <Link
+        href="/rwa-buy"
+        className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-5 hover:border-accent transition-colors"
+      >
+        <div>
+          <p className="text-xs uppercase tracking-wider text-muted">Next demo</p>
+          <p className="text-lg font-semibold">x402 RWA agent</p>
+        </div>
+        <span className="text-xl text-accent" aria-hidden="true">&rarr;</span>
+      </Link>
+
       <footer className="border-t border-border pt-6 text-xs opacity-60 space-y-1">
         <p>
           Mock Pendle router used on testnet - production envelope shape matches Pendle V2.

@@ -45,6 +45,9 @@ const INITIAL_STATE: ChatState = {
   decodedInner: null,
 }
 
+/** Canonical example prompt offered as a one-click chip under the composer. */
+const SUGGESTED_PROMPT = 'Swap 100 USDC for PT-stETH'
+
 /**
  * Scenario A client: Claude tool-use loop + one-click sign.
  *
@@ -163,11 +166,7 @@ export const PendleAgentChat = () => {
 
   const emptyStateNode = (
     <div className="rounded-lg border border-dashed border-border bg-card/40 px-5 py-8 text-center">
-      <p className="text-sm text-muted">
-        Try{': '}
-        <span className="font-mono text-foreground">Swap 100 USDC for PT-stETH</span>
-      </p>
-      <p className="text-xs text-muted mt-2">
+      <p className="text-xs text-muted">
         PT-stETH is a Pendle Principal Token - a fixed-yield position. The agent calls
         prepare_pendle_yield_swap, you review the decoded envelope, then sign in your wallet.
       </p>
@@ -251,23 +250,36 @@ export const PendleAgentChat = () => {
   // Once an envelope is on screen the next action is Reject or Sign, not more
   // chatting, so the composer is hidden during review and returns on reject.
   const chatFormNode = isPrepared ? null : (
-    <form onSubmit={handleSubmit} className="flex gap-2">
-      <input
-        aria-label="Describe a yield rotation"
-        className="flex-1 rounded-md border border-border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent"
-        placeholder={inputPlaceholder}
-        value={input}
-        onChange={(event) => patchState({ input: event.target.value })}
-        disabled={isLoading || !isConnected}
-      />
-      <button
-        type="submit"
-        disabled={isLoading || !isConnected || input.trim().length === 0}
-        className="rounded-md bg-accent px-4 py-2 text-sm text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
-      >
-        Send
-      </button>
-    </form>
+    <div className="space-y-2">
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <input
+          aria-label="Describe a yield rotation"
+          className="flex-1 rounded-md border border-border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent"
+          placeholder={inputPlaceholder}
+          value={input}
+          onChange={(event) => patchState({ input: event.target.value })}
+          disabled={isLoading || !isConnected}
+        />
+        <button
+          type="submit"
+          disabled={isLoading || !isConnected || input.trim().length === 0}
+          className="rounded-md bg-accent px-4 py-2 text-sm text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
+        >
+          Send
+        </button>
+      </form>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-muted">Try</span>
+        <button
+          type="button"
+          onClick={() => patchState({ input: SUGGESTED_PROMPT })}
+          disabled={isLoading || !isConnected}
+          className="inline-flex min-h-[44px] items-center rounded-full border border-border px-3 text-xs font-mono text-muted hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {SUGGESTED_PROMPT}
+        </button>
+      </div>
+    </div>
   )
 
   return (
