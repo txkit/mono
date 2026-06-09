@@ -142,7 +142,7 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
 
   const rawHexNode = innerData !== undefined ? (
     <details className="px-5 pb-1">
-      <summary className="text-xs text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
+      <summary className="cursor-pointer text-xs text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
         Show raw calldata
       </summary>
       <div className="mt-2 rounded-lg bg-card-sunken p-3 font-mono text-xs break-all">
