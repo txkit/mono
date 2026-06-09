@@ -199,8 +199,8 @@ export const PendleAgentChat = () => {
   const mockNoticeNode = isPrepared ? (
     <div className="rounded-md border border-border bg-card/40 px-3 py-2 text-xs text-muted">
       <span className="font-medium text-foreground">Testnet demo - real enforcement, mock settlement.</span>{' '}
-      All 5 AgentPolicyGate checks execute on-chain (verifiable on Arbiscan). The swap router is a mock,
-      so no tokens move - the demo proves the verification layer, not the DEX.
+      The swap router is a mock, so no tokens move - the demo proves the verification layer, not the DEX.
+      The gate checks above run on-chain, verifiable on Arbiscan.
     </div>
   ) : null
 

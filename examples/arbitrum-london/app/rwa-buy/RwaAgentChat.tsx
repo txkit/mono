@@ -223,6 +223,14 @@ export const RwaAgentChat = () => {
 
   const checklistNode = isPrepared ? <PolicyChecklist /> : null
 
+  const mockNoticeNode = isPrepared ? (
+    <div className="rounded-md border border-border bg-card/40 px-3 py-2 text-xs text-muted">
+      <span className="font-medium text-foreground">Testnet demo - real enforcement, mock settlement.</span>{' '}
+      The RWA router is a mock, so no tokens move - the demo proves the verification layer, not the brokerage.
+      The gate checks above run on-chain, verifiable on the explorer.
+    </div>
+  ) : null
+
   const errorNode = errorMessage !== null ? (
     <div role="alert" className="rounded-md border border-error bg-error-bg px-3 py-2 text-sm text-error">
       {errorMessage}
@@ -294,6 +302,7 @@ export const RwaAgentChat = () => {
       {errorNode}
       {previewNode}
       {checklistNode}
+      {mockNoticeNode}
       {actionsNode}
       {chatFormNode}
     </section>
