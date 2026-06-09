@@ -16,11 +16,11 @@ import { ChatMessage } from '@/src/ui/ChatMessage'
 import { EnvelopePreview } from '@/src/ui/EnvelopePreview'
 import type { SignedPaymentBody } from '@/src/x402/facilitator'
 
-import { AgentReasoning } from '../flow-a/AgentReasoning/AgentReasoning'
-import { PolicyChecklist } from '../flow-a/PolicyChecklist/PolicyChecklist'
-import { SignEnvelopeActions } from '../flow-a/SignEnvelopeActions'
-import { fetchDecoded, type DecodedCall } from '../flow-a/utils/fetchDecoded'
-import { formatChainLabel, formatExplorerBase, resolveReplyText, splitReasoningLines } from '../flow-a/utils/formatters'
+import { AgentReasoning } from '../yield-swap/AgentReasoning/AgentReasoning'
+import { PolicyChecklist } from '../yield-swap/PolicyChecklist/PolicyChecklist'
+import { SignEnvelopeActions } from '../yield-swap/SignEnvelopeActions'
+import { fetchDecoded, type DecodedCall } from '../yield-swap/utils/fetchDecoded'
+import { formatChainLabel, formatExplorerBase, resolveReplyText, splitReasoningLines } from '../yield-swap/utils/formatters'
 import { X402Paywall } from './X402Paywall'
 
 

@@ -49,7 +49,7 @@ type VerifyResponseShape = {
  * no on-chain transfer occurs. The verify step (EIP-712 signer recovery,
  * amount + expiry checks) is real.
  *
- * Design mirrors the flow-a empty-state card.
+ * Design mirrors the yield-swap empty-state card.
  */
 export const X402Paywall = (props: X402PaywallProps) => {
   const { onUnlocked } = props

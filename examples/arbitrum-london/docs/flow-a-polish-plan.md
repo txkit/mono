@@ -1,21 +1,21 @@
-# flow-a demo polish - implementation plan (from Figma design)
+# yield-swap demo polish - implementation plan (from Figma design)
 
 > Written before a context compaction so the design analysis survives. Execute from this file.
 
 **Branch:** `feat/arbitrum-pendle-real-tx` (off main). PR #26 open.
-**Goal:** adapt the approved Figma design into the real `app/flow-a` Pendle flow - the 3 hero moments for the 90-second buildathon demo video, on the deployed Arbitrum Sepolia contracts.
+**Goal:** adapt the approved Figma design into the real `app/yield-swap` Pendle flow - the 3 hero moments for the 90-second buildathon demo video, on the deployed Arbitrum Sepolia contracts.
 
 ## Design source
 
 - Zip: `~/Downloads/TransactionSafetyFlowDesign.zip` (extracted earlier to `/tmp/txsfd`, may not survive compaction - re-unzip if needed).
-- It is a standalone Vite+React+Tailwind+shadcn prototype with SIMULATED timers. We take its UX/structure, NOT its code (wrong stack), and wire it to real flow-a data.
+- It is a standalone Vite+React+Tailwind+shadcn prototype with SIMULATED timers. We take its UX/structure, NOT its code (wrong stack), and wire it to real yield-swap data.
 - Key design files: `src/app/App.tsx` (flow state machine), `src/app/components/{agent-reasoning,policy-verification,transaction-preview,execution-success}.tsx`.
 
 ## Stack translation (the design does NOT drop in)
 
 The design uses `motion/react` (Framer Motion), `lucide-react` (inline SVG), shadcn `Card/Badge/Button`. txKit forbids all three. Translate:
 - **Framer Motion -> CSS keyframe animations.** Use the example's Tailwind + the `--tx-duration-*` / `--tx-ease-*` tokens. Respect `prefers-reduced-motion` (one block at end of each CSS file).
-- **lucide inline SVG -> CSS-mask icons.** Rule: `assets/icons/<name>.svg` + a `<span>` with CSS mask. Icons needed: `brain`, `shield`, `check-circle`, `external-link`, `copy`. Check `app/flow-a` / `src/ui` for existing mask-icon pattern first (CopyableValue may already have copy/external-link).
+- **lucide inline SVG -> CSS-mask icons.** Rule: `assets/icons/<name>.svg` + a `<span>` with CSS mask. Icons needed: `brain`, `shield`, `check-circle`, `external-link`, `copy`. Check `app/yield-swap` / `src/ui` for existing mask-icon pattern first (CopyableValue may already have copy/external-link).
 - **shadcn Card/Badge/Button -> plain divs with the example's Tailwind classes** (the example already styles cards as `rounded-lg border border-border bg-card p-6`).
 
 ## Token mapping (design token -> example Tailwind class)
@@ -58,7 +58,7 @@ Current `src/ui/EnvelopePreview.tsx` already shows chain, target, decoded args, 
 ### 4. ExecutionSuccess (upgrade of existing tx-link) - HERO 3
 `SignEnvelopeActions` already renders the post-tx explorer link. Upgrade the success state to a card: green border, a check icon that springs in, "Executed On-Chain" + "Transaction confirmed", the tx hash in a `bg-card-sunken` mono row + an external-link to Arbiscan ("View on Arbiscan"). Reuse `resolveExplorerLabel` / `formatTxExplorerUrl` (already multi-chain).
 
-## flow-a wiring (state -> component)
+## yield-swap wiring (state -> component)
 
 `PendleAgentChat.tsx` already has: messages, isLoading, envelope, decodedInner, txHash, isSigning/isConfirming/isConfirmed. Map:
 - isLoading (agent call in flight) -> AgentReasoning in "preparing" state (subtitle "Preparing transaction...", typing dots).
@@ -70,10 +70,10 @@ Current `src/ui/EnvelopePreview.tsx` already shows chain, target, decoded args, 
 
 ## Files
 
-- Create: `app/flow-a/AgentReasoning/AgentReasoning.tsx` (+ `.css`), `app/flow-a/PolicyChecklist/PolicyChecklist.tsx` (+ `.css`). Folder-per-component (project rule). Scoped helpers in `utils/` if needed.
+- Create: `app/yield-swap/AgentReasoning/AgentReasoning.tsx` (+ `.css`), `app/yield-swap/PolicyChecklist/PolicyChecklist.tsx` (+ `.css`). Folder-per-component (project rule). Scoped helpers in `utils/` if needed.
 - Modify: `src/ui/EnvelopePreview.tsx` (+ its css) - function-call formatting + 3-col grid.
-- Modify: `app/flow-a/SignEnvelopeActions.tsx` - success card.
-- Modify: `app/flow-a/PendleAgentChat.tsx` - render the new components per state; pass real reply as reasoning.
+- Modify: `app/yield-swap/SignEnvelopeActions.tsx` - success card.
+- Modify: `app/yield-swap/PendleAgentChat.tsx` - render the new components per state; pass real reply as reasoning.
 - Add icons: `assets/icons/{brain,shield,check-circle}.svg` (+ external-link/copy if not already present). MD5-dedup check before adding.
 
 ## Code rules (apply throughout)
@@ -83,6 +83,6 @@ Arrow functions; `const Component: React.FC<Props>` for internal, `forwardRef` +
 ## Verification
 
 - `pnpm exec tsc --noEmit` · `pnpm exec eslint app src` · `pnpm exec next build` · em-dash scan (`git diff main...HEAD | grep -nP '[\x{2014}\x{2013}]'`).
-- Visual: `pnpm dev` -> `/flow-a` - the 3 hero moments render; reduced-motion respected. (Full agent run needs ANTHROPIC_API_KEY + Mike; verify the static/preview render + build.)
-- Do NOT touch the other-session uncommitted changes in the working tree (Robinhood deploy sync in deployed.json/decoder-data/README - intentional, leave them; `git add` only flow-a polish files).
+- Visual: `pnpm dev` -> `/yield-swap` - the 3 hero moments render; reduced-motion respected. (Full agent run needs ANTHROPIC_API_KEY + Mike; verify the static/preview render + build.)
+- Do NOT touch the other-session uncommitted changes in the working tree (Robinhood deploy sync in deployed.json/decoder-data/README - intentional, leave them; `git add` only yield-swap polish files).
 - Commit per component; PR #26 stays open (not merge).

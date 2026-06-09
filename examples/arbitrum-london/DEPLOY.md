@@ -13,9 +13,9 @@ Verified state (2026-06-08): `forge build` + `forge test` green (25 tests: 15 Ag
 | `MockRwaRouter` | Arbitrum Sepolia (421614) | scenario C inner buy target (bonus proof) | yes (Arbiscan) |
 | `AgentPolicyGate` | Robinhood Chain testnet (46630) | scenario A + C gate (sponsor chain) | no (explorer verifier API not published) |
 | `MockPendleRouter` | Robinhood Chain testnet (46630) | scenario A inner target (proof) | no |
-| `MockRwaRouter` | Robinhood Chain testnet (46630) | scenario C inner buy target (live /flow-c) | no |
+| `MockRwaRouter` | Robinhood Chain testnet (46630) | scenario C inner buy target (live /rwa-buy) | no |
 
-Both scenarios are live: `buildPendleEnvelope` targets Arbitrum Sepolia (`/flow-a`), `buildRwaEnvelope` targets Robinhood Chain (`/flow-c`, x402-gated). The RWA router was also deployed on Arbitrum as a bonus proof. See section 3d for the Robinhood RWA deploy and the Orbit gas gotcha.
+Both scenarios are live: `buildPendleEnvelope` targets Arbitrum Sepolia (`/yield-swap`), `buildRwaEnvelope` targets Robinhood Chain (`/rwa-buy`, x402-gated). The RWA router was also deployed on Arbitrum as a bonus proof. See section 3d for the Robinhood RWA deploy and the Orbit gas gotcha.
 
 ## 0. Prerequisites
 
@@ -161,7 +161,7 @@ cast send $GATE_ROBINHOOD "setAllowedRecipient(address,bool)" $ROUTER_ROBINHOOD 
   --private-key $DEPLOYER_PRIVATE_KEY
 ```
 
-### 3d. MockRwaRouter (scenario C, live /flow-c)
+### 3d. MockRwaRouter (scenario C, live /rwa-buy)
 
 Deploy via `forge create` (not `forge script`) because of the Orbit gas gotcha above:
 
@@ -256,7 +256,7 @@ cd examples/arbitrum-london
 pnpm dev   # http://localhost:3000
 ```
 
-Open `/flow-a`, ask the agent to prepare a Pendle yield swap. Expect:
+Open `/yield-swap`, ask the agent to prepare a Pendle yield swap. Expect:
 
 - no "not deployed yet" error,
 - the envelope preview shows the outer call to `GATE_ARB` and the inner call to `ROUTER_ARB`,

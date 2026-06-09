@@ -30,7 +30,7 @@ export const X402_MERCHANT_ADDRESS = '0x000000000000000000000000000000000000c402
 export const X402_ASSET = 'native' as const
 // Illustrative challenge amount (100000 abstract units) shown in the paywall.
 export const X402_REQUIRED_AMOUNT = 100000n
-export const X402_RESOURCE = 'flow-c: RWA agent (Robinhood Chain testnet)'
+export const X402_RESOURCE = 'rwa-buy: RWA agent (Robinhood Chain testnet)'
 
 export const X402_DOMAIN = {
   name: 'txKit-x402',

@@ -68,7 +68,7 @@ body {
 }
 
 /*
- * flow-a hero animations - the agent-reasoning, policy-gate and execution
+ * yield-swap hero animations - the agent-reasoning, policy-gate and execution
  * moments of the Pendle demo. Pure CSS keyframes (no Framer Motion); stagger is
  * applied per element with an inline `animation-delay`. Every entrance keyframe
  * uses `both` so an element holds its hidden start state until its delay fires

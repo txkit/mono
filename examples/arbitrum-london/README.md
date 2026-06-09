@@ -6,8 +6,8 @@ Transaction Envelope. The user reviews a typed, decoded, fee-previewed summary. 
 `AgentPolicyGate` enforces the policy - recipient allow-list, spend cap, replay protection, and
 EIP-712 agent-signer binding - before anything executes.
 
-- **Scenario A (live):** Pendle yield swap on Arbitrum Sepolia (`/flow-a`).
-- **Scenario C (live):** x402-paid RWA stock buy on Robinhood Chain testnet (`/flow-c`).
+- **Scenario A (live):** Pendle yield swap on Arbitrum Sepolia (`/yield-swap`).
+- **Scenario C (live):** x402-paid RWA stock buy on Robinhood Chain testnet (`/rwa-buy`).
 
 ## Live on-chain
 
@@ -30,7 +30,7 @@ proof tx). Every `executeEnvelope` below returned status 0x1.
 Contracts deployed 2026-06-05 / 2026-06-08 with **verified source on Arbiscan** (solc 0.8.34). The
 agent signer is `0xEC6613578be203e23e360A3985EA1601435D5907` and both routers are allow-listed on
 the gate. Each `executeEnvelope` is a real `SmokeExecuteEnvelope` / `SmokeRwaBuy` run - the same
-gate and the same EIP-712 envelope shape the dApp signs. Pendle is the live `/flow-a` UI; the RWA
+gate and the same EIP-712 envelope shape the dApp signs. Pendle is the live `/yield-swap` UI; the RWA
 buy here is the bonus proof that the same envelope path generalises to a second action.
 
 ### Robinhood Chain testnet - chainId 46630 (sponsor)
@@ -45,7 +45,7 @@ buy here is the bonus proof that the same envelope path generalises to a second 
 
 Contracts deployed 2026-06-05 / 2026-06-08 (solc 0.8.34); the agent signer is
 `0xEC6613578be203e23e360A3985EA1601435D5907` and both routers are allow-listed on the gate. The RWA
-buy on Robinhood is the live `/flow-c` UI; Pendle here is the proof tx. Robinhood Chain (Arbitrum
+buy on Robinhood is the live `/rwa-buy` UI; Pendle here is the proof tx. Robinhood Chain (Arbitrum
 Orbit) runs the cancun/PUSH0 bytecode as-is - forge's EIP-3855 "might not work properly" warning is
 a stale chain-id allowlist, not a runtime limit. Its `eth_estimateGas` under-reports CREATE and
 L1-data cost and forge script does not honour its gas flags here, so the RWA router was deployed
@@ -70,7 +70,7 @@ The verification layer - not agent autonomy - is the point. It scales to any age
 ## Run it
 
 - **Deploy + capture tx hashes:** [`DEPLOY.md`](./DEPLOY.md) - one funded testnet key, copy-paste.
-- **Local dev:** `pnpm dev`, then open `/flow-a` (Pendle, Arbitrum) or `/flow-c` (x402-paid RWA,
+- **Local dev:** `pnpm dev`, then open `/yield-swap` (Pendle, Arbitrum) or `/rwa-buy` (x402-paid RWA,
   Robinhood). Until the contracts are deployed a flow runs in preview mode (a banner explains, and
   the agent call is skipped so it spends nothing).
 - **Contracts:** `cd contracts && forge test` (25 tests).

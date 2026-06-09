@@ -18,7 +18,7 @@
 - Deployed config: `src/config/deployed.ts`, `contracts/deployed.json`
 - Decoder: `decoder-data/mock-pendle-router.json`, `app/api/decode/route.ts`
 - Deploy + smoke: `contracts/script/DeployRobinhoodTestnet.s.sol`, `contracts/script/SmokeExecuteEnvelope.s.sol`
-- UI: `app/flow-a/PendleAgentChat.tsx`, `app/flow-a/SignEnvelopeActions.tsx`, `app/flow-a/utils/*`
+- UI: `app/yield-swap/PendleAgentChat.tsx`, `app/yield-swap/SignEnvelopeActions.tsx`, `app/yield-swap/utils/*`
 - Agent route: `app/api/agent/route.ts`
 
 ---
@@ -813,25 +813,25 @@ git commit -m "feat(example): decode MockRwaRouter.buy with ascii ticker"
 ### Task 10: X402Paywall component
 
 **Files:**
-- Create: `app/flow-c/X402Paywall.tsx`
+- Create: `app/rwa-buy/X402Paywall.tsx`
 
-- [ ] **Step 1: Implement the paywall gate.** Props: `onUnlocked(proof)`. Fetches `GET /api/x402` to show requirements; on "Pay & unlock" builds a `PaymentAuthorization` (payer = connected address, payTo = merchant, amount = required, nonce = `crypto.randomUUID` hashed to bytes32, validUntil = now + 600), signs via wagmi `useSignTypedData`, POSTs to `/api/x402`, and on `{ verified: true }` calls `onUnlocked(proof)`. Mirror the visual style of `app/flow-a` empty-state cards. Include: `role="status"` for pending, `role="alert"` for errors, focus-visible on the button. Honestly label "settlement stubbed on testnet".
+- [ ] **Step 1: Implement the paywall gate.** Props: `onUnlocked(proof)`. Fetches `GET /api/x402` to show requirements; on "Pay & unlock" builds a `PaymentAuthorization` (payer = connected address, payTo = merchant, amount = required, nonce = `crypto.randomUUID` hashed to bytes32, validUntil = now + 600), signs via wagmi `useSignTypedData`, POSTs to `/api/x402`, and on `{ verified: true }` calls `onUnlocked(proof)`. Mirror the visual style of `app/yield-swap` empty-state cards. Include: `role="status"` for pending, `role="alert"` for errors, focus-visible on the button. Honestly label "settlement stubbed on testnet".
 
 The EIP-712 domain/types MUST match `src/x402/payment-authorization.ts` exactly (import the constants/types from there; keep the `signTypedData` config identical).
 
 - [ ] **Step 2: Typecheck + commit**
 
 ```bash
-git add app/flow-c/X402Paywall.tsx
+git add app/rwa-buy/X402Paywall.tsx
 git commit -m "feat(example): add x402 paywall gate for scenario C"
 ```
 
 ### Task 11: RwaAgentChat (mirror PendleAgentChat, gated)
 
 **Files:**
-- Modify: `app/flow-c/RwaAgentChat.tsx` (replace the 19-line stub)
+- Modify: `app/rwa-buy/RwaAgentChat.tsx` (replace the 19-line stub)
 
-- [ ] **Step 1: Implement, mirroring `app/flow-a/PendleAgentChat.tsx`.** Deltas:
+- [ ] **Step 1: Implement, mirroring `app/yield-swap/PendleAgentChat.tsx`.** Deltas:
   - Local `isUnlocked` + `paymentProof` state; render `<X402Paywall onUnlocked={...} />` until unlocked, then the chat.
   - `handleSubmit` POSTs to `/api/agent` with `{ messages: next, scenario: 'rwa', receiverAddress: connectedAddress, paymentProof }`.
   - Empty-state hint: `Try: Buy 5 TSLA`.
@@ -842,25 +842,25 @@ git commit -m "feat(example): add x402 paywall gate for scenario C"
 - [ ] **Step 2: Typecheck + commit**
 
 ```bash
-git add app/flow-c/RwaAgentChat.tsx
+git add app/rwa-buy/RwaAgentChat.tsx
 git commit -m "feat(example): implement RwaAgentChat for scenario C"
 ```
 
-### Task 12: flow-c honesty + deploy-pending banner
+### Task 12: rwa-buy honesty + deploy-pending banner
 
 **Files:**
-- Modify: `app/flow-c/page.tsx`
+- Modify: `app/rwa-buy/page.tsx`
 - Modify: `src/ui/DeployPendingBanner.tsx` (generalize for Robinhood) OR create a thin Robinhood variant
 
-- [ ] **Step 1: Fix the false claim in `app/flow-c/page.tsx`** - the footer says x402 routes "are scaffolded but not wired" and labels the page a roadmap placeholder. Replace with accurate copy now that scenario C is live (mention the self-hosted x402 facilitator + stubbed settlement honestly).
+- [ ] **Step 1: Fix the false claim in `app/rwa-buy/page.tsx`** - the footer says x402 routes "are scaffolded but not wired" and labels the page a roadmap placeholder. Replace with accurate copy now that scenario C is live (mention the self-hosted x402 facilitator + stubbed settlement honestly).
 
-- [ ] **Step 2: Show a deploy-pending banner for Robinhood** when `checkIsMockRwaRouterDeployed(46630)` / `checkIsAgentPolicyGateDeployed(46630)` is false. Generalize `DeployPendingBanner` to take a chainId + contract predicates, or add a small `flow-c` banner. Mirror the existing banner copy.
+- [ ] **Step 2: Show a deploy-pending banner for Robinhood** when `checkIsMockRwaRouterDeployed(46630)` / `checkIsAgentPolicyGateDeployed(46630)` is false. Generalize `DeployPendingBanner` to take a chainId + contract predicates, or add a small `rwa-buy` banner. Mirror the existing banner copy.
 
 - [ ] **Step 3: Typecheck + commit**
 
 ```bash
-git add app/flow-c/page.tsx src/ui/DeployPendingBanner.tsx
-git commit -m "feat(example): honest flow-c copy + robinhood deploy-pending banner"
+git add app/rwa-buy/page.tsx src/ui/DeployPendingBanner.tsx
+git commit -m "feat(example): honest rwa-buy copy + robinhood deploy-pending banner"
 ```
 
 ---

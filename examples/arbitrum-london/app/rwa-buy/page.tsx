@@ -5,7 +5,7 @@ import {
   checkIsAgentPolicyGateDeployed,
   checkIsMockRwaRouterDeployed,
 } from '@/src/config/deployed'
-import { WalletConnectButton } from '../flow-a/WalletConnectButton'
+import { WalletConnectButton } from '../yield-swap/WalletConnectButton'
 import { RwaAgentChat } from './RwaAgentChat'
 
 

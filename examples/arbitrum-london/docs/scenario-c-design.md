@@ -79,7 +79,7 @@ x402 (Coinbase HTTP 402 payment protocol):
 - `app/api/agent/route.ts` - wire the `rwa` scenario: Robinhood cost-guard (skip
   Claude pre-deploy), require + re-verify the x402 proof, `prepare_rwa_buy` ->
   build -> sign -> return. Remove the 501 stub.
-- `app/flow-c/X402Paywall.tsx` + real `app/flow-c/RwaAgentChat.tsx` - paywall
+- `app/rwa-buy/X402Paywall.tsx` + real `app/rwa-buy/RwaAgentChat.tsx` - paywall
   stage then a chat mirroring `PendleAgentChat`. Reuse `EnvelopePreview`,
   `SignEnvelopeActions`, `ChatMessage`, `fetchDecoded`, `formatters` (already
   multi-chain), and a generalised deploy-pending banner.

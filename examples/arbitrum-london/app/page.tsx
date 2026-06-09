@@ -36,7 +36,7 @@ const Home = () => {
 
       <section className="grid gap-6 md:grid-cols-3 mb-16">
         <Link
-          href="/flow-a"
+          href="/yield-swap"
           className="md:col-span-2 rounded-lg border border-border bg-card p-6 hover:border-accent transition-colors"
         >
           <div className="flex items-center gap-2 mb-2">
@@ -53,7 +53,7 @@ const Home = () => {
         </Link>
 
         <Link
-          href="/flow-c"
+          href="/rwa-buy"
           className="rounded-lg border border-border bg-card p-6 hover:border-accent transition-colors"
         >
           <div className="flex items-center gap-2 mb-2">
