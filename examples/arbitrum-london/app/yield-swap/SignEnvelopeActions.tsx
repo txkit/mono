@@ -116,7 +116,7 @@ export const SignEnvelopeActions = (props: SignEnvelopeActionsProps) => {
         </button>
         <button
           type="button"
-          onClick={onSign}
+          onClick={isConfirmed ? onReject : onSign}
           disabled={!isConnected || isBusySendingTx}
           className="flex-1 rounded-md border border-success bg-success-bg px-4 py-3 text-sm text-success hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
         >

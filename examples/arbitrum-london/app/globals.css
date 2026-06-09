@@ -46,7 +46,8 @@ body {
  * default (and opt into `cursor-not-allowed` where relevant).
  */
 @layer base {
-  button:not(:disabled) {
+  button:not(:disabled),
+  summary {
     cursor: pointer;
   }
 }
