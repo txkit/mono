@@ -69,6 +69,25 @@ body {
 }
 
 /*
+ * Connect button: hold one stable width across the Connect, reconnect-skeleton
+ * and connected states so the header never shifts on load or navigation. The
+ * reconnect skeleton fills the button (flex) so the loading state reads as the
+ * button itself rather than a small inline pulse.
+ */
+.tx-cw-button {
+  min-width: 11rem;
+  justify-content: center;
+}
+
+.tx-cw-skeleton {
+  flex: 1;
+}
+
+.tx-cw-skeleton-text {
+  flex: 1;
+}
+
+/*
  * yield-swap hero animations - the agent-reasoning, policy-gate and execution
  * moments of the Pendle demo. Pure CSS keyframes (no Framer Motion); stagger is
  * applied per element with an inline `animation-delay`. Every entrance keyframe
