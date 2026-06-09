@@ -268,17 +268,14 @@ export const PendleAgentChat = () => {
           Send
         </button>
       </form>
-      <p className="text-xs text-muted">
-        Try{' '}
-        <button
-          type="button"
-          onClick={() => patchState({ input: SUGGESTED_PROMPT })}
-          disabled={isLoading || !isConnected}
-          className="font-mono text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed"
-        >
-          {SUGGESTED_PROMPT}
-        </button>
-      </p>
+      <button
+        type="button"
+        onClick={() => patchState({ input: SUGGESTED_PROMPT })}
+        disabled={isLoading || !isConnected}
+        className="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-xs font-mono text-muted transition-colors hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {SUGGESTED_PROMPT}
+      </button>
     </div>
   )
 
