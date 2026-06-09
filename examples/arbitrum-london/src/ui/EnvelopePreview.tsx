@@ -192,7 +192,15 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
         </div>
         <div className="flex justify-between gap-3">
           <span className="text-muted shrink-0">Expires in</span>
-          <span className="font-mono">{formatExpiry(remainingSeconds)}</span>
+          <span className="font-mono">
+            {formatExpiry(remainingSeconds)}{' '}
+            <span
+              className="text-xs text-muted opacity-70"
+              title="Producer-declared validity window. This minimal demo gate does not enforce expiry on-chain - it is not one of the five gate checks."
+            >
+              (advisory)
+            </span>
+          </span>
         </div>
         <div className="flex justify-between gap-3">
           <span className="text-muted shrink-0">Decoder source</span>
