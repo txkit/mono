@@ -85,7 +85,7 @@
   .tx-root [data-state="loading"] .tx-tb-name,
   .tx-root [data-state="loading"] .tx-tb-icon,
   .tx-root [data-state="loading"] .tx-tb-icon-fallback,
-  .tx-root .tx-cw-skeleton {
+  .tx-root .tx-cw-button--skeleton {
     background: GrayText;
     color: Canvas;
     animation: none;
