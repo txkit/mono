@@ -71,20 +71,39 @@ body {
 /*
  * Connect button: hold one stable width across the Connect, reconnect-skeleton
  * and connected states so the header never shifts on load or navigation. The
- * reconnect skeleton fills the button (flex) so the loading state reads as the
- * button itself rather than a small inline pulse.
+ * reconnect skeleton is the whole button rendered as one shimmer block (see
+ * @txkit/react ConnectWallet.css .tx-cw-button--skeleton), so pinning width is
+ * the only thing this app needs to add.
  */
 .tx-cw-button {
   min-width: 11rem;
   justify-content: center;
 }
 
-.tx-cw-skeleton {
-  flex: 1;
+/*
+ * Collapse: smooth height expand for the prepared-envelope review block. The
+ * grid-template-rows 0fr -> 1fr transition animates to the natural (auto)
+ * height with no JS measuring; the inner element clips overflow while closed.
+ */
+.tx-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s ease-out;
 }
 
-.tx-cw-skeleton-text {
-  flex: 1;
+.tx-collapse[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+
+.tx-collapse-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-collapse {
+    transition: none;
+  }
 }
 
 /*

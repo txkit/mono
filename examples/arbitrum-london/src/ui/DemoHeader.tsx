@@ -23,8 +23,10 @@ export const DemoHeader = (props: DemoHeaderProps) => {
   const { current, chainId } = props
 
   return (
-    <header className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-2 sm:gap-4">
+    // Mobile: two stacked rows - the menu (Home + tabs) on top, the connect
+    // control below. Desktop: a single row, menu on the left + connect right.
+    <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div className="flex items-center gap-3 sm:gap-4">
         <Link href="/" className="text-sm text-muted hover:text-foreground transition-colors">
           Home
         </Link>

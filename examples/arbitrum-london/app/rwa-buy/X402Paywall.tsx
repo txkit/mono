@@ -115,8 +115,9 @@ export const X402Paywall = (props: X402PaywallProps) => {
         setRequirements(fetched)
       }
 
-      // Build payment authorization fields. validUntil = now + 600s.
-      const validUntil = Math.floor(Date.now() / 1000) + 600
+      // Build payment authorization fields. validUntil = now + 1h, so the unlock
+      // restored from sessionStorage stays valid across navigation for a session.
+      const validUntil = Math.floor(Date.now() / 1000) + 3600
       // nonce: keccak256 of a random UUID encoded to bytes32
       const nonce = keccak256(toBytes(crypto.randomUUID())) as `0x${string}`
 
@@ -211,14 +212,16 @@ export const X402Paywall = (props: X402PaywallProps) => {
   ) : null
 
   return (
-    <div className="rounded-lg border border-dashed border-border bg-card/40 px-5 py-8 text-center space-y-4">
+    <div className="rounded-lg border border-border bg-card/40 px-5 py-8 text-center space-y-4">
       <div>
         <p className="text-sm font-medium text-foreground mb-1">
           x402 payment required
         </p>
         <p className="text-xs text-muted">
           Sign a payment authorization to unlock the RWA agent.
-          Verification is real (EIP-712 signer recovery). Settlement is stubbed on testnet.
+        </p>
+        <p className="mt-1.5 text-xs text-muted">
+          Verification is real (EIP-712 signer recovery); settlement is mocked for this testnet demo.
         </p>
       </div>
 

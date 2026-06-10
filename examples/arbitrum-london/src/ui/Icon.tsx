@@ -5,6 +5,8 @@ export type IconName =
   | 'brain'
   | 'shield'
   | 'check-circle'
+  | 'x-circle'
+  | 'info'
   | 'github'
   | 'git-pull-request'
   | 'message-square'
@@ -19,6 +21,8 @@ const ICON_SOURCES: Record<IconName, string> = {
   'brain': "url('/icons/brain.svg')",
   'shield': "url('/icons/shield.svg')",
   'check-circle': "url('/icons/check-circle.svg')",
+  'x-circle': "url('/icons/x-circle.svg')",
+  'info': "url('/icons/info.svg')",
   'github': "url('/icons/github.svg')",
   'git-pull-request': "url('/icons/git-pull-request.svg')",
   'message-square': "url('/icons/message-square.svg')",

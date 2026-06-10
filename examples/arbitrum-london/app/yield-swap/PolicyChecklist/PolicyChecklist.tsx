@@ -16,7 +16,7 @@ const POLICY_CHECKS: ReadonlyArray<PolicyCheckItem> = [
   { id: 'value', label: 'Forwarded value matches declared value' },
   { id: 'replay', label: 'Not a replay (fresh envelope)' },
   { id: 'allowlist', label: 'Recipient is on the allow-list' },
-  { id: 'spend', label: 'Within the spend cap' },
+  { id: 'spend', label: 'Within the 0 ETH spend cap (no value forwarded)' },
   { id: 'signature', label: 'Agent signature valid (EIP-712)' },
 ]
 

@@ -25,20 +25,17 @@ const Home = () => {
         <h1 className="text-4xl font-bold mb-4">
           Verify before you sign
         </h1>
-        <p className="text-lg text-muted max-w-2xl mb-6">
+        <p className="text-lg text-muted max-w-2xl mb-4">
           An autonomous agent prepares an Arbitrum transaction. You see a
           typed, decoded preview of exactly what it does before signing, and a
           minimum-viable policy gate enforces the rules on-chain.
         </p>
-        <a
-          href="https://github.com/ethereum/ERCs/pull/1753"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-mono text-muted hover:border-accent hover:text-foreground transition-colors"
-        >
-          <span className="size-1.5 rounded-full bg-accent" />
-          Built on ERC-8265 - Ethereum PR #1753
-        </a>
+        <p className="text-muted max-w-2xl">
+          txKit is the reference implementation of ERC-8265, a
+          transaction-safety standard authored by{' '}
+          <span className="text-foreground">Mike Diamond</span> and submitted to
+          Ethereum.
+        </p>
       </header>
 
       <section className="grid gap-6 md:grid-cols-2 mb-16">
@@ -46,8 +43,12 @@ const Home = () => {
           href="/yield-swap"
           className="rounded-lg border border-border bg-card p-6 hover:border-accent transition-colors"
         >
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center justify-between gap-2">
             <span className="text-xs uppercase tracking-wider text-success font-mono">Live demo</span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-mono text-muted">
+              <span className="size-2 rounded-full bg-[#28a0f0]" />
+              Arbitrum Sepolia
+            </span>
           </div>
           <h2 className="text-2xl font-semibold mb-2">Pendle yield swap</h2>
           <p className="text-muted mb-4">
@@ -63,8 +64,12 @@ const Home = () => {
           href="/rwa-buy"
           className="rounded-lg border border-border bg-card p-6 hover:border-accent transition-colors"
         >
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center justify-between gap-2">
             <span className="text-xs uppercase tracking-wider text-success font-mono">Live demo</span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-mono text-muted">
+              <span className="size-2 rounded-full bg-[#00c805]" />
+              Robinhood Chain
+            </span>
           </div>
           <h2 className="text-2xl font-semibold mb-2">x402 RWA agent</h2>
           <p className="text-muted mb-4">

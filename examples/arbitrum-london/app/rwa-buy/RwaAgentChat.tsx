@@ -1,7 +1,7 @@
 'use client'
 
-import { type FormEvent, useState } from 'react'
-import { useAccount, usePublicClient, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi'
+import { type FormEvent, useEffect, useState } from 'react'
+import { useAccount, usePublicClient, useSendTransaction, useSwitchChain, useWaitForTransactionReceipt } from 'wagmi'
 
 // ArbitrumChainId covers eip155:42161 | eip155:421614 | eip155:42170 only.
 // Robinhood Chain (eip155:46630) is an Arbitrum Orbit chain but is NOT in that
@@ -13,7 +13,9 @@ import { useAccount, usePublicClient, useSendTransaction, useWaitForTransactionR
 import type { DemoEnvelope } from '@/src/agent/envelope-builder'
 import { ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import { ChatMessage } from '@/src/ui/ChatMessage'
+import { Collapse } from '@/src/ui/Collapse'
 import { EnvelopePreview } from '@/src/ui/EnvelopePreview'
+import { Note } from '@/src/ui/Note'
 import type { SignedPaymentBody } from '@/src/x402/facilitator'
 
 import { AgentReasoning } from '../yield-swap/AgentReasoning/AgentReasoning'
@@ -40,6 +42,7 @@ type ChatState = {
   errorMessage: string | null,
   envelope: DemoEnvelope | null,
   decodedInner: DecodedCall | null,
+  isRejected: boolean,
 }
 
 const INITIAL_STATE: ChatState = {
@@ -49,6 +52,7 @@ const INITIAL_STATE: ChatState = {
   errorMessage: null,
   envelope: null,
   decodedInner: null,
+  isRejected: false,
 }
 
 /** Example prompts offered as one-click chips under the composer. */
@@ -57,6 +61,9 @@ const SUGGESTED_PROMPTS = [
   'Buy 3 AMZN',
   'Buy 10 PLTR',
 ]
+
+// sessionStorage key for a still-valid x402 unlock (avoids re-pay on reload/nav).
+const X402_STORAGE_KEY = 'txkit-x402-payment'
 
 /**
  * Scenario C client: x402-gated Claude tool-use loop + one-click sign on
@@ -73,17 +80,41 @@ const SUGGESTED_PROMPTS = [
  */
 export const RwaAgentChat = () => {
   const [ state, setState ] = useState<ChatState>(INITIAL_STATE)
-  const { messages, input, isLoading, errorMessage, envelope, decodedInner } = state
+  const { messages, input, isLoading, errorMessage, envelope, decodedInner, isRejected } = state
 
   // x402 gate state - kept local; once unlocked it stays unlocked for the session.
-  const [ isUnlocked, setIsUnlocked ] = useState(false)
   const [ paymentBody, setPaymentBody ] = useState<SignedPaymentBody | null>(null)
+  const isUnlocked = paymentBody !== null
+
+  // Restore a still-valid x402 unlock from a prior page view so the user does
+  // not re-pay on every navigation/reload. sessionStorage is client-only, so it
+  // must hydrate state in an effect after mount (a lazy initializer would
+  // mismatch the SSR render).
+  useEffect(() => {
+    const stored = sessionStorage.getItem(X402_STORAGE_KEY)
+    if (stored === null) {
+      return
+    }
+
+    try {
+      const restored = JSON.parse(stored) as SignedPaymentBody
+      if (restored.validUntil * 1000 > Date.now()) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only storage hydration on mount
+        setPaymentBody(restored)
+      } else {
+        sessionStorage.removeItem(X402_STORAGE_KEY)
+      }
+    } catch {
+      sessionStorage.removeItem(X402_STORAGE_KEY)
+    }
+  }, [])
 
   const patchState = (patch: Partial<ChatState>) => {
     setState((previous) => ({ ...previous, ...patch }))
   }
 
-  const { address: connectedAddress, isConnected } = useAccount()
+  const { address: connectedAddress, isConnected, chainId: walletChainId } = useAccount()
+  const { switchChainAsync } = useSwitchChain()
   const publicClient = usePublicClient({ chainId: ROBINHOOD_TESTNET_CHAIN_ID })
   const {
     sendTransaction,
@@ -96,7 +127,7 @@ export const RwaAgentChat = () => {
 
   const handleUnlocked = (payment: SignedPaymentBody) => {
     setPaymentBody(payment)
-    setIsUnlocked(true)
+    sessionStorage.setItem(X402_STORAGE_KEY, JSON.stringify(payment))
   }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -108,7 +139,7 @@ export const RwaAgentChat = () => {
 
     const userMessage: Message = { id: crypto.randomUUID(), role: 'user', content: trimmed }
     const next = [ ...messages, userMessage ]
-    patchState({ messages: next, input: '', isLoading: true, errorMessage: null })
+    patchState({ messages: next, input: '', isLoading: true, errorMessage: null, isRejected: false })
     resetSendTx()
 
     try {
@@ -155,6 +186,20 @@ export const RwaAgentChat = () => {
     const { call, chain } = envelope
     const chainId = Number(chain.split(':')[1])
 
+    // wagmi's sendTransaction does NOT auto-switch the wallet - it throws a chain
+    // mismatch if the wallet sits on another chain. Switch to the envelope's
+    // chain first, then sign (the x402 paywall pre-switches, but the user may
+    // have moved the wallet since unlocking).
+    patchState({ errorMessage: null })
+    if (walletChainId !== chainId) {
+      try {
+        await switchChainAsync({ chainId })
+      } catch {
+        patchState({ errorMessage: `Switch your wallet to ${formatChainLabel(chain)} to sign this transaction.` })
+        return
+      }
+    }
+
     // Robinhood Chain is Arbitrum Orbit and shares Arbitrum's base-fee model, so
     // a tight maxFeePerGas can land just under base fee and the RPC rejects the
     // tx. Read the live fee and double the cap for headroom: the cap is a
@@ -172,7 +217,9 @@ export const RwaAgentChat = () => {
   }
 
   const handleReject = () => {
-    patchState({ envelope: null, decodedInner: null })
+    // isConfirmed reuses this handler as a post-sign reset ("sign another?"), so
+    // only flag a real decline - an envelope rejected before it was signed.
+    patchState({ envelope: null, decodedInner: null, isRejected: !isConfirmed })
     resetSendTx()
   }
 
@@ -196,42 +243,46 @@ export const RwaAgentChat = () => {
     }
     : undefined
 
-  const emptyStateNode = (
-    <div className="rounded-lg border border-dashed border-border bg-card/40 px-5 py-8 text-center">
-      <p className="text-xs text-muted">
-        The agent calls prepare_rwa_buy, you review the decoded envelope, then sign in your wallet.
-      </p>
-    </div>
+  // Persistent flow intro (does not vanish after the first message).
+  const introNode = (
+    <Note icon="brain">
+      The agent calls <code className="rounded bg-card-sunken px-1 font-mono text-foreground">prepare_rwa_buy</code>,
+      you review the decoded envelope, then sign in your wallet.
+    </Note>
   )
 
-  const latestAssistant = [ ...messages ].reverse().find((message) => message.role === 'assistant')
   const isPrepared = envelope !== null
-  const reasoningLines = isPrepared && latestAssistant !== undefined
-    ? splitReasoningLines(latestAssistant.content)
+  const lastMessage = messages[messages.length - 1]
+  // The agent turn is "active" (hoisted into the reasoning card) only while it
+  // is the last message - i.e. the agent just replied / prepared / was rejected.
+  // Once the user sends a new message the previous turn drops into the transcript
+  // as history instead of lingering as a stale card.
+  const activeAssistant = lastMessage?.role === 'assistant' ? lastMessage : undefined
+  const reasoningLines = activeAssistant !== undefined
+    ? splitReasoningLines(activeAssistant.content)
     : []
-  const transcriptMessages = messages.filter((message) => {
-    const isHoistedIntoReasoning = isPrepared && message.id === latestAssistant?.id
-    return !isHoistedIntoReasoning
-  })
+  const transcriptMessages = messages.filter((message) => message.id !== activeAssistant?.id)
 
-  const messagesNode = messages.length === 0
-    ? emptyStateNode
-    : transcriptMessages.map((message) => (
-      <ChatMessage key={message.id} role={message.role} content={message.content} />
-    ))
+  const messagesNode = transcriptMessages.length > 0 ? (
+    <div className="space-y-3">
+      {transcriptMessages.map((message) => (
+        <ChatMessage key={message.id} role={message.role} content={message.content} />
+      ))}
+    </div>
+  ) : null
 
-  const reasoningNode = isLoading || isPrepared ? (
-    <AgentReasoning reasoningLines={reasoningLines} isPreparing={isLoading} isPrepared={isPrepared} />
+  const reasoningNode = isLoading || activeAssistant !== undefined ? (
+    <AgentReasoning reasoningLines={reasoningLines} isPreparing={isLoading} isPrepared={isPrepared} isRejected={isRejected} />
   ) : null
 
   const checklistNode = isPrepared ? <PolicyChecklist /> : null
 
   const mockNoticeNode = isPrepared ? (
-    <div className="rounded-md border border-border bg-card/40 px-3 py-2 text-xs text-muted">
+    <Note icon="info">
       <span className="font-medium text-foreground">Testnet demo - real enforcement, mock settlement.</span>{' '}
       The RWA router is a mock, so no tokens move - the demo proves the verification layer, not the brokerage.
       The gate checks above run on-chain, verifiable on the explorer.
-    </div>
+    </Note>
   ) : null
 
   const errorNode = errorMessage !== null ? (
@@ -294,35 +345,53 @@ export const RwaAgentChat = () => {
           Send
         </button>
       </form>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-muted">Try:</span>
-        {SUGGESTED_PROMPTS.map((prompt) => (
-          <button
-            key={prompt}
-            type="button"
-            onClick={() => patchState({ input: prompt })}
-            disabled={isLoading || !isConnected}
-            className="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-xs font-mono text-muted transition-colors hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {prompt}
-          </button>
+      <div className="text-xs leading-relaxed">
+        <span className="text-muted">Try: </span>
+        {SUGGESTED_PROMPTS.map((prompt, index) => (
+          <span key={prompt}>
+            <button
+              type="button"
+              onClick={() => patchState({ input: prompt })}
+              disabled={isLoading || !isConnected}
+              className="border-b border-dashed border-border pb-px font-mono text-muted transition-colors hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {prompt}
+            </button>
+            {index < SUGGESTED_PROMPTS.length - 1 ? <span className="mr-2 text-muted">,</span> : null}
+          </span>
         ))}
       </div>
     </div>
   )
 
-  return (
-    <section className="space-y-4">
-      <div className="space-y-3">
-        {messagesNode}
-      </div>
-
-      {reasoningNode}
-      {errorNode}
+  // Before signing: the full envelope review. Once the tx is confirmed the
+  // review is done, so the preview/checklist/notice drop away and only the
+  // success card + continue actions remain.
+  const reviewDetailsNode = isConfirmed ? null : (
+    <>
       {previewNode}
       {checklistNode}
       {mockNoticeNode}
-      {actionsNode}
+    </>
+  )
+
+  // The whole review block expands in together once the agent prepares a tx.
+  const reviewNode = isPrepared ? (
+    <Collapse>
+      <div className="space-y-4">
+        {reviewDetailsNode}
+        {actionsNode}
+      </div>
+    </Collapse>
+  ) : null
+
+  return (
+    <section className="space-y-4">
+      {introNode}
+      {messagesNode}
+      {reasoningNode}
+      {errorNode}
+      {reviewNode}
       {chatFormNode}
     </section>
   )
