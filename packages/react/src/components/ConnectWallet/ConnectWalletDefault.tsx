@@ -5,7 +5,6 @@ import chainSwitchIcon from '../../assets/icons/chain-switch.svg'
 import maskStyle from '../../helpers/maskStyle'
 import DotLoader from './DotLoader'
 import WalletModal from './WalletModal'
-import SkeletonPulse from './SkeletonPulse'
 import AvatarFallback from './AvatarFallback'
 import AccountDropdown from './AccountDropdown'
 import type { ConnectWalletDefaultProps } from '../../types/connect'
@@ -56,6 +55,9 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = (props) => {
 
   const isInitializing = connectors.length === 0
   const showSkeleton = isInitializing || state === 'reconnecting'
+  // While loading, the whole button is one shimmer block (no inner avatar/text
+  // shapes), so the skeleton reads as the button itself at its final size.
+  const buttonClassName = showSkeleton ? 'tx-cw-button tx-cw-button--skeleton' : 'tx-cw-button'
 
   const isConnectedLike = state === 'connected' || state === 'wrong-chain'
   const ariaHaspopup = isConnectedLike ? 'menu' as const : 'dialog' as const
@@ -85,7 +87,7 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = (props) => {
     <button
       ref={buttonRef}
       type="button"
-      className="tx-cw-button"
+      className={buttonClassName}
       data-state={isInitializing ? 'initializing' : state}
       onClick={onButtonClick}
       disabled={state === 'connecting' || showSkeleton}
@@ -94,10 +96,6 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = (props) => {
       aria-controls={panelControlsMap[panel]}
       aria-busy={state === 'connecting' || showSkeleton}
     >
-      {
-        showSkeleton && <SkeletonPulse />
-      }
-
       {
         !showSkeleton && state === 'connecting' && <DotLoader />
       }

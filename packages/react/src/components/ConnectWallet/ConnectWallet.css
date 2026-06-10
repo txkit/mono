@@ -109,6 +109,22 @@
   pointer-events: none;
 }
 
+/*
+ * Full-button skeleton: the entire button is one shimmer block (no inner
+ * avatar/text shapes) so the loading state reads as the button itself at its
+ * final size and corner radius. The doubled class outranks the data-state
+ * background while staying later in source order.
+ */
+.tx-cw-button.tx-cw-button--skeleton {
+  background: linear-gradient(90deg, var(--tx-skeleton-from) 25%, var(--tx-skeleton-to) 50%, var(--tx-skeleton-from) 75%);
+  background-size: 200% 100%;
+  animation: tx-shimmer var(--tx-duration-breathe) linear infinite;
+  border-color: transparent;
+  color: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+
 /* Button - disconnected */
 
 .tx-cw-button[data-state="disconnected"] {
@@ -201,31 +217,6 @@
 }
 
 /* Skeleton pulse */
-
-.tx-cw-skeleton {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--tx-space-sm);
-}
-
-.tx-cw-skeleton-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: var(--tx-radius-full);
-  background: linear-gradient(90deg, var(--tx-skeleton-from) 25%, var(--tx-skeleton-to) 50%, var(--tx-skeleton-from) 75%);
-  background-size: 200% 100%;
-  animation: tx-shimmer var(--tx-duration-breathe) linear infinite;
-}
-
-.tx-cw-skeleton-text {
-  width: 80px;
-  height: 12px;
-  border-radius: var(--tx-radius-sm);
-  background: linear-gradient(90deg, var(--tx-skeleton-from) 25%, var(--tx-skeleton-to) 50%, var(--tx-skeleton-from) 75%);
-  background-size: 200% 100%;
-  animation: tx-shimmer var(--tx-duration-breathe) linear infinite;
-  animation-delay: 0.15s;
-}
 
 /* tx-shimmer keyframe is defined globally in @txkit/themes base.css */
 
@@ -368,7 +359,7 @@
 
 .tx-cw-modal-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: var(--tx-space-lg);
@@ -811,7 +802,9 @@
 /* Account dropdown */
 
 .tx-cw-dropdown {
-  --_hover-bg: oklch(0.96 0.004 248);
+  /* Brand-tinted hover (primary at low alpha) for the identity link + menu
+     items, so hover/active reads as the brand color in both themes. */
+  --_hover-bg: var(--tx-color-primary-alpha);
 
   position: absolute;
   top: calc(100% + var(--tx-space-xs));
@@ -824,10 +817,6 @@
   z-index: var(--tx-z-dropdown, 1000);
   overflow: hidden;
   animation: tx-cw-dropdown-in var(--tx-duration-normal) var(--tx-ease-smooth);
-}
-
-.tx-dark .tx-cw-dropdown {
-  --_hover-bg: oklch(0.25 0.01 248);
 }
 
 @keyframes tx-cw-dropdown-in {
@@ -1190,8 +1179,7 @@ a.tx-cw-dropdown-identity-link:focus-visible {
   .tx-cw-dropdown,
   .tx-cw-timeout,
   .tx-cw-copy-check,
-  .tx-cw-skeleton-avatar,
-  .tx-cw-skeleton-text,
+  .tx-cw-button--skeleton,
   .tx-cw-balance-skeleton,
   .tx-cw-qr-skeleton,
   .tx-cw-button[data-state="error"],
