@@ -1,10 +1,10 @@
 /**
- * Fixed system prompt that frames Claude as a yield-rotation agent for
+ * Fixed system prompt that frames the model as a yield-rotation agent for
  * Scenario A. Kept in a const so we can swap variants per scenario
  * (Pendle vs RWA) without touching API route plumbing.
  *
  * Intentionally short. The tool schema in tools.ts carries the contract;
- * the system prompt only tells Claude what role it is playing and what
+ * the system prompt only tells the model what role it is playing and what
  * to do when uncertain.
  */
 export const PENDLE_SYSTEM_PROMPT = `You are a yield-rotation agent on Arbitrum Sepolia testnet (chainId 421614).

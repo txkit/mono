@@ -11,9 +11,9 @@ Verified state (2026-06-08): `forge build` + `forge test` green (25 tests: 15 Ag
 | `AgentPolicyGate` | Arbitrum Sepolia (421614) | scenario A + C policy enforcement point | yes (Arbiscan) |
 | `MockPendleRouter` | Arbitrum Sepolia (421614) | scenario A inner swap target | yes (Arbiscan) |
 | `MockRwaRouter` | Arbitrum Sepolia (421614) | scenario C inner buy target (bonus proof) | yes (Arbiscan) |
-| `AgentPolicyGate` | Robinhood Chain testnet (46630) | scenario A + C gate (sponsor chain) | no (explorer verifier API not published) |
-| `MockPendleRouter` | Robinhood Chain testnet (46630) | scenario A inner target (proof) | no |
-| `MockRwaRouter` | Robinhood Chain testnet (46630) | scenario C inner buy target (live /rwa-buy) | no |
+| `AgentPolicyGate` | Robinhood Chain testnet (46630) | scenario A + C gate (sponsor chain) | yes (Blockscout, 2026-06-11) |
+| `MockPendleRouter` | Robinhood Chain testnet (46630) | scenario A inner target (proof) | yes (Blockscout, 2026-06-11) |
+| `MockRwaRouter` | Robinhood Chain testnet (46630) | scenario C inner buy target (live /rwa-buy) | yes (Blockscout, 2026-06-11) |
 
 Both scenarios are live: `buildPendleEnvelope` targets Arbitrum Sepolia (`/yield-swap`), `buildRwaEnvelope` targets Robinhood Chain (`/rwa-buy`, x402-gated). The RWA router was also deployed on Arbitrum as a bonus proof. See section 3d for the Robinhood RWA deploy and the Orbit gas gotcha.
 

@@ -1,44 +1,44 @@
 {
   "AgentPolicyGate": {
+    "46630": {
+      "address": "0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35",
+      "deployedAt": "2026-06-05",
+      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35",
+      "note": "Deployed to Robinhood Chain testnet 2026-06-05 (solc 0.8.34). Tx: 0x54764c3def25c5f6a0116a0dd069c1fb27ecd52891a9cdc5e04fa58a97e32ab1. Owner + agent signer: 0xEC6613578be203e23e360A3985EA1601435D5907. Robinhood (Arbitrum Orbit) runs cancun/PUSH0 bytecode; the forge EIP-3855 warning is a stale chain-id allowlist, not a runtime limit. executeEnvelope verified non-reverting (tx 0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c). Robinhood eth_estimateGas under-reports CREATE code-deposit, so deploy needs --gas-estimate-multiplier 300. Source verified on the Robinhood explorer (Blockscout, forge verify-contract, solc 0.8.34) 2026-06-11."
+    },
     "421614": {
       "address": "0x3A9DaED4a43021df9adcF1d672F90014b25412A5",
       "deployedAt": "2026-06-05",
       "blockExplorer": "https://sepolia.arbiscan.io/address/0x3A9DaED4a43021df9adcF1d672F90014b25412A5",
       "note": "Deployed to Arbitrum Sepolia 2026-06-05 (solc 0.8.34, verified on Arbiscan). Tx: 0x9fb2415cd46ab88f4ef8c8b510c6b5541ec08868f012f840b2cc07797cf67714. Owner + agent signer: 0xEC6613578be203e23e360A3985EA1601435D5907. Recompiled from 0.8.28 + pinned evm_version=cancun to clear the generic Arbiscan compiler-bug notices (none applied: no transient storage, no storage arrays, via_ir off)."
-    },
-    "46630": {
-      "address": "0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35",
-      "deployedAt": "2026-06-05",
-      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35",
-      "note": "Deployed to Robinhood Chain testnet 2026-06-05 (solc 0.8.34). Tx: 0x54764c3def25c5f6a0116a0dd069c1fb27ecd52891a9cdc5e04fa58a97e32ab1. Owner + agent signer: 0xEC6613578be203e23e360A3985EA1601435D5907. Robinhood (Arbitrum Orbit) runs cancun/PUSH0 bytecode; the forge EIP-3855 warning is a stale chain-id allowlist, not a runtime limit. executeEnvelope verified non-reverting (tx 0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c). Robinhood eth_estimateGas under-reports CREATE code-deposit, so deploy needs --gas-estimate-multiplier 300."
     }
   },
   "MockPendleRouter": {
+    "46630": {
+      "address": "0x637f00246A9aaC315580632D206f86701F3F99b0",
+      "deployedAt": "2026-06-05",
+      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x637f00246A9aaC315580632D206f86701F3F99b0",
+      "note": "Deployed to Robinhood Chain testnet 2026-06-05 (solc 0.8.34). Tx: 0x047037c7acb4deebbbc74cf9157c2b9a43d742e74264ba5819a85f9af20ee99a. Allow-listed on gate 0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35 via setAllowedRecipient (tx 0x895b133fc37ba855c24bd99a51e3baa027e1c460a724c0eda6d2bd4ab28279ad). Source verified on the Robinhood explorer (Blockscout, forge verify-contract, solc 0.8.34) 2026-06-11."
+    },
     "421614": {
       "address": "0xf94aaba9c0ED6b29F12d3F4eBBA8290427B6A069",
       "deployedAt": "2026-06-05",
       "blockExplorer": "https://sepolia.arbiscan.io/address/0xf94aaba9c0ED6b29F12d3F4eBBA8290427B6A069",
       "note": "Deployed to Arbitrum Sepolia 2026-06-05 (solc 0.8.34, verified on Arbiscan). Tx: 0x62829e10f6bc82b9dc0a5db97c79fe90601896dd522e3ad4adf0af313f956c5d. Allow-listed on gate 0x3A9DaED4a43021df9adcF1d672F90014b25412A5 via setAllowedRecipient (tx 0x878d85d9fb9be55291bb7b6005ba0ba66d071ad4e9043a19e74ea0d5eb20a710)."
-    },
-    "46630": {
-      "address": "0x637f00246A9aaC315580632D206f86701F3F99b0",
-      "deployedAt": "2026-06-05",
-      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x637f00246A9aaC315580632D206f86701F3F99b0",
-      "note": "Deployed to Robinhood Chain testnet 2026-06-05 (solc 0.8.34). Tx: 0x047037c7acb4deebbbc74cf9157c2b9a43d742e74264ba5819a85f9af20ee99a. Allow-listed on gate 0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35 via setAllowedRecipient (tx 0x895b133fc37ba855c24bd99a51e3baa027e1c460a724c0eda6d2bd4ab28279ad)."
     }
   },
   "MockRwaRouter": {
+    "46630": {
+      "address": "0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C",
+      "deployedAt": "2026-06-08",
+      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C",
+      "note": "Deployed to Robinhood Chain testnet 2026-06-08 (solc 0.8.34). Deploy via forge create --gas-limit 3000000 (Robinhood eth_estimateGas under-reports CREATE; forge-script gas-estimate-multiplier did not apply in this version). Deploy tx 0x71d5845579675e88c1e3117c2b62c2cdbc95df811df4bfe4e53360b8ea0a8bca. Allow-listed on gate 0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35 (tx 0x24e05fdfa050524bb471d9bc5669ef2d55915afa34d65b2c4f3aec512911fd92). Real RWA buy executeEnvelope (TSLA x5) tx 0xff64404144bdaea4e08c94e973166af180b29fed621b1e3632757703e9b080fa (status 0x1, RwaPurchased + EnvelopeExecuted; broadcast via cast send --gas-limit 1500000 because forge script gas handling is unreliable on Orbit). Source verified on the Robinhood explorer (Blockscout, forge verify-contract, solc 0.8.34) 2026-06-11."
+    },
     "421614": {
       "address": "0xDe3cBf69877f08661152F945F11399e3F7912eA9",
       "deployedAt": "2026-06-08",
       "blockExplorer": "https://sepolia.arbiscan.io/address/0xDe3cBf69877f08661152F945F11399e3F7912eA9",
       "note": "Deployed to Arbitrum Sepolia 2026-06-08 (solc 0.8.34, verified on Arbiscan). Allow-listed on gate 0x3A9DaED4a43021df9adcF1d672F90014b25412A5 via setAllowedRecipient (tx 0xfbed5d388ce45229ebd46d1ded539587f7cdd91434cfeb8336e7dd41b17c8131). Real RWA buy executeEnvelope tx 0xf29e0d9f82f59d79dc6f65bd481976ec9c9eb70db8119283d7eeb6e7fb6fd3ea (status 0x1, RwaPurchased + EnvelopeExecuted events)."
-    },
-    "46630": {
-      "address": "0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C",
-      "deployedAt": "2026-06-08",
-      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C",
-      "note": "Deployed to Robinhood Chain testnet 2026-06-08 (solc 0.8.34). Deploy via forge create --gas-limit 3000000 (Robinhood eth_estimateGas under-reports CREATE; forge-script gas-estimate-multiplier did not apply in this version). Deploy tx 0x71d5845579675e88c1e3117c2b62c2cdbc95df811df4bfe4e53360b8ea0a8bca. Allow-listed on gate 0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35 (tx 0x24e05fdfa050524bb471d9bc5669ef2d55915afa34d65b2c4f3aec512911fd92). Real RWA buy executeEnvelope (TSLA x5) tx 0xff64404144bdaea4e08c94e973166af180b29fed621b1e3632757703e9b080fa (status 0x1, RwaPurchased + EnvelopeExecuted; broadcast via cast send --gas-limit 1500000 because forge script gas handling is unreliable on Orbit)."
     }
   }
 }
