@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
+import { DemoHeader } from '@/src/ui/DemoHeader'
 import { Icon } from '@/src/ui/Icon'
-import { WalletConnectButton } from '@/src/ui/WalletConnectButton'
 
 
 /**
@@ -13,9 +13,9 @@ import { WalletConnectButton } from '@/src/ui/WalletConnectButton'
 const Home = () => {
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12">
-      <div className="mb-10 flex items-center justify-end">
-        <WalletConnectButton />
+    <main className="mx-auto max-w-3xl px-6 pt-6 pb-12">
+      <div className="mb-12">
+        <DemoHeader />
       </div>
 
       <header className="mb-16">
@@ -81,7 +81,7 @@ const Home = () => {
       </section>
 
       <footer className="border-t border-border pt-8 text-sm text-muted">
-        <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-y-2 sm:justify-start sm:gap-x-5">
           <a
             className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
             href="https://github.com/txkit/mono"
@@ -89,7 +89,7 @@ const Home = () => {
             rel="noopener noreferrer"
           >
             <Icon name="github" className="size-4" />
-            txKit/mono
+            txKit
           </a>
           <a
             className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
@@ -98,7 +98,9 @@ const Home = () => {
             rel="noopener noreferrer"
           >
             <Icon name="git-pull-request" className="size-4" />
-            ERC-8265 (PR #1753)
+            <span>
+              ERC-8265<span className="hidden sm:inline"> (PR #1753)</span>
+            </span>
           </a>
           <a
             className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
@@ -110,7 +112,10 @@ const Home = () => {
             Magicians discussion
           </a>
         </div>
-        <p>Built for the Arbitrum Open House London Buildathon, due June 14 2026</p>
+        <p>
+          Built for the Arbitrum Open House London Buildathon,{' '}
+          <span className="block sm:inline">due June 14 2026</span>
+        </p>
       </footer>
     </main>
   )

@@ -143,16 +143,17 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
     )
     : null
 
-  // Collapse animates the reveal on mount (grid-rows 0fr -> 1fr), matching the
-  // envelope-review collapsible; unmounting on hide is the instant close.
-  const rawRevealNode = isRawShown ? (
-    <Collapse>
+  // Collapse animates the reveal and the hide (grid-rows 0fr <-> 1fr),
+  // matching the envelope-review collapsible. Rendered only inside rawHexNode,
+  // so innerData is always defined here.
+  const rawRevealNode = (
+    <Collapse isOpen={isRawShown}>
       <div className="mt-2 rounded-lg bg-card-sunken p-3 font-mono text-xs break-all">
         <p className="mb-1 text-warning">Without txKit, this opaque hex is all the agent asks you to sign:</p>
         <span className="text-muted">{innerData}</span>
       </div>
     </Collapse>
-  ) : null
+  )
 
   // Inline toggle (not a block <summary>): the hover/click target is just the
   // chevron + label, so hovering past the text no longer highlights a full-width

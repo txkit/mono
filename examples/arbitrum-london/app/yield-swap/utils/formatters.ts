@@ -41,6 +41,10 @@ export const formatExplorerBase = (chainId: number | null): string | undefined =
   return undefined
 }
 
+export const formatTxHashShort = (txHash: string): string => {
+  return `${txHash.slice(0, 6)}…${txHash.slice(-4)}`
+}
+
 export const resolveExplorerLabel = (chainId: number | null): string => {
   if (chainId === 421614) {
     return 'Arbiscan'

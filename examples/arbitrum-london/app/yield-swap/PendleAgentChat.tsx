@@ -1,6 +1,6 @@
 'use client'
 
-import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
+import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react'
 import { useAccount, usePublicClient, useSendTransaction, useSwitchChain, useWaitForTransactionReceipt } from 'wagmi'
 
 import type { ArbitrumChainId } from '@txkit/arbitrum-adapter'
@@ -9,6 +9,7 @@ import type { DemoEnvelope } from '@/src/agent/envelope-builder'
 import { ARBITRUM_SEPOLIA_CHAIN_ID } from '@/src/chains'
 import { ChatMessage } from '@/src/ui/ChatMessage'
 import { ChatShell } from '@/src/ui/ChatShell/ChatShell'
+import { useReviewScrollPin } from '@/src/ui/ChatShell/useReviewScrollPin'
 import { Collapse } from '@/src/ui/Collapse'
 import { EnvelopePreview } from '@/src/ui/EnvelopePreview'
 import { Icon } from '@/src/ui/Icon'
@@ -17,13 +18,30 @@ import { SequencerFeeRow } from '@/src/ui/SequencerFeeRow'
 
 import { AgentReasoning } from './AgentReasoning/AgentReasoning'
 import { PreparingCard } from './AgentReasoning/PreparingCard'
+import { ConnectWalletPrompt } from './ConnectWalletPrompt'
 import { PolicyChecklist } from './PolicyChecklist/PolicyChecklist'
 import { SignEnvelopeActions } from './SignEnvelopeActions'
 import { fetchDecoded, type DecodedCall } from './utils/fetchDecoded'
-import { formatChainLabel, formatExplorerBase, resolveReplyText, splitReasoningLines } from './utils/formatters'
+import {
+  formatChainLabel,
+  formatExplorerBase,
+  formatTxExplorerUrl,
+  resolveReplyText,
+  splitReasoningLines,
+} from './utils/formatters'
 
 
-type Message = { id: string, role: 'user' | 'assistant', content: string, status?: 'prepared' | 'rejected' | 'executed' }
+type Message = {
+  id: string,
+  role: 'user' | 'assistant',
+  content: string,
+  status?: 'prepared' | 'rejected' | 'executed',
+  pipelineSteps?: string[],
+  isConnectPrompt?: boolean,
+  isConnectResolved?: boolean,
+  txHash?: `0x${string}`,
+  isRestored?: boolean,
+}
 
 type AgentResponse = {
   reply?: string,
@@ -36,6 +54,7 @@ type ChatState = {
   messages: Message[],
   input: string,
   isLoading: boolean,
+  isReplyTyped: boolean,
   errorMessage: string | null,
   envelope: DemoEnvelope | null,
   decodedInner: DecodedCall | null,
@@ -45,6 +64,7 @@ const INITIAL_STATE: ChatState = {
   messages: [],
   input: '',
   isLoading: false,
+  isReplyTyped: false,
   errorMessage: null,
   envelope: null,
   decodedInner: null,
@@ -58,23 +78,48 @@ const SUGGESTED_PROMPTS = [
 ]
 
 /**
- * Pipeline stages narrated in the in-flight reasoning card. Each names a real
- * step the request goes through in /api/agent: the LLM parses the intent,
- * evaluates the prepare_pendle_yield_swap tool, the envelope builder fills
- * amounts / min-out / expiry, and the agent key signs the EIP-712 envelope.
+ * Pipeline stages narrated in the reasoning card. Each names a real step the
+ * request goes through in /api/agent: the LLM parses the message, decides
+ * whether the prepare_pendle_yield_swap tool is needed, the envelope builder
+ * fills amounts / min-out / expiry, and the agent key signs the EIP-712
+ * envelope. Step 2 is phrased as "whether" on purpose - it is true for BOTH
+ * outcomes (the model may decide no tool is needed and just reply).
  */
 const PREPARING_STEPS = [
-  'Parsing the yield-swap intent',
-  'Evaluating tool call: prepare_pendle_yield_swap',
+  'Parsing the request',
+  'Evaluating whether to call prepare_pendle_yield_swap',
   'Building the envelope: amounts, min-out, expiry',
   'Signing as the agent (EIP-712)',
 ]
 
+// Steps that run regardless of the outcome. The in-flight card stages only
+// these, so nothing it shows has to be taken back when the model settles on a
+// plain reply; the envelope-only steps (build, sign) appear with the prepared
+// turn itself.
+const IN_FLIGHT_STEPS = PREPARING_STEPS.slice(0, 2)
+
+const resolveInputPlaceholder = (isReviewing: boolean): string => {
+  if (isReviewing) {
+    return 'Review the prepared transaction above...'
+  }
+
+  return 'Describe a yield rotation...'
+}
+
+// sessionStorage key for the transcript (chat state lives in this client
+// component, which unmounts on route change - persisting it keeps the
+// conversation across in-page navigation, LLM-app style).
+const CHAT_STORAGE_KEY = 'txkit-chat-pendle-v1'
+
+type PersistedChat = Pick<ChatState, 'messages' | 'envelope' | 'decodedInner'> & {
+  owner?: `0x${string}`,
+}
+
 type PendleAgentChatProps = {
   header: ReactNode,
   intro: ReactNode,
+  note: ReactNode,
   banner: ReactNode,
-  footer: ReactNode,
 }
 
 /**
@@ -88,9 +133,9 @@ type PendleAgentChatProps = {
  * the scrollable ChatShell with the composer pinned to the viewport bottom.
  */
 export const PendleAgentChat = (props: PendleAgentChatProps) => {
-  const { header, intro, banner, footer } = props
+  const { header, intro, note, banner } = props
   const [ state, setState ] = useState<ChatState>(INITIAL_STATE)
-  const { messages, input, isLoading, errorMessage, envelope, decodedInner } = state
+  const { messages, input, isLoading, isReplyTyped, errorMessage, envelope, decodedInner } = state
 
   const patchState = (patch: Partial<ChatState>) => {
     setState((previous) => ({ ...previous, ...patch }))
@@ -108,9 +153,87 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
   } = useSendTransaction()
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash: txHash })
 
-  // When the tx confirms, promote the prepared turn to 'executed' so its OWN
-  // reasoning card becomes the "Executed on-chain" card in place (no separate
-  // success card) and that status persists in history after the next prompt.
+  // The conversation belongs to one wallet session, so the transcript is
+  // restored only once that wallet reconnects (owner-checked) - never on a
+  // disconnected mount. A reload keeps it: wagmi settles reconnecting ->
+  // connected without ever reporting a disconnect transition.
+  const hasHydratedRef = useRef(false)
+  useEffect(() => {
+    if (!isConnected || hasHydratedRef.current) {
+      return
+    }
+    hasHydratedRef.current = true
+
+    const stored = sessionStorage.getItem(CHAT_STORAGE_KEY)
+    if (stored === null) {
+      return
+    }
+
+    try {
+      const restored = JSON.parse(stored) as PersistedChat
+      const hasMessages = Array.isArray(restored.messages) && restored.messages.length > 0
+      if (!hasMessages || restored.owner !== connectedAddress) {
+        sessionStorage.removeItem(CHAT_STORAGE_KEY)
+        return
+      }
+
+      // isRestored marks each turn as history, so it renders its text at once
+      // instead of replaying the typing animation. A restored open review was
+      // already typed in its original session, so isReplyTyped comes back true.
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only storage hydration once the owning wallet reconnects
+      setState((previous) => ({
+        ...previous,
+        messages: restored.messages.map((message) => ({ ...message, isRestored: true })),
+        envelope: restored.envelope || null,
+        decodedInner: restored.decodedInner || null,
+        isReplyTyped: Boolean(restored.envelope),
+      }))
+    } catch {
+      sessionStorage.removeItem(CHAT_STORAGE_KEY)
+    }
+  }, [ isConnected, connectedAddress ])
+
+  // A live disconnect ends the chat session: wipe the transcript and its
+  // storage so the next wallet starts clean.
+  const wasConnectedRef = useRef(false)
+  useEffect(() => {
+    if (isConnected) {
+      wasConnectedRef.current = true
+      return
+    }
+    if (!wasConnectedRef.current) {
+      return
+    }
+
+    wasConnectedRef.current = false
+    hasHydratedRef.current = false
+    sessionStorage.removeItem(CHAT_STORAGE_KEY)
+    resetSendTx()
+    setState(INITIAL_STATE)
+  }, [ isConnected, resetSendTx ])
+
+  // Persist the transcript on every change. The envelope (the open review) is
+  // saved only while the last turn is still 'prepared' - restoring it after the
+  // tx settled would re-open a review for an executed/rejected transaction.
+  useEffect(() => {
+    if (messages.length === 0) {
+      return
+    }
+
+    const lastStatus = messages[messages.length - 1]?.status
+    const isReviewOpen = lastStatus === 'prepared'
+    const persisted: PersistedChat = {
+      owner: connectedAddress,
+      messages,
+      envelope: isReviewOpen ? envelope : null,
+      decodedInner: isReviewOpen ? decodedInner : null,
+    }
+    sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(persisted))
+  }, [ messages, envelope, decodedInner, connectedAddress ])
+
+  // When the tx confirms, promote the prepared turn to 'executed' (with its tx
+  // hash, so the turn keeps its own explorer link) - the SAME reasoning card
+  // greens in place, and that status persists in history after the next prompt.
   useEffect(() => {
     if (!isConfirmed) {
       return
@@ -124,32 +247,28 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
       }
 
       const messages = previous.messages.map((message, index) =>
-        index === lastPreparedIndex ? { ...message, status: 'executed' as const } : message,
+        index === lastPreparedIndex ? { ...message, status: 'executed' as const, txHash } : message,
       )
 
       return { ...previous, messages }
     })
-  }, [ isConfirmed ])
+  }, [ isConfirmed, txHash ])
 
-  const submitPrompt = async (rawText: string) => {
-    const trimmed = rawText.trim()
-    if (trimmed.length === 0 || isLoading || !isConnected) {
-      return
-    }
-
-    const userMessage: Message = { id: crypto.randomUUID(), role: 'user', content: trimmed }
-    const next = [ ...messages, userMessage ]
+  const sendToAgent = async (next: Message[]) => {
     // Clear any prior envelope so a previous prepared/executed turn's review does
     // not linger while the new turn is in flight (the composer is now visible in
     // the executed state, so a new prompt can arrive on top of an old envelope).
-    patchState({ messages: next, input: '', isLoading: true, errorMessage: null, envelope: null, decodedInner: null })
+    patchState({ messages: next, input: '', isLoading: true, isReplyTyped: false, errorMessage: null, envelope: null, decodedInner: null })
     resetSendTx()
 
     try {
+      // Connect-prompt turns are local UI artifacts - the model never sees
+      // them (a mid-history "please connect wallet" could derail it).
+      const modelMessages = next.filter((message) => !message.isConnectPrompt)
       const response = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: next, scenario: 'pendle', receiverAddress: connectedAddress }),
+        body: JSON.stringify({ messages: modelMessages, scenario: 'pendle', receiverAddress: connectedAddress }),
       })
       const json = (await response.json()) as AgentResponse
       const { reply, envelope: returnedEnvelope, error, hint } = json
@@ -162,11 +281,17 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
       }
 
       const replyText = resolveReplyText(reply, returnedEnvelope !== undefined)
+      // The pipeline trace persists on the turn (LLM-style: nothing shown ever
+      // disappears). A plain reply keeps just the outcome-independent stages -
+      // the model evaluated whether to call the tool and decided not to, so
+      // nothing was built or signed.
+      const hasEnvelope = returnedEnvelope !== undefined
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: replyText,
-        status: returnedEnvelope !== undefined ? 'prepared' : undefined,
+        status: hasEnvelope ? 'prepared' : undefined,
+        pipelineSteps: hasEnvelope ? PREPARING_STEPS : IN_FLIGHT_STEPS,
       }
       patchState({ messages: [ ...next, assistantMessage ] })
 
@@ -181,6 +306,56 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
     }
   }
 
+  const submitPrompt = async (rawText: string) => {
+    const trimmed = rawText.trim()
+    if (trimmed.length === 0 || isLoading) {
+      return
+    }
+
+    const userMessage: Message = { id: crypto.randomUUID(), role: 'user', content: trimmed }
+
+    // No wallet - no receiver for the envelope, so the agent run would be
+    // pointless. Instead of locking the composer, answer locally with a
+    // connect-wallet turn (no API call, no token spend) and keep the chat open.
+    if (!isConnected) {
+      const connectPrompt: Message = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: 'Please connect wallet to continue.',
+        isConnectPrompt: true,
+      }
+      patchState({ messages: [ ...messages, userMessage, connectPrompt ], input: '' })
+      return
+    }
+
+    await sendToAgent([ ...messages, userMessage ])
+  }
+
+  // When the user connects in response to a connect-prompt turn, the chat
+  // resumes by itself: the prompt card resolves in place ("Wallet connected /
+  // Thanks for connecting.") and the pending request goes to the agent without
+  // re-typing. The resolved flag makes this one-shot - the effect re-runs on
+  // every message change, but only an unresolved trailing prompt triggers it.
+  useEffect(() => {
+    if (!isConnected || isLoading) {
+      return
+    }
+
+    const lastMessage = messages[messages.length - 1]
+    const pendingMessage = messages[messages.length - 2]
+    const isAwaitingConnect = Boolean(lastMessage?.isConnectPrompt) && lastMessage?.isConnectResolved !== true
+    if (!isAwaitingConnect || pendingMessage?.role !== 'user') {
+      return
+    }
+
+    const resolved = messages.map((message, index) =>
+      index === messages.length - 1 ? { ...message, isConnectResolved: true } : message,
+    )
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing the external wagmi connect event into the conversation: resolve the prompt turn and resume the pending request
+    void sendToAgent(resolved)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sendToAgent is an unstable closure; the guard above makes the effect idempotent, so reacting to connection + transcript changes is sufficient
+  }, [ isConnected, isLoading, messages ])
+
   const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     void submitPrompt(input)
@@ -188,6 +363,10 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
 
   const handleSuggestionClick = (prompt: string) => {
     void submitPrompt(prompt)
+  }
+
+  const handleReplyTyped = () => {
+    patchState({ isReplyTyped: true })
   }
 
   const handleSignTransaction = async () => {
@@ -229,11 +408,11 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
   }
 
   const handleReject = () => {
-    // isConfirmed reuses this handler as a post-sign reset ("sign another?"), so
-    // only flag a real decline - an envelope rejected before it was signed. The
-    // flag lives on the assistant turn itself (not a chat-level boolean) so the
-    // decline persists in the transcript after the next message instead of
-    // vanishing when the turn drops out of the live reasoning card.
+    // Flipping the turn to 'rejected' is what closes the review (the Collapse
+    // exit animates it out); the envelope itself is NOT cleared here - the
+    // content must stay mounted through the exit transition, and the next
+    // prompt clears it anyway. The flag lives on the assistant turn itself so
+    // the decline persists in the transcript after the next message.
     const wasDeclined = !isConfirmed
     setState((previous) => {
       const lastIndex = previous.messages.length - 1
@@ -242,21 +421,18 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
         ? previous.messages.map((message, index) => (index === lastIndex ? { ...message, status: 'rejected' as const } : message))
         : previous.messages
 
-      return { ...previous, envelope: null, decodedInner: null, messages }
+      return { ...previous, messages }
     })
     resetSendTx()
   }
 
   const isBusySendingTx = isSigning || isConfirming
   const envelopeChainId = envelope !== null ? Number(envelope.chain.split(':')[1]) : null
-  const inputPlaceholder = isConnected
-    ? 'Describe a yield rotation...'
-    : 'Connect your wallet to start...'
 
   const decodedForPreview = decodedInner !== null
     ? {
-      selector: decodedInner.selector ?? undefined,
-      functionName: decodedInner.functionName ?? undefined,
+      selector: decodedInner.selector || undefined,
+      functionName: decodedInner.functionName || undefined,
       args: decodedInner.args?.map((arg) => ({ name: arg.name ?? '', type: arg.type, value: arg.value })),
       source: decodedInner.source,
       clearSigning: decodedInner.clearSigning,
@@ -273,12 +449,32 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
     if (message.role === 'user') {
       return <ChatMessage key={message.id} role="user" content={message.content} />
     }
+    if (message.isConnectPrompt) {
+      return <ConnectWalletPrompt key={message.id} isResolved={message.isConnectResolved} />
+    }
+
+    // An executed turn carries its own tx hash, so the card voices the outcome
+    // ("Transaction submitted: ..." + explorer link) inside the same message.
+    const executedTx = message.status === 'executed' && message.txHash !== undefined
+      ? {
+        hash: message.txHash,
+        href: formatTxExplorerUrl(ARBITRUM_SEPOLIA_CHAIN_ID, message.txHash),
+      }
+      : undefined
+
+    // Only the live prepared turn reports typing completion - that is what
+    // gates the envelope review expanding below it.
+    const onTypedComplete = message.status === 'prepared' && !message.isRestored ? handleReplyTyped : undefined
 
     return (
       <AgentReasoning
         key={message.id}
         reasoningLines={splitReasoningLines(message.content)}
         status={message.status ?? 'replied'}
+        pipelineSteps={message.pipelineSteps}
+        executedTx={executedTx}
+        isInstant={message.isRestored}
+        onTypedComplete={onTypedComplete}
       />
     )
   })
@@ -288,15 +484,16 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
   // though isLoading stays true through the decode call - its own card takes over,
   // so the preparing card and the prepared card never show at the same time.
   const isAwaitingReply = isLoading && messages[messages.length - 1]?.role !== 'assistant'
-  const preparingNode = isAwaitingReply ? <PreparingCard steps={PREPARING_STEPS} /> : null
+  const preparingNode = isAwaitingReply ? <PreparingCard steps={IN_FLIGHT_STEPS} /> : null
 
   const checklistNode = isPrepared ? <PolicyChecklist /> : null
 
   const mockNoticeNode = isPrepared ? (
     <Note icon="info">
       <span className="font-medium text-foreground">Testnet demo - real enforcement, mock settlement.</span>{' '}
-      The swap router is a mock, so no tokens move - the demo proves the verification layer, not the DEX.
-      The gate checks above run on-chain, verifiable on Arbiscan.
+      The swap router is a mock, so no tokens move - the demo proves the verification layer, not the
+      DEX; the production envelope shape matches Pendle V2. The gate checks above run on-chain,
+      verifiable on Arbiscan.
     </Note>
   ) : null
 
@@ -334,7 +531,6 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
       isConnected={isConnected}
       isSigning={isSigning}
       isConfirming={isConfirming}
-      isConfirmed={isConfirmed}
       isBusySendingTx={isBusySendingTx}
       txHash={txHash}
       sendError={sendError}
@@ -344,11 +540,21 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
     />
   ) : null
 
-  // The composer is hidden only during review (prepared, not yet confirmed) -
-  // there the next action is Reject or Sign, not more chatting. It returns on
-  // reject AND once the tx is executed, so the user can start the next
-  // transaction from the terminal "Executed on-chain" state without a refresh.
-  const isComposerShown = !isPrepared || isConfirmed
+  // The review belongs to the last turn only while it is still 'prepared': a
+  // reject or confirmation flips the turn status, which closes the review (the
+  // envelope itself lingers until the next prompt so the Collapse exit can
+  // animate with its content mounted). It opens only after the reply finished
+  // typing, so the user reads the agent's summary before the envelope appears.
+  const lastTurnStatus = messages[messages.length - 1]?.status
+  const isReviewing = isPrepared && !isConfirmed && lastTurnStatus === 'prepared'
+  const isReviewOpen = isReviewing && isReplyTyped
+  const isComposerDisabled = isLoading || isReviewing
+  const inputPlaceholder = resolveInputPlaceholder(isReviewing)
+
+  // Once the review opens, align the prepared turn card to the top of the
+  // transcript so the agent's summary reads first and the envelope review
+  // fills the viewport below it (instead of the default scroll-to-bottom).
+  useReviewScrollPin(isReviewOpen)
 
   const composerNode = (
     <div className="space-y-2">
@@ -358,30 +564,30 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
       >
         <input
           aria-label="Describe a yield rotation"
-          className="flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted disabled:cursor-not-allowed"
+          className="flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-50"
           placeholder={inputPlaceholder}
           value={input}
           onChange={(event) => patchState({ input: event.target.value })}
-          disabled={isLoading || !isConnected}
+          disabled={isComposerDisabled}
         />
         <button
           type="submit"
           aria-label="Send"
-          disabled={isLoading || !isConnected || input.trim().length === 0}
-          className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-text transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40"
+          disabled={isComposerDisabled || input.trim().length === 0}
+          className="flex size-8 shrink-0 items-center justify-center rounded-lg text-foreground transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40"
         >
-          <Icon name="arrow-up" className="size-4" />
+          <Icon name="corner-down-left" className="size-4" />
         </button>
       </form>
-      <div className="px-1 text-xs leading-relaxed">
+      <div className={`px-1 text-xs leading-relaxed ${isComposerDisabled ? 'opacity-50' : ''}`}>
         <span className="text-muted">Try: </span>
         {SUGGESTED_PROMPTS.map((prompt, index) => (
           <span key={prompt}>
             <button
               type="button"
               onClick={() => handleSuggestionClick(prompt)}
-              disabled={isLoading || !isConnected}
-              className="border-b border-dashed border-border pb-px font-mono text-muted transition-colors hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isComposerDisabled}
+              className="border-b border-dashed border-border pb-px font-mono text-muted transition-colors enabled:hover:border-accent enabled:hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed"
             >
               {prompt}
             </button>
@@ -392,41 +598,42 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
     </div>
   )
 
-  // Before signing: the full envelope review. Once the tx is confirmed the
-  // review is done, so the preview/checklist/notice drop away and only the
-  // success card + continue actions remain.
-  const reviewDetailsNode = isConfirmed ? null : (
-    <>
-      {previewNode}
-      {checklistNode}
-      {mockNoticeNode}
-    </>
-  )
-
-  // The whole review block expands in together once the agent prepares a tx.
+  // The whole review block expands in together once the prepared reply is
+  // typed, and collapses out the same way on reject / confirmation - the
+  // executed turn card carries the outcome line + explorer link itself.
   const reviewNode = isPrepared ? (
-    <Collapse>
+    <Collapse isOpen={isReviewOpen}>
       <div className="space-y-4">
-        {reviewDetailsNode}
+        {previewNode}
+        {checklistNode}
+        {mockNoticeNode}
         {actionsNode}
       </div>
     </Collapse>
   ) : null
 
-  // scrollKey drives ChatShell's auto-scroll-to-bottom: it changes on every
-  // event that adds or swaps transcript content (new turn, in-flight reply,
-  // prepared review, confirmation) so the newest block is brought into view.
-  const scrollKey = `${messages.length}:${isLoading}:${isPrepared}:${isConfirmed}`
+  // scrollKey drives ChatShell's auto-scroll-to-bottom on new turns and the
+  // in-flight reply; the prepared review does NOT bottom-scroll - it gets the
+  // align-to-top treatment above instead.
+  const scrollKey = `${messages.length}:${isLoading}`
 
   return (
-    <ChatShell header={header} composer={isComposerShown ? composerNode : null} scrollKey={scrollKey}>
-      {intro}
-      {banner}
+    <ChatShell
+      header={header}
+      pinned={(
+        <>
+          {intro}
+          {banner}
+        </>
+      )}
+      composer={composerNode}
+      scrollKey={scrollKey}
+    >
+      {note}
       {turnsNode}
       {preparingNode}
       {errorNode}
       {reviewNode}
-      {footer}
     </ChatShell>
   )
 }

@@ -39,5 +39,5 @@ export const PreparingCard = (props: PreparingCardProps) => {
     return () => clearInterval(interval)
   }, [ steps ])
 
-  return <AgentReasoning reasoningLines={steps.slice(0, visibleCount)} status="preparing" />
+  return <AgentReasoning reasoningLines={[]} pipelineSteps={steps.slice(0, visibleCount)} status="preparing" />
 }

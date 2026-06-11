@@ -8,7 +8,7 @@ export type IconName =
   | 'x-circle'
   | 'info'
   | 'chevron-right'
-  | 'arrow-up'
+  | 'corner-down-left'
   | 'github'
   | 'git-pull-request'
   | 'message-square'
@@ -26,7 +26,7 @@ const ICON_SOURCES: Record<IconName, string> = {
   'x-circle': "url('/icons/x-circle.svg')",
   'info': "url('/icons/info.svg')",
   'chevron-right': "url('/icons/chevron-right.svg')",
-  'arrow-up': "url('/icons/arrow-up.svg')",
+  'corner-down-left': "url('/icons/corner-down-left.svg')",
   'github': "url('/icons/github.svg')",
   'git-pull-request': "url('/icons/git-pull-request.svg')",
   'message-square': "url('/icons/message-square.svg')",

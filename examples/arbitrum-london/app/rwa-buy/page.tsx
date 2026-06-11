@@ -79,29 +79,17 @@ const FlowC = () => {
           <p className="text-xs uppercase tracking-wider text-accent mb-2">
             Robinhood Chain testnet (46630)
           </p>
-          <h1 className="text-3xl font-bold mb-3">x402-paid RWA agent</h1>
-          <Note icon="info">
-            Pay via x402 (EIP-712 authorization, self-hosted facilitator), then ask the
-            agent to buy a mock RWA token (TSLA / AMZN / PLTR) on Robinhood Chain testnet.
-            The agent calls <code className="rounded bg-card-sunken px-1 font-mono text-foreground">prepare_rwa_buy</code>,
-            you review the decoded envelope, then sign in your wallet. Verification is
-            real, and each executed buy settles a mock-scale token transfer on-chain.
-          </Note>
+          <h1 className="text-3xl font-bold">x402-paid RWA agent</h1>
         </header>
       )}
-      footer={(
-        <footer className="border-t border-border pt-6 text-xs opacity-60">
-          <p>
-            x402 payment: verify is real (EIP-712 signer recovery), and every gated buy
-            settles a mock-scale mxUSD transfer to the x402 merchant treasury on-chain -
-            a real Transfer receipt closes the payment loop. The self-hosted facilitator
-            handles Robinhood Chain (Arbitrum Orbit) - Coinbase&apos;s facilitator does not
-            support Orbit chains. On-chain contracts: AgentPolicyGate
-            0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35, MockRwaRouter
-            0x26623A7ff4585CDA976ABAd99111712b60DB9745, MockSettlementToken
-            0x3585aA19Dbc8D5ba1Fa37E1940f401E43De03Aa1.
-          </p>
-        </footer>
+      note={(
+        <Note icon="info">
+          Pay via x402 (EIP-712 authorization, self-hosted facilitator), then ask the
+          agent to buy a mock RWA token (TSLA / AMZN / PLTR) on Robinhood Chain testnet.
+          The agent calls <code className="rounded bg-card-sunken px-1 font-mono text-foreground">prepare_rwa_buy</code>,
+          you review the decoded envelope, then sign in your wallet. Verification is
+          real, and each executed buy settles a mock-scale token transfer on-chain.
+        </Note>
       )}
     />
   )

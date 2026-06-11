@@ -1,6 +1,6 @@
 'use client'
 
-import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
+import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react'
 import { useAccount, usePublicClient, useSendTransaction, useSwitchChain, useWaitForTransactionReceipt } from 'wagmi'
 
 // ArbitrumChainId covers eip155:42161 | eip155:421614 | eip155:42170 only.
@@ -14,6 +14,7 @@ import type { DemoEnvelope } from '@/src/agent/envelope-builder'
 import { ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import { ChatMessage } from '@/src/ui/ChatMessage'
 import { ChatShell } from '@/src/ui/ChatShell/ChatShell'
+import { useReviewScrollPin } from '@/src/ui/ChatShell/useReviewScrollPin'
 import { Collapse } from '@/src/ui/Collapse'
 import { EnvelopePreview } from '@/src/ui/EnvelopePreview'
 import { Icon } from '@/src/ui/Icon'
@@ -22,14 +23,31 @@ import type { SignedPaymentBody } from '@/src/x402/facilitator'
 
 import { AgentReasoning } from '../yield-swap/AgentReasoning/AgentReasoning'
 import { PreparingCard } from '../yield-swap/AgentReasoning/PreparingCard'
+import { ConnectWalletPrompt } from '../yield-swap/ConnectWalletPrompt'
 import { PolicyChecklist } from '../yield-swap/PolicyChecklist/PolicyChecklist'
 import { SignEnvelopeActions } from '../yield-swap/SignEnvelopeActions'
 import { fetchDecoded, type DecodedCall } from '../yield-swap/utils/fetchDecoded'
-import { formatChainLabel, formatExplorerBase, resolveReplyText, splitReasoningLines } from '../yield-swap/utils/formatters'
+import {
+  formatChainLabel,
+  formatExplorerBase,
+  formatTxExplorerUrl,
+  resolveReplyText,
+  splitReasoningLines,
+} from '../yield-swap/utils/formatters'
 import { X402Paywall } from './X402Paywall'
 
 
-type Message = { id: string, role: 'user' | 'assistant', content: string, status?: 'prepared' | 'rejected' | 'executed' }
+type Message = {
+  id: string,
+  role: 'user' | 'assistant',
+  content: string,
+  status?: 'prepared' | 'rejected' | 'executed',
+  pipelineSteps?: string[],
+  isConnectPrompt?: boolean,
+  isConnectResolved?: boolean,
+  txHash?: `0x${string}`,
+  isRestored?: boolean,
+}
 
 type AgentResponse = {
   reply?: string,
@@ -42,6 +60,7 @@ type ChatState = {
   messages: Message[],
   input: string,
   isLoading: boolean,
+  isReplyTyped: boolean,
   errorMessage: string | null,
   envelope: DemoEnvelope | null,
   decodedInner: DecodedCall | null,
@@ -51,6 +70,7 @@ const INITIAL_STATE: ChatState = {
   messages: [],
   input: '',
   isLoading: false,
+  isReplyTyped: false,
   errorMessage: null,
   envelope: null,
   decodedInner: null,
@@ -64,29 +84,57 @@ const SUGGESTED_PROMPTS = [
 ]
 
 /**
- * Pipeline stages narrated in the in-flight reasoning card. Each names a real
- * step the request goes through in /api/agent: the server re-verifies the x402
- * payment before spending LLM tokens, the LLM parses the intent and evaluates
- * the prepare_rwa_buy tool, and the agent key signs the EIP-712 envelope.
+ * Pipeline stages narrated in the reasoning card. Each names a real step the
+ * request goes through in /api/agent: the server re-verifies the x402 payment
+ * before spending LLM tokens, the LLM parses the message and decides whether
+ * the prepare_rwa_buy tool is needed, and the agent key signs the EIP-712
+ * envelope. Step 3 is phrased as "whether" on purpose - it is true for BOTH
+ * outcomes (the model may decide no tool is needed and just reply).
  */
 const PREPARING_STEPS = [
   'Re-verifying the x402 payment',
-  'Parsing the RWA buy intent',
-  'Evaluating tool call: prepare_rwa_buy',
+  'Parsing the request',
+  'Evaluating whether to call prepare_rwa_buy',
   'Signing as the agent (EIP-712)',
 ]
 
-// sessionStorage key for a still-valid x402 unlock (avoids re-pay on reload/nav).
-// v2: the challenge amount was re-denominated (abstract units -> 0.001 ETH in
-// wei), so a v1 proof signed for the old amount fails re-verification - the
-// version bump invalidates any stale unlock from before that change.
+// Steps that run regardless of the outcome. The in-flight card stages only
+// these, so nothing it shows has to be taken back when the model settles on a
+// plain reply; the envelope-only signing step appears with the prepared turn.
+const IN_FLIGHT_STEPS = PREPARING_STEPS.slice(0, 3)
+
+const resolveInputPlaceholder = (isReviewing: boolean, isLocked: boolean): string => {
+  if (isLocked) {
+    return 'Pay and unlock to start...'
+  }
+  if (isReviewing) {
+    return 'Review the prepared transaction above...'
+  }
+
+  return 'Buy a tokenised stock...'
+}
+
+// sessionStorage key for a still-valid x402 unlock (avoids re-pay on
+// reload/nav). The receipt is wallet-bound: it restores only when the wallet
+// that paid (payer) reconnects. v2: the challenge amount was re-denominated
+// (abstract units -> 0.001 ETH in wei), so a v1 proof signed for the old
+// amount fails re-verification - the version bump invalidates stale unlocks.
 const X402_STORAGE_KEY = 'txkit-x402-payment-v2'
+
+// sessionStorage key for the transcript (chat state lives in this client
+// component, which unmounts on route change - persisting it keeps the
+// conversation across in-page navigation, LLM-app style).
+const CHAT_STORAGE_KEY = 'txkit-chat-rwa-v1'
+
+type PersistedChat = Pick<ChatState, 'messages' | 'envelope' | 'decodedInner'> & {
+  owner?: `0x${string}`,
+}
 
 type RwaAgentChatProps = {
   header: ReactNode,
   intro: ReactNode,
+  note: ReactNode,
   banner: ReactNode,
-  footer: ReactNode,
 }
 
 /**
@@ -107,42 +155,51 @@ type RwaAgentChatProps = {
  * ChatShell with the composer pinned to the viewport bottom.
  */
 export const RwaAgentChat = (props: RwaAgentChatProps) => {
-  const { header, intro, banner, footer } = props
+  const { header, intro, note, banner } = props
   const [ state, setState ] = useState<ChatState>(INITIAL_STATE)
-  const { messages, input, isLoading, errorMessage, envelope, decodedInner } = state
+  const { messages, input, isLoading, isReplyTyped, errorMessage, envelope, decodedInner } = state
 
   // x402 gate state - kept local; once unlocked it stays unlocked for the session.
   const [ paymentBody, setPaymentBody ] = useState<SignedPaymentBody | null>(null)
   const isUnlocked = paymentBody !== null
 
-  // Restore a still-valid x402 unlock from a prior page view so the user does
-  // not re-pay on every navigation/reload. sessionStorage is client-only, so it
-  // must hydrate state in an effect after mount (a lazy initializer would
-  // mismatch the SSR render).
-  useEffect(() => {
-    const stored = sessionStorage.getItem(X402_STORAGE_KEY)
-    if (stored === null) {
-      return
-    }
-
-    try {
-      const restored = JSON.parse(stored) as SignedPaymentBody
-      if (restored.validUntil * 1000 > Date.now()) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only storage hydration on mount
-        setPaymentBody(restored)
-      } else {
-        sessionStorage.removeItem(X402_STORAGE_KEY)
-      }
-    } catch {
-      sessionStorage.removeItem(X402_STORAGE_KEY)
-    }
-  }, [])
-
   const patchState = (patch: Partial<ChatState>) => {
     setState((previous) => ({ ...previous, ...patch }))
   }
 
-  const { address: connectedAddress, isConnected, chainId: walletChainId } = useAccount()
+  const { address: connectedAddress, isConnected, chainId: walletChainId, status: accountStatus } = useAccount()
+
+  // Probe sessionStorage once on mount: when a still-valid receipt is present
+  // the paywall is NOT flashed while wagmi settles - the locked slot stays
+  // blank until the connection resolves (and restores the unlock) or settles
+  // disconnected (then the paywall is honest).
+  const [ unlockProbe, setUnlockProbe ] = useState<'pending' | 'stored' | 'none'>('pending')
+  useEffect(() => {
+    const stored = sessionStorage.getItem(X402_STORAGE_KEY)
+    let hasValidStored = false
+    if (stored !== null) {
+      try {
+        const restored = JSON.parse(stored) as SignedPaymentBody
+        hasValidStored = restored.validUntil * 1000 > Date.now()
+      } catch {
+        hasValidStored = false
+      }
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only storage probe on mount
+    setUnlockProbe(hasValidStored ? 'stored' : 'none')
+  }, [])
+
+  // Hard cap on how long the paywall is held back: wagmi can sit in
+  // 'connecting' indefinitely (e.g. a stale stored connection with a locked
+  // wallet extension), so "settled" cannot be detected from status alone. If
+  // the unlock has not restored within the window, the paywall shows anyway.
+  const [ hasUnlockWaitExpired, setUnlockWaitExpired ] = useState(false)
+  useEffect(() => {
+    const timeout = setTimeout(() => setUnlockWaitExpired(true), 3000)
+
+    return () => clearTimeout(timeout)
+  }, [])
   const { switchChainAsync } = useSwitchChain()
   const publicClient = usePublicClient({ chainId: ROBINHOOD_TESTNET_CHAIN_ID })
   const {
@@ -154,9 +211,127 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
   } = useSendTransaction()
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash: txHash })
 
-  // When the tx confirms, promote the prepared turn to 'executed' so its OWN
-  // reasoning card becomes the "Executed on-chain" card in place (no separate
-  // success card) and that status persists in history after the next prompt.
+  // Restore a still-valid x402 unlock once the wallet that paid reconnects -
+  // the receipt is wallet-bound, so another payer must pay for itself and a
+  // disconnected page stays locked (no paywall flash-then-vanish on mount).
+  // sessionStorage is client-only, so it hydrates after wagmi settles.
+  const hasUnlockHydratedRef = useRef(false)
+  useEffect(() => {
+    if (!isConnected || hasUnlockHydratedRef.current) {
+      return
+    }
+    hasUnlockHydratedRef.current = true
+
+    const stored = sessionStorage.getItem(X402_STORAGE_KEY)
+    if (stored === null) {
+      return
+    }
+
+    try {
+      const restored = JSON.parse(stored) as SignedPaymentBody
+      const isOwnUnlock = restored.payer.toLowerCase() === connectedAddress?.toLowerCase()
+      const isStillValid = restored.validUntil * 1000 > Date.now()
+      if (isOwnUnlock && isStillValid) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only storage hydration once the paying wallet reconnects
+        setPaymentBody(restored)
+      } else {
+        // A foreign or expired receipt is dropped - and the probe flips so the
+        // paywall (held back while the receipt looked usable) appears.
+        sessionStorage.removeItem(X402_STORAGE_KEY)
+        setUnlockProbe('none')
+      }
+    } catch {
+      sessionStorage.removeItem(X402_STORAGE_KEY)
+      setUnlockProbe('none')
+    }
+  }, [ isConnected, connectedAddress ])
+
+  // The conversation belongs to one wallet session, so the transcript is
+  // restored only once that wallet reconnects (owner-checked) - never on a
+  // disconnected mount. A reload keeps it: wagmi settles reconnecting ->
+  // connected without ever reporting a disconnect transition.
+  const hasHydratedRef = useRef(false)
+  useEffect(() => {
+    if (!isConnected || hasHydratedRef.current) {
+      return
+    }
+    hasHydratedRef.current = true
+
+    const stored = sessionStorage.getItem(CHAT_STORAGE_KEY)
+    if (stored === null) {
+      return
+    }
+
+    try {
+      const restored = JSON.parse(stored) as PersistedChat
+      const hasMessages = Array.isArray(restored.messages) && restored.messages.length > 0
+      if (!hasMessages || restored.owner !== connectedAddress) {
+        sessionStorage.removeItem(CHAT_STORAGE_KEY)
+        return
+      }
+
+      // isRestored marks each turn as history, so it renders its text at once
+      // instead of replaying the typing animation. A restored open review was
+      // already typed in its original session, so isReplyTyped comes back true.
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only storage hydration once the owning wallet reconnects
+      setState((previous) => ({
+        ...previous,
+        messages: restored.messages.map((message) => ({ ...message, isRestored: true })),
+        envelope: restored.envelope || null,
+        decodedInner: restored.decodedInner || null,
+        isReplyTyped: Boolean(restored.envelope),
+      }))
+    } catch {
+      sessionStorage.removeItem(CHAT_STORAGE_KEY)
+    }
+  }, [ isConnected, connectedAddress ])
+
+  // A live disconnect ends the chat session: wipe the transcript and its
+  // storage so the next wallet starts clean, and re-lock the page. The x402
+  // unlock STORAGE is kept - it is a payment receipt, so the same wallet
+  // reconnecting restores it without re-paying (another payer cannot: the
+  // restore effect drops a foreign receipt).
+  const wasConnectedRef = useRef(false)
+  useEffect(() => {
+    if (isConnected) {
+      wasConnectedRef.current = true
+      return
+    }
+    if (!wasConnectedRef.current) {
+      return
+    }
+
+    wasConnectedRef.current = false
+    hasHydratedRef.current = false
+    hasUnlockHydratedRef.current = false
+    sessionStorage.removeItem(CHAT_STORAGE_KEY)
+    resetSendTx()
+    setPaymentBody(null)
+    setState(INITIAL_STATE)
+  }, [ isConnected, resetSendTx ])
+
+  // Persist the transcript on every change. The envelope (the open review) is
+  // saved only while the last turn is still 'prepared' - restoring it after the
+  // tx settled would re-open a review for an executed/rejected transaction.
+  useEffect(() => {
+    if (messages.length === 0) {
+      return
+    }
+
+    const lastStatus = messages[messages.length - 1]?.status
+    const isReviewOpen = lastStatus === 'prepared'
+    const persisted: PersistedChat = {
+      owner: connectedAddress,
+      messages,
+      envelope: isReviewOpen ? envelope : null,
+      decodedInner: isReviewOpen ? decodedInner : null,
+    }
+    sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(persisted))
+  }, [ messages, envelope, decodedInner, connectedAddress ])
+
+  // When the tx confirms, promote the prepared turn to 'executed' (with its tx
+  // hash, so the turn keeps its own explorer link) - the SAME reasoning card
+  // greens in place, and that status persists in history after the next prompt.
   useEffect(() => {
     if (!isConfirmed) {
       return
@@ -170,38 +345,34 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       }
 
       const messages = previous.messages.map((message, index) =>
-        index === lastPreparedIndex ? { ...message, status: 'executed' as const } : message,
+        index === lastPreparedIndex ? { ...message, status: 'executed' as const, txHash } : message,
       )
 
       return { ...previous, messages }
     })
-  }, [ isConfirmed ])
+  }, [ isConfirmed, txHash ])
 
   const handleUnlocked = (payment: SignedPaymentBody) => {
     setPaymentBody(payment)
     sessionStorage.setItem(X402_STORAGE_KEY, JSON.stringify(payment))
   }
 
-  const submitPrompt = async (rawText: string) => {
-    const trimmed = rawText.trim()
-    if (trimmed.length === 0 || isLoading || paymentBody === null || !isConnected) {
-      return
-    }
-
-    const userMessage: Message = { id: crypto.randomUUID(), role: 'user', content: trimmed }
-    const next = [ ...messages, userMessage ]
+  const sendToAgent = async (next: Message[]) => {
     // Clear any prior envelope so a previous prepared/executed turn's review does
     // not linger while the new turn is in flight (the composer is now visible in
     // the executed state, so a new prompt can arrive on top of an old envelope).
-    patchState({ messages: next, input: '', isLoading: true, errorMessage: null, envelope: null, decodedInner: null })
+    patchState({ messages: next, input: '', isLoading: true, isReplyTyped: false, errorMessage: null, envelope: null, decodedInner: null })
     resetSendTx()
 
     try {
+      // Connect-prompt turns are local UI artifacts - the model never sees
+      // them (a mid-history "please connect wallet" could derail it).
+      const modelMessages = next.filter((message) => !message.isConnectPrompt)
       const response = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: next,
+          messages: modelMessages,
           scenario: 'rwa',
           receiverAddress: connectedAddress,
           payment: paymentBody,
@@ -218,11 +389,17 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       }
 
       const replyText = resolveReplyText(reply, returnedEnvelope !== undefined)
+      // The pipeline trace persists on the turn (LLM-style: nothing shown ever
+      // disappears). A plain reply keeps just the outcome-independent stages -
+      // the model evaluated whether to call the tool and decided not to, so
+      // nothing was signed.
+      const hasEnvelope = returnedEnvelope !== undefined
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: replyText,
-        status: returnedEnvelope !== undefined ? 'prepared' : undefined,
+        status: hasEnvelope ? 'prepared' : undefined,
+        pipelineSteps: hasEnvelope ? PREPARING_STEPS : IN_FLIGHT_STEPS,
       }
       patchState({ messages: [ ...next, assistantMessage ] })
 
@@ -237,6 +414,56 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     }
   }
 
+  const submitPrompt = async (rawText: string) => {
+    const trimmed = rawText.trim()
+    if (trimmed.length === 0 || isLoading || paymentBody === null) {
+      return
+    }
+
+    const userMessage: Message = { id: crypto.randomUUID(), role: 'user', content: trimmed }
+
+    // No wallet - no receiver for the envelope (possible if the user
+    // disconnects after the x402 unlock). Instead of locking the composer,
+    // answer locally with a connect-wallet turn and keep the chat open.
+    if (!isConnected) {
+      const connectPrompt: Message = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: 'Please connect wallet to continue.',
+        isConnectPrompt: true,
+      }
+      patchState({ messages: [ ...messages, userMessage, connectPrompt ], input: '' })
+      return
+    }
+
+    await sendToAgent([ ...messages, userMessage ])
+  }
+
+  // When the user connects in response to a connect-prompt turn, the chat
+  // resumes by itself: the prompt card resolves in place ("Wallet connected /
+  // Thanks for connecting.") and the pending request goes to the agent without
+  // re-typing. The resolved flag makes this one-shot - the effect re-runs on
+  // every message change, but only an unresolved trailing prompt triggers it.
+  useEffect(() => {
+    if (!isConnected || isLoading || paymentBody === null) {
+      return
+    }
+
+    const lastMessage = messages[messages.length - 1]
+    const pendingMessage = messages[messages.length - 2]
+    const isAwaitingConnect = Boolean(lastMessage?.isConnectPrompt) && lastMessage?.isConnectResolved !== true
+    if (!isAwaitingConnect || pendingMessage?.role !== 'user') {
+      return
+    }
+
+    const resolved = messages.map((message, index) =>
+      index === messages.length - 1 ? { ...message, isConnectResolved: true } : message,
+    )
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing the external wagmi connect event into the conversation: resolve the prompt turn and resume the pending request
+    void sendToAgent(resolved)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sendToAgent is an unstable closure; the guard above makes the effect idempotent, so reacting to connection + transcript changes is sufficient
+  }, [ isConnected, isLoading, paymentBody, messages ])
+
   const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     void submitPrompt(input)
@@ -244,6 +471,10 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
 
   const handleSuggestionClick = (prompt: string) => {
     void submitPrompt(prompt)
+  }
+
+  const handleReplyTyped = () => {
+    patchState({ isReplyTyped: true })
   }
 
   const handleSignTransaction = async () => {
@@ -285,11 +516,11 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
   }
 
   const handleReject = () => {
-    // isConfirmed reuses this handler as a post-sign reset ("sign another?"), so
-    // only flag a real decline - an envelope rejected before it was signed. The
-    // flag lives on the assistant turn itself (not a chat-level boolean) so the
-    // decline persists in the transcript after the next message instead of
-    // vanishing when the turn drops out of the live reasoning card.
+    // Flipping the turn to 'rejected' is what closes the review (the Collapse
+    // exit animates it out); the envelope itself is NOT cleared here - the
+    // content must stay mounted through the exit transition, and the next
+    // prompt clears it anyway. The flag lives on the assistant turn itself so
+    // the decline persists in the transcript after the next message.
     const wasDeclined = !isConfirmed
     setState((previous) => {
       const lastIndex = previous.messages.length - 1
@@ -298,21 +529,18 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
         ? previous.messages.map((message, index) => (index === lastIndex ? { ...message, status: 'rejected' as const } : message))
         : previous.messages
 
-      return { ...previous, envelope: null, decodedInner: null, messages }
+      return { ...previous, messages }
     })
     resetSendTx()
   }
 
   const isBusySendingTx = isSigning || isConfirming
   const envelopeChainId = envelope !== null ? Number(envelope.chain.split(':')[1]) : null
-  const inputPlaceholder = isConnected
-    ? 'Buy a tokenised stock...'
-    : 'Connect your wallet to start...'
 
   const decodedForPreview = decodedInner !== null
     ? {
-      selector: decodedInner.selector ?? undefined,
-      functionName: decodedInner.functionName ?? undefined,
+      selector: decodedInner.selector || undefined,
+      functionName: decodedInner.functionName || undefined,
       args: decodedInner.args?.map((arg) => ({ name: arg.name ?? '', type: arg.type, value: arg.value })),
       source: decodedInner.source,
       clearSigning: decodedInner.clearSigning,
@@ -329,12 +557,32 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     if (message.role === 'user') {
       return <ChatMessage key={message.id} role="user" content={message.content} />
     }
+    if (message.isConnectPrompt) {
+      return <ConnectWalletPrompt key={message.id} isResolved={message.isConnectResolved} />
+    }
+
+    // An executed turn carries its own tx hash, so the card voices the outcome
+    // ("Transaction submitted: ..." + explorer link) inside the same message.
+    const executedTx = message.status === 'executed' && message.txHash !== undefined
+      ? {
+        hash: message.txHash,
+        href: formatTxExplorerUrl(ROBINHOOD_TESTNET_CHAIN_ID, message.txHash),
+      }
+      : undefined
+
+    // Only the live prepared turn reports typing completion - that is what
+    // gates the envelope review expanding below it.
+    const onTypedComplete = message.status === 'prepared' && !message.isRestored ? handleReplyTyped : undefined
 
     return (
       <AgentReasoning
         key={message.id}
         reasoningLines={splitReasoningLines(message.content)}
         status={message.status ?? 'replied'}
+        pipelineSteps={message.pipelineSteps}
+        executedTx={executedTx}
+        isInstant={message.isRestored}
+        onTypedComplete={onTypedComplete}
       />
     )
   })
@@ -344,15 +592,16 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
   // though isLoading stays true through the decode call - its own card takes over,
   // so the preparing card and the prepared card never show at the same time.
   const isAwaitingReply = isLoading && messages[messages.length - 1]?.role !== 'assistant'
-  const preparingNode = isAwaitingReply ? <PreparingCard steps={PREPARING_STEPS} /> : null
+  const preparingNode = isAwaitingReply ? <PreparingCard steps={IN_FLIGHT_STEPS} /> : null
 
   const checklistNode = isPrepared ? <PolicyChecklist /> : null
 
   const mockNoticeNode = isPrepared ? (
     <Note icon="info">
-      <span className="font-medium text-foreground">Testnet demo - real enforcement, mock settlement.</span>{' '}
-      The RWA router is a mock, so no tokens move - the demo proves the verification layer, not the brokerage.
-      The gate checks above run on-chain, verifiable on the explorer.
+      <span className="font-medium text-foreground">Testnet demo - real enforcement, mock holdings.</span>{' '}
+      The RWA router credits a mock holdings ledger (no real equity moves), and each executed buy
+      settles a real mock-scale mxUSD transfer to the x402 merchant treasury on-chain. The gate
+      checks above run on-chain, verifiable on the explorer.
     </Note>
   ) : null
 
@@ -385,7 +634,6 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       isConnected={isConnected}
       isSigning={isSigning}
       isConfirming={isConfirming}
-      isConfirmed={isConfirmed}
       isBusySendingTx={isBusySendingTx}
       txHash={txHash}
       sendError={sendError}
@@ -395,11 +643,22 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     />
   ) : null
 
-  // The composer is hidden during review (prepared, not yet confirmed) and while
-  // the x402 paywall is still locked. It returns on reject AND once the tx is
-  // executed, so the user can start the next purchase from the terminal
-  // "Executed on-chain" state without a refresh.
-  const isComposerShown = isUnlocked && (!isPrepared || isConfirmed)
+  // The review belongs to the last turn only while it is still 'prepared': a
+  // reject or confirmation flips the turn status, which closes the review (the
+  // envelope itself lingers until the next prompt so the Collapse exit can
+  // animate with its content mounted). It opens only after the reply finished
+  // typing, so the user reads the agent's summary before the envelope appears.
+  // The composer is always mounted (locked / review states disable it).
+  const lastTurnStatus = messages[messages.length - 1]?.status
+  const isReviewing = isPrepared && !isConfirmed && lastTurnStatus === 'prepared'
+  const isReviewOpen = isReviewing && isReplyTyped
+  const isComposerDisabled = isLoading || isReviewing || !isUnlocked
+  const inputPlaceholder = resolveInputPlaceholder(isReviewing, !isUnlocked)
+
+  // Once the review opens, align the prepared turn card to the top of the
+  // transcript so the agent's summary reads first and the envelope review sits
+  // right below it (instead of the default scroll-to-bottom).
+  useReviewScrollPin(isReviewOpen)
 
   const composerNode = (
     <div className="space-y-2">
@@ -409,30 +668,30 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       >
         <input
           aria-label="Describe an RWA purchase"
-          className="flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted disabled:cursor-not-allowed"
+          className="flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-50"
           placeholder={inputPlaceholder}
           value={input}
           onChange={(event) => patchState({ input: event.target.value })}
-          disabled={isLoading || !isConnected}
+          disabled={isComposerDisabled}
         />
         <button
           type="submit"
           aria-label="Send"
-          disabled={isLoading || !isConnected || input.trim().length === 0}
-          className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-text transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40"
+          disabled={isComposerDisabled || input.trim().length === 0}
+          className="flex size-8 shrink-0 items-center justify-center rounded-lg text-foreground transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40"
         >
-          <Icon name="arrow-up" className="size-4" />
+          <Icon name="corner-down-left" className="size-4" />
         </button>
       </form>
-      <div className="px-1 text-xs leading-relaxed">
+      <div className={`px-1 text-xs leading-relaxed ${isComposerDisabled ? 'opacity-50' : ''}`}>
         <span className="text-muted">Try: </span>
         {SUGGESTED_PROMPTS.map((prompt, index) => (
           <span key={prompt}>
             <button
               type="button"
               onClick={() => handleSuggestionClick(prompt)}
-              disabled={isLoading || !isConnected}
-              className="border-b border-dashed border-border pb-px font-mono text-muted transition-colors hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isComposerDisabled}
+              className="border-b border-dashed border-border pb-px font-mono text-muted transition-colors enabled:hover:border-accent enabled:hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed"
             >
               {prompt}
             </button>
@@ -443,30 +702,38 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     </div>
   )
 
-  // Before signing: the full envelope review. Once the tx is confirmed the
-  // review is done, so the preview/checklist/notice drop away and only the
-  // success card + continue actions remain.
-  const reviewDetailsNode = isConfirmed ? null : (
-    <>
-      {previewNode}
-      {checklistNode}
-      {mockNoticeNode}
-    </>
-  )
-
-  // The whole review block expands in together once the agent prepares a tx.
+  // The whole review block expands in together once the prepared reply is
+  // typed, and collapses out the same way on reject / confirmation - the
+  // executed turn card carries the outcome line + explorer link itself.
   const reviewNode = isPrepared ? (
-    <Collapse>
+    <Collapse isOpen={isReviewOpen}>
       <div className="space-y-4">
-        {reviewDetailsNode}
+        {previewNode}
+        {checklistNode}
+        {mockNoticeNode}
         {actionsNode}
       </div>
     </Collapse>
   ) : null
 
   // Until the x402 payment is verified the chat is gated: the paywall is the
-  // only scroll content and the composer is hidden.
-  const lockedNode = !isUnlocked ? <X402Paywall onUnlocked={handleUnlocked} /> : null
+  // only scroll content, optically centered in the leftover chat height
+  // (flex-1 inside ChatShell's min-h-full column; the 2:3 spacer split sits
+  // the card slightly above the geometric center), with the composer disabled
+  // below it. While a stored receipt is waiting for wagmi to settle the slot
+  // stays blank - flashing the paywall right before the unlock restores reads
+  // as a glitch; a settled disconnect still shows the paywall.
+  const isUnlockStillSettling = unlockProbe === 'pending'
+    || (unlockProbe === 'stored' && accountStatus !== 'disconnected')
+  const isAwaitingStoredUnlock = isUnlockStillSettling && !hasUnlockWaitExpired
+  const isPaywallVisible = !isUnlocked && !isAwaitingStoredUnlock
+  const lockedNode = isPaywallVisible ? (
+    <div className="flex flex-1 flex-col">
+      <div className="grow-[2]" />
+      <X402Paywall onUnlocked={handleUnlocked} />
+      <div className="grow-[3]" />
+    </div>
+  ) : null
 
   // The transcript is meaningful only once unlocked (no messages can exist while
   // gated), so it sits behind the unlock check to keep the locked view clean.
@@ -479,18 +746,26 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     </>
   ) : null
 
-  // scrollKey drives ChatShell's auto-scroll-to-bottom on every event that adds
-  // or swaps transcript content (unlock, new turn, in-flight reply, prepared
-  // review, confirmation).
-  const scrollKey = `${isUnlocked}:${messages.length}:${isLoading}:${isPrepared}:${isConfirmed}`
+  // scrollKey drives ChatShell's auto-scroll-to-bottom on unlock, new turns and
+  // the in-flight reply; the prepared review does NOT bottom-scroll - it gets
+  // the align-to-top treatment above instead.
+  const scrollKey = `${isUnlocked}:${messages.length}:${isLoading}`
 
   return (
-    <ChatShell header={header} composer={isComposerShown ? composerNode : null} scrollKey={scrollKey}>
-      {intro}
-      {banner}
+    <ChatShell
+      header={header}
+      pinned={(
+        <>
+          {intro}
+          {banner}
+        </>
+      )}
+      composer={composerNode}
+      scrollKey={scrollKey}
+    >
+      {note}
       {lockedNode}
       {transcriptNode}
-      {footer}
     </ChatShell>
   )
 }

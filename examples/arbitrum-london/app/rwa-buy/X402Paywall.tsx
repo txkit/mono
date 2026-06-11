@@ -1,10 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { useAccount, useChainId, useSignTypedData, useSwitchChain } from 'wagmi'
+import { useAccount, useSignTypedData, useSwitchChain } from 'wagmi'
 import { formatUnits, keccak256, toBytes } from 'viem'
 
 import { robinhoodTestnet, ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
+import { openConnectWalletModal } from '@/src/ui/openConnectWalletModal'
+import { resolveSendErrorText } from '../yield-swap/utils/formatters'
 import {
   X402_ASSET,
   X402_DOMAIN,
@@ -90,8 +92,7 @@ const formatAcceptAmount = (asset: string, rawAmount: string): string => {
 export const X402Paywall = (props: X402PaywallProps) => {
   const { onUnlocked } = props
 
-  const { address: connectedAddress, isConnected } = useAccount()
-  const activeChainId = useChainId()
+  const { address: connectedAddress, isConnected, chainId: walletChainId } = useAccount()
   const { switchChainAsync } = useSwitchChain()
 
   const [ isPending, setIsPending ] = useState(false)
@@ -129,8 +130,11 @@ export const X402Paywall = (props: X402PaywallProps) => {
   }, [ fetchRequirements ])
 
   const handlePayAndUnlock = async () => {
+    // The button stays active while disconnected: the first thing paying
+    // requires is a wallet, so the click opens the connect modal instead of
+    // showing a dead disabled state.
     if (!isConnected || connectedAddress === undefined) {
-      setErrorMessage('Connect your wallet first')
+      openConnectWalletModal()
       return
     }
 
@@ -142,7 +146,11 @@ export const X402Paywall = (props: X402PaywallProps) => {
       // rejects signTypedData when its active chain differs ("provided chainId
       // must match the active chainId"), so switch the wallet first. switchChain
       // also triggers wallet_addEthereumChain when the chain is not yet known.
-      if (activeChainId !== ROBINHOOD_TESTNET_CHAIN_ID) {
+      // The check reads the WALLET's chain (useAccount), not useChainId: the
+      // wagmi config chain can claim 46630 (persisted from a prior session)
+      // while the freshly connected wallet sits elsewhere - that skipped the
+      // switch and left the wallet on the wrong network after unlocking.
+      if (walletChainId !== ROBINHOOD_TESTNET_CHAIN_ID) {
         await switchChainAsync({ chainId: ROBINHOOD_TESTNET_CHAIN_ID })
       }
 
@@ -208,11 +216,10 @@ export const X402Paywall = (props: X402PaywallProps) => {
       // re-verifies the raw payment for defense-in-depth.
       onUnlocked(signedBody)
     } catch (paymentError) {
-      if (paymentError instanceof Error && paymentError.message.includes('User rejected')) {
-        setErrorMessage('Signature rejected')
-      } else {
-        setErrorMessage(`Payment failed: ${String(paymentError)}`)
-      }
+      // resolveSendErrorText reduces wallet/RPC errors (including the user
+      // rejecting the signature) to their one-line shortMessage.
+      const message = paymentError instanceof Error ? resolveSendErrorText(paymentError) : String(paymentError)
+      setErrorMessage(message)
     } finally {
       setIsPending(false)
     }
@@ -220,8 +227,8 @@ export const X402Paywall = (props: X402PaywallProps) => {
 
   const requirementsNode = requirements !== null ? (
     <div className="mt-3 rounded-md bg-card-sunken px-4 py-3 font-mono text-xs space-y-1">
-      {requirements.accepts.map((accept, index) => (
-        <div key={index} className="text-muted">
+      {requirements.accepts.map((accept) => (
+        <div key={accept.network} className="text-muted">
           <span className="text-foreground">{formatAcceptAmount(accept.asset, accept.maxAmountRequired)}</span>
           {' on '}
           <span className="text-accent">{accept.network}</span>
@@ -237,12 +244,6 @@ export const X402Paywall = (props: X402PaywallProps) => {
     <div role="alert" className="mt-3 rounded-md border border-error bg-error-bg px-3 py-2 text-sm text-error">
       {errorMessage}
     </div>
-  ) : null
-
-  const pendingStatusNode = isPending ? (
-    <p role="status" aria-live="polite" className="mt-3 text-xs text-muted">
-      Waiting for wallet signature...
-    </p>
   ) : null
 
   return (
@@ -263,18 +264,13 @@ export const X402Paywall = (props: X402PaywallProps) => {
 
       <button
         type="button"
-        disabled={isPending || !isConnected}
+        disabled={isPending}
         onClick={handlePayAndUnlock}
         className="rounded-md bg-accent px-6 py-2.5 text-sm text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPending ? 'Signing...' : 'Pay and unlock'}
       </button>
 
-      {!isConnected ? (
-        <p className="text-xs text-muted">Connect your wallet to pay</p>
-      ) : null}
-
-      {pendingStatusNode}
       {errorNode}
     </div>
   )

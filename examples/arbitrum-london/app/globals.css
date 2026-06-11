@@ -81,22 +81,33 @@ body {
 }
 
 /*
+ * Desktop reconnect skeleton: fixed 168px (vs the 11rem text-button pin) to
+ * match the connected button's rendered width. Overridden to 155px on mobile
+ * by the later media-query block below.
+ */
+.tx-cw .tx-cw-button--skeleton {
+  width: 168px;
+  min-width: 168px;
+}
+
+/*
  * Mobile: hide the connect button's ETH balance on every ConnectWallet (the demo
- * header AND the landing) - too wide for a phone. In the demo header, also
- * release the 11rem desktop min-width so the single row fits (the button shrinks
- * to avatar + address); the landing connect sits in its own row, so it keeps the
- * pin. Balance + pin both return at >= sm.
+ * header AND the landing) - too wide for a phone - and swap the 11rem desktop
+ * width pin for a 155px one that fits a single header row. The reconnect
+ * skeleton renders no text (the width IS its size), so it gets a fixed 155px.
+ * Balance + the 11rem pin both return at >= sm.
  */
 @media (max-width: 639.98px) {
   .tx-cw .tx-cw-balance-wrap {
     display: none;
   }
 
-  /* Header only: let the connected / Connect button shrink to its content, but
-     keep the reconnect skeleton at its reserved 11rem width - it renders no
-     text, so min-width is the only thing giving the shimmer block its size. */
-  .demo-header .tx-cw-button:not(.tx-cw-button--skeleton) {
-    min-width: 0;
+  .tx-cw .tx-cw-button {
+    min-width: 155px;
+  }
+
+  .tx-cw .tx-cw-button--skeleton {
+    width: 155px;
   }
 }
 
@@ -134,8 +145,15 @@ body {
  * the top edge, so the newest content near the composer stays fully opaque.
  */
 .tx-chat-scroll {
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* Push the scrollbar into the page's side padding so it sits to the right of
+     the content instead of overlapping it: the padding reserves a gutter inside
+     the scroll container, the negative margin pulls the container outward by the
+     same amount, so the content column keeps its width. */
+  padding-right: 0.75rem;
+  margin-right: -0.75rem;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem);
   mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem);
   scrollbar-width: thin;
