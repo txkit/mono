@@ -4,6 +4,7 @@ import {
   checkIsMockRwaRouterDeployed,
 } from '@/src/config/deployed'
 import { DemoHeader } from '@/src/ui/DemoHeader'
+import { Note } from '@/src/ui/Note'
 
 import { RwaAgentChat } from './RwaAgentChat'
 
@@ -69,37 +70,37 @@ const RobinhoodDeployPendingBanner = () => {
 const FlowC = () => {
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-12 space-y-8">
-      <DemoHeader current="rwa-buy" chainId={ROBINHOOD_TESTNET_CHAIN_ID} />
-
-      <header>
-        <p className="text-xs uppercase tracking-wider text-accent mb-2">
-          Robinhood Chain testnet (46630)
-        </p>
-        <h1 className="text-3xl font-bold mb-3">x402-paid RWA agent</h1>
-        <p className="opacity-80">
-          Pay via x402 (EIP-712 authorization, self-hosted facilitator), then ask the
-          agent to buy a mock RWA token (TSLA / AMZN / PLTR) on Robinhood Chain testnet.
-          The agent prepares a typed envelope, the policy gate enforces the rules
-          on chain. Settlement is stubbed on testnet - verification is real.
-        </p>
-      </header>
-
-      <RobinhoodDeployPendingBanner />
-
-      <RwaAgentChat />
-
-      <footer className="border-t border-border pt-6 text-xs opacity-60">
-        <p>
-          x402 payment: verify is real (EIP-712 signer recovery), settle is stubbed
-          on testnet (the signature is the receipt). The self-hosted facilitator
-          handles Robinhood Chain (Arbitrum Orbit) - Coinbase&apos;s facilitator does not
-          support Orbit chains. On-chain contracts: AgentPolicyGate
-          0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35, MockRwaRouter
-          0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C.
-        </p>
-      </footer>
-    </main>
+    <RwaAgentChat
+      header={<DemoHeader current="rwa-buy" chainId={ROBINHOOD_TESTNET_CHAIN_ID} />}
+      banner={<RobinhoodDeployPendingBanner />}
+      intro={(
+        <header>
+          <p className="text-xs uppercase tracking-wider text-accent mb-2">
+            Robinhood Chain testnet (46630)
+          </p>
+          <h1 className="text-3xl font-bold mb-3">x402-paid RWA agent</h1>
+          <Note icon="info">
+            Pay via x402 (EIP-712 authorization, self-hosted facilitator), then ask the
+            agent to buy a mock RWA token (TSLA / AMZN / PLTR) on Robinhood Chain testnet.
+            The agent calls <code className="rounded bg-card-sunken px-1 font-mono text-foreground">prepare_rwa_buy</code>,
+            you review the decoded envelope, then sign in your wallet. Settlement is
+            stubbed on testnet - verification is real.
+          </Note>
+        </header>
+      )}
+      footer={(
+        <footer className="border-t border-border pt-6 text-xs opacity-60">
+          <p>
+            x402 payment: verify is real (EIP-712 signer recovery), settle is stubbed
+            on testnet (the signature is the receipt). The self-hosted facilitator
+            handles Robinhood Chain (Arbitrum Orbit) - Coinbase&apos;s facilitator does not
+            support Orbit chains. On-chain contracts: AgentPolicyGate
+            0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35, MockRwaRouter
+            0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C.
+          </p>
+        </footer>
+      )}
+    />
   )
 }
 

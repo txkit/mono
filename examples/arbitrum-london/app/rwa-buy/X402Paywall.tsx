@@ -2,14 +2,16 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useAccount, useChainId, useSignTypedData, useSwitchChain } from 'wagmi'
-import { keccak256, toBytes } from 'viem'
+import { formatUnits, keccak256, toBytes } from 'viem'
 
-import { ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
+import { robinhoodTestnet, ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import {
+  X402_ASSET,
   X402_DOMAIN,
   X402_MERCHANT_ADDRESS,
   X402_PAYMENT_TYPES,
   X402_REQUIRED_AMOUNT,
+  X402_RESOURCE,
   hashPaymentRequirements,
   type SignedPaymentBody,
 } from '@/src/x402/facilitator'
@@ -38,6 +40,40 @@ type VerifyResponseShape = {
   error?: string,
 }
 
+// The 402 challenge is built from compile-time facilitator constants - the same
+// ones GET /api/x402 serves - so the paywall renders the requirements on first
+// paint instead of waiting for the fetch. That removes the pop-in / height jump
+// (previously requirements started null and only appeared after the round-trip).
+// The background fetch still runs (real x402 handshake) and returns identical
+// values, so it never changes the rendered box.
+const STATIC_REQUIREMENTS: RequirementsShape = {
+  accepts: [
+    {
+      scheme: 'exact',
+      network: `eip155:${ROBINHOOD_TESTNET_CHAIN_ID}`,
+      payTo: X402_MERCHANT_ADDRESS,
+      asset: X402_ASSET,
+      maxAmountRequired: X402_REQUIRED_AMOUNT.toString(),
+      resource: X402_RESOURCE,
+    },
+  ],
+  settlement: 'stubbed-testnet',
+}
+
+// Render the x402 challenge amount as a human value. A native-asset amount is in
+// wei, so format it against the chain's native currency (ETH, 18 decimals) and
+// show the symbol; a non-native asset (an ERC-20 address) falls back to the raw
+// amount + asset string.
+const formatAcceptAmount = (asset: string, rawAmount: string): string => {
+  if (asset !== 'native') {
+    return `${rawAmount} ${asset}`
+  }
+
+  const { decimals, symbol } = robinhoodTestnet.nativeCurrency
+
+  return `${formatUnits(BigInt(rawAmount), decimals)} ${symbol}`
+}
+
 /**
  * x402 paywall gate for scenario C. Fetches GET /api/x402 to display the
  * payment requirements, then on "Pay and unlock" builds a PaymentAuthorization
@@ -60,7 +96,7 @@ export const X402Paywall = (props: X402PaywallProps) => {
 
   const [ isPending, setIsPending ] = useState(false)
   const [ errorMessage, setErrorMessage ] = useState<string | null>(null)
-  const [ requirements, setRequirements ] = useState<RequirementsShape | null>(null)
+  const [ requirements, setRequirements ] = useState<RequirementsShape | null>(STATIC_REQUIREMENTS)
 
   const { signTypedDataAsync } = useSignTypedData()
 
@@ -186,9 +222,7 @@ export const X402Paywall = (props: X402PaywallProps) => {
     <div className="mt-3 rounded-md bg-card-sunken px-4 py-3 font-mono text-xs space-y-1">
       {requirements.accepts.map((accept, index) => (
         <div key={index} className="text-muted">
-          <span className="text-foreground">{accept.maxAmountRequired}</span>
-          {' '}
-          <span>{accept.asset}</span>
+          <span className="text-foreground">{formatAcceptAmount(accept.asset, accept.maxAmountRequired)}</span>
           {' on '}
           <span className="text-accent">{accept.network}</span>
         </div>

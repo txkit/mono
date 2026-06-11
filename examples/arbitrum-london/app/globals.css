@@ -81,6 +81,26 @@ body {
 }
 
 /*
+ * Mobile: hide the connect button's ETH balance on every ConnectWallet (the demo
+ * header AND the landing) - too wide for a phone. In the demo header, also
+ * release the 11rem desktop min-width so the single row fits (the button shrinks
+ * to avatar + address); the landing connect sits in its own row, so it keeps the
+ * pin. Balance + pin both return at >= sm.
+ */
+@media (max-width: 639.98px) {
+  .tx-cw .tx-cw-balance-wrap {
+    display: none;
+  }
+
+  /* Header only: let the connected / Connect button shrink to its content, but
+     keep the reconnect skeleton at its reserved 11rem width - it renders no
+     text, so min-width is the only thing giving the shimmer block its size. */
+  .demo-header .tx-cw-button:not(.tx-cw-button--skeleton) {
+    min-width: 0;
+  }
+}
+
+/*
  * Collapse: smooth height expand for the prepared-envelope review block. The
  * grid-template-rows 0fr -> 1fr transition animates to the natural (auto)
  * height with no JS measuring; the inner element clips overflow while closed.
@@ -104,6 +124,39 @@ body {
   .tx-collapse {
     transition: none;
   }
+}
+
+/*
+ * Chat app shell scroll area (ChatShell). The transcript scrolls inside this
+ * while the composer stays pinned at the viewport bottom (LLM-app layout). A top
+ * mask gradient fades content as it scrolls under the fixed header; the scrollbar
+ * is a thin, low-contrast custom bar (frontwise pattern). The mask softens only
+ * the top edge, so the newest content near the composer stays fully opaque.
+ */
+.tx-chat-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 1.25rem);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.tx-chat-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tx-chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tx-chat-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 9999px;
+}
+
+.tx-chat-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-hover);
 }
 
 /*
@@ -148,6 +201,11 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes tx-caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 .tx-anim-pulse { animation: tx-pulse-soft 2s ease-in-out infinite; }
 .tx-anim-enter-x { animation: tx-enter-x 0.35s ease-out both; }
 .tx-anim-enter-y { animation: tx-enter-y 0.35s ease-out both; }
@@ -156,6 +214,18 @@ body {
 .tx-anim-typing { animation: tx-typing-dot 1s ease-in-out infinite; }
 .tx-anim-card-in { animation: tx-card-in 0.4s ease-out both; }
 
+/* Streaming caret for the agent-reasoning typewriter (TypedText) - a thin bar in
+   the current text color that blinks while characters are still being revealed. */
+.tx-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: currentColor;
+  animation: tx-caret-blink 1s step-end infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tx-anim-pulse,
   .tx-anim-enter-x,
@@ -163,7 +233,8 @@ body {
   .tx-anim-pop,
   .tx-anim-spin,
   .tx-anim-typing,
-  .tx-anim-card-in {
+  .tx-anim-card-in,
+  .tx-caret {
     animation: none;
   }
 }

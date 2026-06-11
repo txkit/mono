@@ -1,6 +1,6 @@
 'use client'
 
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
 import { useAccount, usePublicClient, useSendTransaction, useSwitchChain, useWaitForTransactionReceipt } from 'wagmi'
 
 import type { ArbitrumChainId } from '@txkit/arbitrum-adapter'
@@ -8,19 +8,22 @@ import type { ArbitrumChainId } from '@txkit/arbitrum-adapter'
 import type { DemoEnvelope } from '@/src/agent/envelope-builder'
 import { ARBITRUM_SEPOLIA_CHAIN_ID } from '@/src/chains'
 import { ChatMessage } from '@/src/ui/ChatMessage'
+import { ChatShell } from '@/src/ui/ChatShell/ChatShell'
 import { Collapse } from '@/src/ui/Collapse'
 import { EnvelopePreview } from '@/src/ui/EnvelopePreview'
+import { Icon } from '@/src/ui/Icon'
 import { Note } from '@/src/ui/Note'
 import { SequencerFeeRow } from '@/src/ui/SequencerFeeRow'
 
 import { AgentReasoning } from './AgentReasoning/AgentReasoning'
+import { PreparingCard } from './AgentReasoning/PreparingCard'
 import { PolicyChecklist } from './PolicyChecklist/PolicyChecklist'
 import { SignEnvelopeActions } from './SignEnvelopeActions'
 import { fetchDecoded, type DecodedCall } from './utils/fetchDecoded'
 import { formatChainLabel, formatExplorerBase, resolveReplyText, splitReasoningLines } from './utils/formatters'
 
 
-type Message = { id: string, role: 'user' | 'assistant', content: string }
+type Message = { id: string, role: 'user' | 'assistant', content: string, status?: 'prepared' | 'rejected' | 'executed' }
 
 type AgentResponse = {
   reply?: string,
@@ -36,7 +39,6 @@ type ChatState = {
   errorMessage: string | null,
   envelope: DemoEnvelope | null,
   decodedInner: DecodedCall | null,
-  isRejected: boolean,
 }
 
 const INITIAL_STATE: ChatState = {
@@ -46,7 +48,6 @@ const INITIAL_STATE: ChatState = {
   errorMessage: null,
   envelope: null,
   decodedInner: null,
-  isRejected: false,
 }
 
 /** Example prompts offered as one-click chips under the composer. */
@@ -57,16 +58,39 @@ const SUGGESTED_PROMPTS = [
 ]
 
 /**
- * Scenario A client: Claude tool-use loop + one-click sign.
+ * Pipeline stages narrated in the in-flight reasoning card. Each names a real
+ * step the request goes through in /api/agent: the LLM parses the intent,
+ * evaluates the prepare_pendle_yield_swap tool, the envelope builder fills
+ * amounts / min-out / expiry, and the agent key signs the EIP-712 envelope.
+ */
+const PREPARING_STEPS = [
+  'Parsing the yield-swap intent',
+  'Evaluating tool call: prepare_pendle_yield_swap',
+  'Building the envelope: amounts, min-out, expiry',
+  'Signing as the agent (EIP-712)',
+]
+
+type PendleAgentChatProps = {
+  header: ReactNode,
+  intro: ReactNode,
+  banner: ReactNode,
+  footer: ReactNode,
+}
+
+/**
+ * Scenario A client: LLM tool-use loop + one-click sign.
  *
  * Sends conversation history to /api/agent, which returns either a clarifying
  * reply (text only) or a signed envelope ready for review. wagmi
  * useSendTransaction signs envelope.call in one click; the explorer link
- * appears once the tx hash is returned.
+ * appears once the tx hash is returned. The static page chrome (header, intro,
+ * deploy banner, footer) is passed in as slots so the whole page lives inside
+ * the scrollable ChatShell with the composer pinned to the viewport bottom.
  */
-export const PendleAgentChat = () => {
+export const PendleAgentChat = (props: PendleAgentChatProps) => {
+  const { header, intro, banner, footer } = props
   const [ state, setState ] = useState<ChatState>(INITIAL_STATE)
-  const { messages, input, isLoading, errorMessage, envelope, decodedInner, isRejected } = state
+  const { messages, input, isLoading, errorMessage, envelope, decodedInner } = state
 
   const patchState = (patch: Partial<ChatState>) => {
     setState((previous) => ({ ...previous, ...patch }))
@@ -84,16 +108,41 @@ export const PendleAgentChat = () => {
   } = useSendTransaction()
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash: txHash })
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const trimmed = input.trim()
+  // When the tx confirms, promote the prepared turn to 'executed' so its OWN
+  // reasoning card becomes the "Executed on-chain" card in place (no separate
+  // success card) and that status persists in history after the next prompt.
+  useEffect(() => {
+    if (!isConfirmed) {
+      return
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing the external wagmi tx-receipt confirmation into the turn status; must persist past the next prompt (which resets isConfirmed), so it cannot be a render-time derivation
+    setState((previous) => {
+      const lastPreparedIndex = previous.messages.map((message) => message.status).lastIndexOf('prepared')
+      if (lastPreparedIndex === -1) {
+        return previous
+      }
+
+      const messages = previous.messages.map((message, index) =>
+        index === lastPreparedIndex ? { ...message, status: 'executed' as const } : message,
+      )
+
+      return { ...previous, messages }
+    })
+  }, [ isConfirmed ])
+
+  const submitPrompt = async (rawText: string) => {
+    const trimmed = rawText.trim()
     if (trimmed.length === 0 || isLoading || !isConnected) {
       return
     }
 
     const userMessage: Message = { id: crypto.randomUUID(), role: 'user', content: trimmed }
     const next = [ ...messages, userMessage ]
-    patchState({ messages: next, input: '', isLoading: true, errorMessage: null, isRejected: false })
+    // Clear any prior envelope so a previous prepared/executed turn's review does
+    // not linger while the new turn is in flight (the composer is now visible in
+    // the executed state, so a new prompt can arrive on top of an old envelope).
+    patchState({ messages: next, input: '', isLoading: true, errorMessage: null, envelope: null, decodedInner: null })
     resetSendTx()
 
     try {
@@ -113,7 +162,12 @@ export const PendleAgentChat = () => {
       }
 
       const replyText = resolveReplyText(reply, returnedEnvelope !== undefined)
-      const assistantMessage: Message = { id: crypto.randomUUID(), role: 'assistant', content: replyText }
+      const assistantMessage: Message = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: replyText,
+        status: returnedEnvelope !== undefined ? 'prepared' : undefined,
+      }
       patchState({ messages: [ ...next, assistantMessage ] })
 
       if (returnedEnvelope !== undefined) {
@@ -125,6 +179,15 @@ export const PendleAgentChat = () => {
     } finally {
       patchState({ isLoading: false })
     }
+  }
+
+  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    void submitPrompt(input)
+  }
+
+  const handleSuggestionClick = (prompt: string) => {
+    void submitPrompt(prompt)
   }
 
   const handleSignTransaction = async () => {
@@ -167,8 +230,20 @@ export const PendleAgentChat = () => {
 
   const handleReject = () => {
     // isConfirmed reuses this handler as a post-sign reset ("sign another?"), so
-    // only flag a real decline - an envelope rejected before it was signed.
-    patchState({ envelope: null, decodedInner: null, isRejected: !isConfirmed })
+    // only flag a real decline - an envelope rejected before it was signed. The
+    // flag lives on the assistant turn itself (not a chat-level boolean) so the
+    // decline persists in the transcript after the next message instead of
+    // vanishing when the turn drops out of the live reasoning card.
+    const wasDeclined = !isConfirmed
+    setState((previous) => {
+      const lastIndex = previous.messages.length - 1
+      const shouldMark = wasDeclined && previous.messages[lastIndex]?.role === 'assistant'
+      const messages = shouldMark
+        ? previous.messages.map((message, index) => (index === lastIndex ? { ...message, status: 'rejected' as const } : message))
+        : previous.messages
+
+      return { ...previous, envelope: null, decodedInner: null, messages }
+    })
     resetSendTx()
   }
 
@@ -188,39 +263,32 @@ export const PendleAgentChat = () => {
     }
     : undefined
 
-  // Persistent flow intro (does not vanish after the first message): explains
-  // PT-stETH + the prepare -> review -> sign loop as a Note, not a dashed box.
-  const introNode = (
-    <Note icon="brain">
-      PT-stETH is a Pendle Principal Token - a fixed-yield position. The agent
-      calls <code className="rounded bg-card-sunken px-1 font-mono text-foreground">prepare_pendle_yield_swap</code>,
-      you review the decoded envelope, then sign in your wallet.
-    </Note>
-  )
-
   const isPrepared = envelope !== null
-  const lastMessage = messages[messages.length - 1]
-  // The agent turn is "active" (hoisted into the reasoning card) only while it
-  // is the last message - i.e. the agent just replied / prepared / was rejected.
-  // Once the user sends a new message the previous turn drops into the transcript
-  // as history instead of lingering as a stale card.
-  const activeAssistant = lastMessage?.role === 'assistant' ? lastMessage : undefined
-  const reasoningLines = activeAssistant !== undefined
-    ? splitReasoningLines(activeAssistant.content)
-    : []
-  const transcriptMessages = messages.filter((message) => message.id !== activeAssistant?.id)
 
-  const messagesNode = transcriptMessages.length > 0 ? (
-    <div className="space-y-3">
-      {transcriptMessages.map((message) => (
-        <ChatMessage key={message.id} role={message.role} content={message.content} />
-      ))}
-    </div>
-  ) : null
+  // Every bot turn renders as an AgentReasoning card (its per-turn status drives
+  // the subtitle + theme); user turns stay as bubbles. A turn still in flight has
+  // no message yet, so the in-flight "preparing" card is appended separately
+  // below the transcript.
+  const turnsNode = messages.map((message) => {
+    if (message.role === 'user') {
+      return <ChatMessage key={message.id} role="user" content={message.content} />
+    }
 
-  const reasoningNode = isLoading || activeAssistant !== undefined ? (
-    <AgentReasoning reasoningLines={reasoningLines} isPreparing={isLoading} isPrepared={isPrepared} isRejected={isRejected} />
-  ) : null
+    return (
+      <AgentReasoning
+        key={message.id}
+        reasoningLines={splitReasoningLines(message.content)}
+        status={message.status ?? 'replied'}
+      />
+    )
+  })
+
+  // Show the in-flight "preparing" card only while the reply has not landed yet
+  // (last turn is still the user's). Once the assistant message is added - even
+  // though isLoading stays true through the decode call - its own card takes over,
+  // so the preparing card and the prepared card never show at the same time.
+  const isAwaitingReply = isLoading && messages[messages.length - 1]?.role !== 'assistant'
+  const preparingNode = isAwaitingReply ? <PreparingCard steps={PREPARING_STEPS} /> : null
 
   const checklistNode = isPrepared ? <PolicyChecklist /> : null
 
@@ -276,14 +344,21 @@ export const PendleAgentChat = () => {
     />
   ) : null
 
-  // Once an envelope is on screen the next action is Reject or Sign, not more
-  // chatting, so the composer is hidden during review and returns on reject.
-  const chatFormNode = isPrepared ? null : (
+  // The composer is hidden only during review (prepared, not yet confirmed) -
+  // there the next action is Reject or Sign, not more chatting. It returns on
+  // reject AND once the tx is executed, so the user can start the next
+  // transaction from the terminal "Executed on-chain" state without a refresh.
+  const isComposerShown = !isPrepared || isConfirmed
+
+  const composerNode = (
     <div className="space-y-2">
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form
+        onSubmit={handleFormSubmit}
+        className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-accent"
+      >
         <input
           aria-label="Describe a yield rotation"
-          className="flex-1 rounded-md border border-border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent"
+          className="flex-1 bg-transparent px-1 text-sm outline-none placeholder:text-muted disabled:cursor-not-allowed"
           placeholder={inputPlaceholder}
           value={input}
           onChange={(event) => patchState({ input: event.target.value })}
@@ -291,19 +366,20 @@ export const PendleAgentChat = () => {
         />
         <button
           type="submit"
+          aria-label="Send"
           disabled={isLoading || !isConnected || input.trim().length === 0}
-          className="rounded-md bg-accent px-4 py-2 text-sm text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
+          className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-text transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-40"
         >
-          Send
+          <Icon name="arrow-up" className="size-4" />
         </button>
       </form>
-      <div className="text-xs leading-relaxed">
+      <div className="px-1 text-xs leading-relaxed">
         <span className="text-muted">Try: </span>
         {SUGGESTED_PROMPTS.map((prompt, index) => (
           <span key={prompt}>
             <button
               type="button"
-              onClick={() => patchState({ input: prompt })}
+              onClick={() => handleSuggestionClick(prompt)}
               disabled={isLoading || !isConnected}
               className="border-b border-dashed border-border pb-px font-mono text-muted transition-colors hover:border-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -337,14 +413,20 @@ export const PendleAgentChat = () => {
     </Collapse>
   ) : null
 
+  // scrollKey drives ChatShell's auto-scroll-to-bottom: it changes on every
+  // event that adds or swaps transcript content (new turn, in-flight reply,
+  // prepared review, confirmation) so the newest block is brought into view.
+  const scrollKey = `${messages.length}:${isLoading}:${isPrepared}:${isConfirmed}`
+
   return (
-    <section className="space-y-4">
-      {introNode}
-      {messagesNode}
-      {reasoningNode}
+    <ChatShell header={header} composer={isComposerShown ? composerNode : null} scrollKey={scrollKey}>
+      {intro}
+      {banner}
+      {turnsNode}
+      {preparingNode}
       {errorNode}
       {reviewNode}
-      {chatFormNode}
-    </section>
+      {footer}
+    </ChatShell>
   )
 }

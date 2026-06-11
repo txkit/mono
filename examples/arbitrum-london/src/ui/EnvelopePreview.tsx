@@ -2,7 +2,9 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 
+import { Collapse } from './Collapse'
 import { ExplorerValue } from './ExplorerValue'
+import { Icon } from './Icon'
 import { PolicyStatusBadge, type PolicyStatus } from './PolicyStatusBadge'
 
 
@@ -98,6 +100,7 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
   const [ remainingSeconds, setRemainingSeconds ] = useState(() =>
     Math.max(0, validityNotAfter - Math.floor(Date.now() / 1000)),
   )
+  const [ isRawShown, setRawShown ] = useState(false)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -140,16 +143,36 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
     )
     : null
 
-  const rawHexNode = innerData !== undefined ? (
-    <details className="px-5 pt-2 pb-1">
-      <summary className="cursor-pointer text-xs text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
-        Show raw calldata
-      </summary>
+  // Collapse animates the reveal on mount (grid-rows 0fr -> 1fr), matching the
+  // envelope-review collapsible; unmounting on hide is the instant close.
+  const rawRevealNode = isRawShown ? (
+    <Collapse>
       <div className="mt-2 rounded-lg bg-card-sunken p-3 font-mono text-xs break-all">
         <p className="mb-1 text-warning">Without txKit, this opaque hex is all the agent asks you to sign:</p>
         <span className="text-muted">{innerData}</span>
       </div>
-    </details>
+    </Collapse>
+  ) : null
+
+  // Inline toggle (not a block <summary>): the hover/click target is just the
+  // chevron + label, so hovering past the text no longer highlights a full-width
+  // row. The chevron rotates 90deg to point down when the calldata is open.
+  const rawHexNode = innerData !== undefined ? (
+    <div className="px-5 pt-2 pb-1">
+      <button
+        type="button"
+        onClick={() => setRawShown((shown) => !shown)}
+        aria-expanded={isRawShown}
+        className="inline-flex items-center gap-1.5 rounded text-xs text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        <Icon
+          name="chevron-right"
+          className={`size-3.5 transition-transform motion-reduce:transition-none ${isRawShown ? 'rotate-90' : ''}`}
+        />
+        {isRawShown ? 'Hide raw calldata' : 'Show raw calldata'}
+      </button>
+      {rawRevealNode}
+    </div>
   ) : null
 
   const feeNode = feeSlot !== undefined && feeSlot !== null

@@ -25,11 +25,12 @@ import type { X402PaymentProof } from '@txkit/x402-adapter'
 // Demo merchant that receives the (stubbed) x402 payment. All-lowercase on
 // purpose: viem rejects a mixed-case non-checksummed address.
 export const X402_MERCHANT_ADDRESS = '0x000000000000000000000000000000000000c402' as const
-// Verify-only demo: nothing settles on-chain, so asset + amount are illustrative
-// challenge values, not a real token transfer. Native = the Robinhood gas token.
+// Verify-only demo: nothing settles on-chain. Native = the Robinhood gas token
+// (ETH). The amount is a realistic x402 micropayment in wei - authorized and
+// verified (EIP-712), but never settled (stubbed on testnet).
 export const X402_ASSET = 'native' as const
-// Illustrative challenge amount (100000 abstract units) shown in the paywall.
-export const X402_REQUIRED_AMOUNT = 100000n
+// 0.001 ETH (in wei) - the x402 challenge to unlock the RWA agent.
+export const X402_REQUIRED_AMOUNT = 1000000000000000n
 export const X402_RESOURCE = 'rwa-buy: RWA agent (Robinhood Chain testnet)'
 
 export const X402_DOMAIN = {

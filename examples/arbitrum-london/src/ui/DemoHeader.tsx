@@ -23,9 +23,11 @@ export const DemoHeader = (props: DemoHeaderProps) => {
   const { current, chainId } = props
 
   return (
-    // Mobile: two stacked rows - the menu (Home + tabs) on top, the connect
-    // control below. Desktop: a single row, menu on the left + connect right.
-    <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+    // One row at every width: menu (Home + tabs) on the left, connect control on
+    // the right. On mobile the connect button drops its ETH balance and its
+    // desktop min-width (see the .demo-header rule in globals.css) so the single
+    // row still fits.
+    <header className="demo-header flex items-center justify-between gap-3 sm:gap-4">
       <div className="flex items-center gap-3 sm:gap-4">
         <Link href="/" className="text-sm text-muted hover:text-foreground transition-colors">
           Home

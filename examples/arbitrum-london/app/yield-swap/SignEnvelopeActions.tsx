@@ -44,10 +44,6 @@ export const SignEnvelopeActions = (props: SignEnvelopeActionsProps) => {
       return 'Waiting for confirmation...'
     }
 
-    if (isConfirmed) {
-      return 'Confirmed - sign another?'
-    }
-
     return 'Sign tx in wallet'
   }
 
@@ -77,52 +73,49 @@ export const SignEnvelopeActions = (props: SignEnvelopeActionsProps) => {
     </a>
   ) : null
 
+  // The "Executed on-chain" heading now lives in the reasoning card (it flips to
+  // the executed theme on confirm), so this is just the explorer CTA - a clean
+  // "View on <explorer>" link rather than the raw hash.
   const successNode = txHash !== undefined && explorerUrl !== null && isConfirmed ? (
-    <div role="status" aria-live="polite" className="rounded-lg border-2 border-success bg-card p-5 tx-anim-card-in">
-      <div className="mb-4 flex items-center gap-3">
-        <span className="tx-anim-pop flex size-12 items-center justify-center rounded-full bg-success-bg">
-          <Icon name="check-circle" className="size-6 text-success" />
-        </span>
-        <div>
-          <h3 className="font-semibold text-success">Executed on-chain</h3>
-          <p className="text-sm text-muted">Transaction confirmed</p>
-        </div>
-      </div>
-      <p className="mb-2 text-xs uppercase tracking-wider text-muted">Transaction hash</p>
-      <a
-        href={explorerUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group flex items-center gap-2 rounded-lg bg-card-sunken p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    <a
+      href={explorerUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group inline-flex items-center gap-2 rounded-lg border border-border bg-card-sunken px-4 py-3 text-sm font-medium text-foreground transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    >
+      View on {explorerLabel}
+      <Icon name="external-link" className="size-4 shrink-0 text-accent opacity-60 transition-opacity group-hover:opacity-100" />
+    </a>
+  ) : null
+
+  // Once the tx is confirmed the success card is the terminal state, so the
+  // Reject / sign actions drop away - a clean "Executed on-chain" card is all
+  // that remains (navigate via the header to run another flow).
+  const actionsRowNode = !isConfirmed ? (
+    <div className="flex gap-3">
+      <button
+        type="button"
+        onClick={onReject}
+        disabled={isBusySendingTx}
+        className="flex-1 rounded-md border border-border bg-transparent px-4 py-3 text-sm text-muted hover:text-foreground hover:border-border-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <code className="flex-1 truncate font-mono text-sm text-foreground">{txHash}</code>
-        <span className="shrink-0 text-accent opacity-60 transition-opacity group-hover:opacity-100" aria-hidden="true">↗</span>
-      </a>
-      <p className="mt-2 text-center text-xs text-muted">View on {explorerLabel}</p>
+        Reject
+      </button>
+      <button
+        type="button"
+        onClick={onSign}
+        disabled={!isConnected || isBusySendingTx}
+        className="flex-1 rounded-md border border-success bg-success-bg px-4 py-3 text-sm text-success hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {resolveTxButtonLabel()}
+      </button>
     </div>
   ) : null
 
   return (
     <div className="space-y-3">
       {successNode}
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={onReject}
-          disabled={isBusySendingTx}
-          className="flex-1 rounded-md border border-border bg-transparent px-4 py-3 text-sm text-muted hover:text-foreground hover:border-border-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Reject
-        </button>
-        <button
-          type="button"
-          onClick={isConfirmed ? onReject : onSign}
-          disabled={!isConnected || isBusySendingTx}
-          className="flex-1 rounded-md border border-success bg-success-bg px-4 py-3 text-sm text-success hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {resolveTxButtonLabel()}
-        </button>
-      </div>
+      {actionsRowNode}
       {notConnectedNode}
       {sendErrorNode}
       {pendingLinkNode}

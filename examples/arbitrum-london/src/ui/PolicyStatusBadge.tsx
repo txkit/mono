@@ -30,7 +30,13 @@ export const PolicyStatusBadge = (props: PolicyStatusBadgeProps) => {
       className={`inline-flex max-w-full items-start gap-2 rounded-md border px-2.5 py-1 text-xs font-mono leading-relaxed ${STATUS_STYLES[status]}`}
       title={reason}
     >
-      <span className="mt-1 size-1.5 shrink-0 rounded-full bg-current" aria-hidden="true" />
+      {/* The dot wrapper is exactly one line-box tall (leading-relaxed x the
+          text-xs font size) and centers the dot, so it lands on the first line's
+          optical center whether the reason fits one line or wraps - no magic
+          top-margin nudge. */}
+      <span className="flex h-[1.625em] shrink-0 items-center" aria-hidden="true">
+        <span className="size-1.5 rounded-full bg-current" />
+      </span>
       <span>
         {STATUS_LABELS[status]}
         {reasonNode}

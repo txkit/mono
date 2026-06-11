@@ -30,7 +30,7 @@ const Home = () => {
           typed, decoded preview of exactly what it does before signing, and a
           minimum-viable policy gate enforces the rules on-chain.
         </p>
-        <p className="text-muted max-w-2xl">
+        <p className="text-lg text-muted max-w-2xl">
           txKit is the reference implementation of ERC-8265, a
           transaction-safety standard authored by{' '}
           <span className="text-foreground">Mike Diamond</span> and submitted to
@@ -41,7 +41,7 @@ const Home = () => {
       <section className="grid gap-6 md:grid-cols-2 mb-16">
         <Link
           href="/yield-swap"
-          className="rounded-lg border border-border bg-card p-6 hover:border-accent transition-colors"
+          className="flex flex-col rounded-lg border border-border bg-card p-6 hover:border-accent transition-colors"
         >
           <div className="mb-2 flex items-center justify-between gap-2">
             <span className="text-xs uppercase tracking-wider text-success font-mono">Live demo</span>
@@ -51,18 +51,18 @@ const Home = () => {
             </span>
           </div>
           <h2 className="text-2xl font-semibold mb-2">Pendle yield swap</h2>
-          <p className="text-muted mb-4">
+          <p className="text-muted flex-1">
             Agent swaps a base token for a fixed-yield Pendle PT position on
             Arbitrum Sepolia. Envelope decoded with
             <code className="font-mono bg-card-sunken px-1 rounded mx-1">@txkit/tx-decoder</code>,
             executed via AgentPolicyGate.
           </p>
-          <p className="text-sm text-accent">Open demo &rarr;</p>
+          <p className="mt-4 text-sm text-accent">Open demo &rarr;</p>
         </Link>
 
         <Link
           href="/rwa-buy"
-          className="rounded-lg border border-border bg-card p-6 hover:border-accent transition-colors"
+          className="flex flex-col rounded-lg border border-border bg-card p-6 hover:border-accent transition-colors"
         >
           <div className="mb-2 flex items-center justify-between gap-2">
             <span className="text-xs uppercase tracking-wider text-success font-mono">Live demo</span>
@@ -72,11 +72,11 @@ const Home = () => {
             </span>
           </div>
           <h2 className="text-2xl font-semibold mb-2">x402 RWA agent</h2>
-          <p className="text-muted mb-4">
-            x402-paid agent buying tokenised equity on Robinhood Chain testnet.
+          <p className="text-muted flex-1">
+            x402-paid agent buying tokenised equity on Robinhood Chain.
             Same policy gate, a second Arbitrum Orbit chain.
           </p>
-          <p className="text-sm text-accent">Open demo &rarr;</p>
+          <p className="mt-4 text-sm text-accent">Open demo &rarr;</p>
         </Link>
       </section>
 
