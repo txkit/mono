@@ -119,7 +119,9 @@ The verification layer - not agent autonomy - is the point. It scales to any age
   1:0.995, no token custody) so the gate path executes on a testnet without funding real input
   tokens - real plumbing, mock payload.
 - Scenario C is live end to end on Robinhood Chain: an x402 paywall (real EIP-712 payment-auth
-  verify with signer recovery), the agent prepares the RWA buy, and the gate executes it on-chain.
+  verify with signer recovery, via a self-hosted facilitator - Coinbase's x402 facilitator does
+  not support Arbitrum Orbit chains), the agent prepares the RWA buy, and the gate executes it
+  on-chain.
   x402 settlement: a real on-chain token transfer closes the loop on Robinhood - every gated buy
   moves 1 mxUSD from the router to the x402 merchant treasury - and amounts are mock-scale.
   Payment-loop closure is demonstrated on the sponsor chain; the Arbitrum-side RWA proof tx keeps
