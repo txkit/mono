@@ -6,6 +6,7 @@ import { getExplorerUrl, copyToClipboard } from '@txkit/core'
 import copyIcon from '../../../assets/icons/copy.svg'
 import checkIcon from '../../../assets/icons/check.svg'
 import logOutIcon from '../../../assets/icons/log-out.svg'
+import arrowRightIcon from '../../../assets/icons/arrow-right.svg'
 import externalLinkIcon from '../../../assets/icons/external-link.svg'
 
 import maskStyle from '../../../helpers/maskStyle'
@@ -20,6 +21,7 @@ import type { ConnectWalletLabels } from '../labels'
 const copyMaskStyle = maskStyle(copyIcon)
 const checkMaskStyle = maskStyle(checkIcon)
 const logOutMaskStyle = maskStyle(logOutIcon)
+const arrowMaskStyle = maskStyle(arrowRightIcon)
 const explorerMaskStyle = maskStyle(externalLinkIcon)
 
 
@@ -160,7 +162,7 @@ const AccountDropdown: React.FC<AccountDropdownProps> = (props) => {
             <div className="tx-cw-dropdown-chain-flow">
               <span className="tx-cw-dropdown-chain-dot" style={{ background: 'var(--tx-color-warning)' }} aria-hidden="true" />
               <span>{currentChainLabel}</span>
-              <span className="tx-cw-dropdown-chain-flow-arrow" aria-hidden="true">{'->'}</span>
+              <span className="tx-cw-dropdown-chain-flow-arrow" style={arrowMaskStyle} aria-hidden="true" />
               <span className="tx-cw-dropdown-chain-target">
                 <span className="tx-cw-dropdown-chain-dot" style={{ background: 'var(--tx-color-success)' }} aria-hidden="true" />
                 {requiredChain.name}
