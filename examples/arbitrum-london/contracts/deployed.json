@@ -29,10 +29,10 @@
   },
   "MockRwaRouter": {
     "46630": {
-      "address": "0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C",
-      "deployedAt": "2026-06-08",
-      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C",
-      "note": "Deployed to Robinhood Chain testnet 2026-06-08 (solc 0.8.34). Deploy via forge create --gas-limit 3000000 (Robinhood eth_estimateGas under-reports CREATE; forge-script gas-estimate-multiplier did not apply in this version). Deploy tx 0x71d5845579675e88c1e3117c2b62c2cdbc95df811df4bfe4e53360b8ea0a8bca. Allow-listed on gate 0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35 (tx 0x24e05fdfa050524bb471d9bc5669ef2d55915afa34d65b2c4f3aec512911fd92). Real RWA buy executeEnvelope (TSLA x5) tx 0xff64404144bdaea4e08c94e973166af180b29fed621b1e3632757703e9b080fa (status 0x1, RwaPurchased + EnvelopeExecuted; broadcast via cast send --gas-limit 1500000 because forge script gas handling is unreliable on Orbit). Source verified on the Robinhood explorer (Blockscout, forge verify-contract, solc 0.8.34) 2026-06-11."
+      "address": "0x26623A7ff4585CDA976ABAd99111712b60DB9745",
+      "deployedAt": "2026-06-11",
+      "blockExplorer": "https://explorer.testnet.chain.robinhood.com/address/0x26623A7ff4585CDA976ABAd99111712b60DB9745",
+      "note": "v2 with the x402 settlement leg: the constructor creates MockSettlementToken (0x3585aA19Dbc8D5ba1Fa37E1940f401E43De03Aa1, full supply pre-minted to the router) and every buy moves 1 mxUSD to the x402 merchant treasury 0x...C402, so a real ERC-20 Transfer receipt lands next to RwaPurchased. Deployed to Robinhood Chain testnet 2026-06-11 via forge create --gas-limit 3000000 (Orbit gas gotcha), deploy tx 0x2544ef9abd79da8be790eabb4a8faf779ad0f16fb495438dba920901aa21661a. Allow-listed on gate 0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35 (tx 0x12146e83770c5a41bf5ec67b0c835e098cc53849eba272da471a3695240b5f1a). Router + token source verified on the Robinhood explorer (Blockscout, solc 0.8.34) 2026-06-11. Real RWA buy executeEnvelope (TSLA x5) tx 0xa4736fe73d166ced41813649bcd87e4b041d2fd482e0a956348c82e7e9879d5e (status 0x1, Transfer + RwaPurchased + EnvelopeExecuted in one receipt; treasury mxUSD balance 1 confirmed). Supersedes v1 0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C (no settlement leg, exec tx 0xff64404144bdaea4e08c94e973166af180b29fed621b1e3632757703e9b080fa)."
     },
     "421614": {
       "address": "0xDe3cBf69877f08661152F945F11399e3F7912eA9",

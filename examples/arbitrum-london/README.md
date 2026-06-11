@@ -60,19 +60,24 @@ buy here is the bonus proof that the same envelope path generalises to a second 
 |---|---|
 | AgentPolicyGate | [`0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35`](https://explorer.testnet.chain.robinhood.com/address/0x0d4E461d19788B0c2Bd72f527F2e43E1eea54d35) (verified) |
 | MockPendleRouter | [`0x637f00246A9aaC315580632D206f86701F3F99b0`](https://explorer.testnet.chain.robinhood.com/address/0x637f00246A9aaC315580632D206f86701F3F99b0) (verified) |
-| MockRwaRouter | [`0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C`](https://explorer.testnet.chain.robinhood.com/address/0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C) (verified) |
+| MockRwaRouter | [`0x26623A7ff4585CDA976ABAd99111712b60DB9745`](https://explorer.testnet.chain.robinhood.com/address/0x26623A7ff4585CDA976ABAd99111712b60DB9745) (verified) |
+| MockSettlementToken (mxUSD) | [`0x3585aA19Dbc8D5ba1Fa37E1940f401E43De03Aa1`](https://explorer.testnet.chain.robinhood.com/address/0x3585aA19Dbc8D5ba1Fa37E1940f401E43De03Aa1) (verified) |
 | Pendle `executeEnvelope` | [`0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c`](https://explorer.testnet.chain.robinhood.com/tx/0x9e551909082204669b0e2f44759d0d280dd8c985afb7a74b517ee412e4c5695c) |
-| RWA buy `executeEnvelope` (TSLA x5) | [`0xff64404144bdaea4e08c94e973166af180b29fed621b1e3632757703e9b080fa`](https://explorer.testnet.chain.robinhood.com/tx/0xff64404144bdaea4e08c94e973166af180b29fed621b1e3632757703e9b080fa) |
+| RWA buy `executeEnvelope` (TSLA x5) | [`0xa4736fe73d166ced41813649bcd87e4b041d2fd482e0a956348c82e7e9879d5e`](https://explorer.testnet.chain.robinhood.com/tx/0xa4736fe73d166ced41813649bcd87e4b041d2fd482e0a956348c82e7e9879d5e) |
 
-Contracts deployed 2026-06-05 / 2026-06-08 with **verified source on the Robinhood explorer**
+The RWA buy receipt closes the x402 payment loop on-chain: one `executeEnvelope` emits an ERC-20
+`Transfer` (1 mxUSD, router to the x402 merchant treasury `0x...C402`) next to `RwaPurchased` and
+`EnvelopeExecuted`.
+
+Contracts deployed 2026-06-05 / 2026-06-11 with **verified source on the Robinhood explorer**
 (Blockscout, solc 0.8.34); the agent signer is
 `0xEC6613578be203e23e360A3985EA1601435D5907` and both routers are allow-listed on the gate. The RWA
 buy on Robinhood is the live `/rwa-buy` UI; Pendle here is the proof tx. Robinhood Chain (Arbitrum
 Orbit) runs the cancun/PUSH0 bytecode as-is - forge's EIP-3855 "might not work properly" warning is
 a stale chain-id allowlist, not a runtime limit. Its `eth_estimateGas` under-reports CREATE and
 L1-data cost and forge script does not honour its gas flags here, so the RWA router was deployed
-with `forge create --gas-limit 3000000` ([deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x71d5845579675e88c1e3117c2b62c2cdbc95df811df4bfe4e53360b8ea0a8bca),
-[allow-list tx](https://explorer.testnet.chain.robinhood.com/tx/0x24e05fdfa050524bb471d9bc5669ef2d55915afa34d65b2c4f3aec512911fd92))
+with `forge create --gas-limit 3000000` ([deploy tx](https://explorer.testnet.chain.robinhood.com/tx/0x2544ef9abd79da8be790eabb4a8faf779ad0f16fb495438dba920901aa21661a),
+[allow-list tx](https://explorer.testnet.chain.robinhood.com/tx/0x12146e83770c5a41bf5ec67b0c835e098cc53849eba272da471a3695240b5f1a))
 and the RWA `executeEnvelope` was broadcast via `cast send --gas-limit` from the dry-run calldata.
 
 ## What this proves
@@ -95,7 +100,7 @@ The verification layer - not agent autonomy - is the point. It scales to any age
 - **Local dev:** `pnpm dev`, then open `/yield-swap` (Pendle, Arbitrum) or `/rwa-buy` (x402-paid RWA,
   Robinhood). Until the contracts are deployed a flow runs in preview mode (a banner explains, and
   the agent call is skipped so it spends nothing).
-- **Contracts:** `cd contracts && forge test` (25 tests).
+- **Contracts:** `cd contracts && forge test` (27 tests).
 
 ## Roadmap
 
@@ -114,8 +119,11 @@ The verification layer - not agent autonomy - is the point. It scales to any age
   1:0.995, no token custody) so the gate path executes on a testnet without funding real input
   tokens - real plumbing, mock payload.
 - Scenario C is live end to end on Robinhood Chain: an x402 paywall (real EIP-712 payment-auth
-  verify with signer recovery; settlement honestly stubbed on testnet, no on-chain transfer), the
-  agent prepares the RWA buy, and the gate executes it on-chain. The buy target is a deterministic
-  `MockRwaRouter` (holdings ledger + `RwaPurchased` event, no real equity custody).
+  verify with signer recovery), the agent prepares the RWA buy, and the gate executes it on-chain.
+  x402 settlement: a real on-chain token transfer closes the loop on Robinhood - every gated buy
+  moves 1 mxUSD from the router to the x402 merchant treasury - and amounts are mock-scale.
+  Payment-loop closure is demonstrated on the sponsor chain; the Arbitrum-side RWA proof tx keeps
+  the earlier ledger-only router. The buy target remains a deterministic `MockRwaRouter`
+  (holdings ledger + `RwaPurchased` event, no real equity custody).
 - x402 replay protection is expiry-bounded for the single demo session; a durable nonce store is
   out of scope.

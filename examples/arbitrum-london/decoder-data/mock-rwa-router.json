@@ -9,9 +9,18 @@
         "name": "buy",
         "stateMutability": "nonpayable",
         "inputs": [
-          { "name": "receiver", "type": "address" },
-          { "name": "ticker", "type": "bytes32" },
-          { "name": "amount", "type": "uint256" }
+          {
+            "name": "receiver",
+            "type": "address"
+          },
+          {
+            "name": "ticker",
+            "type": "bytes32"
+          },
+          {
+            "name": "amount",
+            "type": "uint256"
+          }
         ],
         "outputs": []
       },
@@ -19,10 +28,26 @@
         "type": "event",
         "name": "RwaPurchased",
         "inputs": [
-          { "indexed": true, "name": "receiver", "type": "address" },
-          { "indexed": true, "name": "caller", "type": "address" },
-          { "indexed": true, "name": "ticker", "type": "bytes32" },
-          { "indexed": false, "name": "amount", "type": "uint256" }
+          {
+            "indexed": true,
+            "name": "receiver",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "name": "caller",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "name": "ticker",
+            "type": "bytes32"
+          },
+          {
+            "indexed": false,
+            "name": "amount",
+            "type": "uint256"
+          }
         ]
       }
     ],
@@ -39,7 +64,7 @@
   },
   {
     "chain": "eip155:46630",
-    "address": "0x3a57f2d32b1eBaa38AEB26957B3Cbc0fB7ee4c3C",
+    "address": "0x26623A7ff4585CDA976ABAd99111712b60DB9745",
     "label": "MockRwaRouter (Buildathon, Robinhood Chain testnet)",
     "abi": [
       {
@@ -47,9 +72,18 @@
         "name": "buy",
         "stateMutability": "nonpayable",
         "inputs": [
-          { "name": "receiver", "type": "address" },
-          { "name": "ticker", "type": "bytes32" },
-          { "name": "amount", "type": "uint256" }
+          {
+            "name": "receiver",
+            "type": "address"
+          },
+          {
+            "name": "ticker",
+            "type": "bytes32"
+          },
+          {
+            "name": "amount",
+            "type": "uint256"
+          }
         ],
         "outputs": []
       },
@@ -57,10 +91,26 @@
         "type": "event",
         "name": "RwaPurchased",
         "inputs": [
-          { "indexed": true, "name": "receiver", "type": "address" },
-          { "indexed": true, "name": "caller", "type": "address" },
-          { "indexed": true, "name": "ticker", "type": "bytes32" },
-          { "indexed": false, "name": "amount", "type": "uint256" }
+          {
+            "indexed": true,
+            "name": "receiver",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "name": "caller",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "name": "ticker",
+            "type": "bytes32"
+          },
+          {
+            "indexed": false,
+            "name": "amount",
+            "type": "uint256"
+          }
         ]
       }
     ],

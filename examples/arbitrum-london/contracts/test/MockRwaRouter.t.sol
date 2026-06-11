@@ -5,16 +5,24 @@ import { Test } from "forge-std/Test.sol";
 
 import { AgentPolicyGate } from "../src/AgentPolicyGate.sol";
 import { MockRwaRouter } from "../src/MockRwaRouter.sol";
+import { MockSettlementToken } from "../src/MockSettlementToken.sol";
 
 contract MockRwaRouterTest is Test {
     MockRwaRouter internal router;
+    MockSettlementToken internal token;
     address internal receiver;
     bytes32 internal ticker;
 
     function setUp() public {
         router = new MockRwaRouter();
+        token = router.settlementToken();
         receiver = makeAddr("receiver");
         ticker = bytes32("TSLA");
+    }
+
+    function test_deploy_premintsSettlementSupplyToRouter() public view {
+        assertEq(token.balanceOf(address(router)), token.totalSupply(), "supply should sit on the router");
+        assertGt(token.totalSupply(), 0, "supply should be non-zero");
     }
 
     function test_buy_recordsHolding() public {
@@ -32,6 +40,19 @@ contract MockRwaRouterTest is Test {
         vm.expectEmit(true, true, true, true);
         emit MockRwaRouter.RwaPurchased(receiver, address(this), ticker, 5);
         router.buy(receiver, ticker, 5);
+    }
+
+    function test_buy_settlesX402LegOnChain() public {
+        address treasury = router.X402_TREASURY();
+        uint256 treasuryBefore = token.balanceOf(treasury);
+        uint256 routerBefore = token.balanceOf(address(router));
+
+        vm.expectEmit(true, true, true, true, address(token));
+        emit MockSettlementToken.Transfer(address(router), treasury, router.SETTLEMENT_AMOUNT());
+        router.buy(receiver, ticker, 5);
+
+        assertEq(token.balanceOf(treasury), treasuryBefore + router.SETTLEMENT_AMOUNT(), "treasury should be paid");
+        assertEq(token.balanceOf(address(router)), routerBefore - router.SETTLEMENT_AMOUNT(), "router should pay");
     }
 
     function test_revert_whenAmountZero() public {
@@ -70,9 +91,16 @@ contract MockRwaRouterTest is Test {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(agentSignerKey, digest);
         bytes memory signature = abi.encodePacked(r, s, v);
 
+        uint256 treasuryBefore = token.balanceOf(router.X402_TREASURY());
+
         gate.executeEnvelope(envelopeHash, signature, address(router), innerData, value);
 
         assertTrue(gate.usedEnvelopes(envelopeHash), "envelope should be consumed");
         assertEq(router.holdings(receiver, ticker), 5, "buy should execute through the gate");
+        assertEq(
+            token.balanceOf(router.X402_TREASURY()),
+            treasuryBefore + router.SETTLEMENT_AMOUNT(),
+            "x402 settlement leg should land through the gate path"
+        );
     }
 }

@@ -2,7 +2,7 @@
 
 Copy-paste deploy of the demo's on-chain pieces to Arbitrum Sepolia (scenario A, Pendle yield swap) and Robinhood Chain testnet (scenario C, x402-paid RWA buy). Both scenarios are live on both chains. Every command below is meant to be pasted as-is after you fill the env vars and the captured addresses.
 
-Verified state (2026-06-08): `forge build` + `forge test` green (25 tests: 15 AgentPolicyGate + 5 MockPendleRouter + 5 MockRwaRouter incl. end-to-end gate->router integration tests), app `tsc --noEmit` + `next build` + 10 vitest clean. The deployed addresses + real tx hashes are in the README "Live on-chain" tables and `contracts/deployed.json`; this runbook reproduces them from a funded key you hold.
+Verified state (2026-06-11): `forge build` + `forge test` green (27 tests: 15 AgentPolicyGate + 5 MockPendleRouter + 7 MockRwaRouter incl. end-to-end gate->router integration and the x402 settlement-leg tests), app `tsc --noEmit` + `next build` + 10 vitest clean. The deployed addresses + real tx hashes are in the README "Live on-chain" tables and `contracts/deployed.json`; this runbook reproduces them from a funded key you hold.
 
 ## What gets deployed
 
