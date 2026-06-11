@@ -10,6 +10,7 @@ import {
   buildRwaEnvelope,
   type DemoEnvelope,
 } from '@/src/agent/envelope-builder'
+import { resolvePendleClarify, resolveRwaClarify } from '@/src/agent/grounding'
 import { runAgentTurn, type AgentProvider, type AgentTurn } from '@/src/agent/llm'
 import { signEnvelope } from '@/src/agent/signing'
 import {
@@ -252,6 +253,13 @@ export const POST = async (request: NextRequest) => {
 
   // Build the envelope with the scenario's zod schema + builder. The builders
   // throw a clear error before deploy (getMock*RouterAddress), surfaced as 503.
+  // Between parse and build sits the grounding guard (src/agent/grounding.ts):
+  // a parameter the user never stated means the model invented it - reject the
+  // tool call deterministically and reply with the clarifying question instead.
+  const userText = messages
+    .filter((message) => message.role === 'user')
+    .map((message) => message.content)
+    .join('\n')
   const chainId = scenario === 'rwa' ? ROBINHOOD_TESTNET_CHAIN_ID : ARBITRUM_SEPOLIA_CHAIN_ID
   let envelope: DemoEnvelope
   try {
@@ -263,6 +271,10 @@ export const POST = async (request: NextRequest) => {
           { status: 422 },
         )
       }
+      const clarify = resolveRwaClarify(rwaArgs.data, userText)
+      if (clarify !== null) {
+        return NextResponse.json({ reply: clarify, scenario })
+      }
       envelope = buildRwaEnvelope(rwaArgs.data, receiverAddress)
     } else {
       const pendleArgs = preparePendleYieldSwapArgs.safeParse(toolInput)
@@ -271,6 +283,10 @@ export const POST = async (request: NextRequest) => {
           { error: 'Invalid tool args from agent', detail: pendleArgs.error.flatten(), rawInput: toolInput },
           { status: 422 },
         )
+      }
+      const clarify = resolvePendleClarify(pendleArgs.data, userText)
+      if (clarify !== null) {
+        return NextResponse.json({ reply: clarify, scenario })
       }
       envelope = buildPendleEnvelope(pendleArgs.data, receiverAddress)
     }

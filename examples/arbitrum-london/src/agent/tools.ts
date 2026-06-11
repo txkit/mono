@@ -54,13 +54,17 @@ export type PrepareRwaBuyArgs = z.infer<typeof prepareRwaBuyArgs>
 export const PENDLE_TOOL_DEFINITION = {
   name: 'prepare_pendle_yield_swap',
   description:
-    'Prepare a Pendle yield-swap envelope. Returns a typed PreparedEnvelope that the user reviews and signs.',
+    'Prepare a Pendle yield-swap envelope. Call only once the user has explicitly stated the amount to swap - never assume one. Returns a typed PreparedEnvelope that the user reviews and signs.',
   input_schema: {
     type: 'object',
     properties: {
       tokenIn: { type: 'string', pattern: '^0x[a-fA-F0-9]{40}$' },
       tokenOut: { type: 'string', pattern: '^0x[a-fA-F0-9]{40}$' },
-      amountIn: { type: 'string', pattern: '^\\d+$' },
+      amountIn: {
+        type: 'string',
+        pattern: '^\\d+$',
+        description: 'Raw token units converted from the amount the user explicitly stated. Never a default or assumed value.',
+      },
       slippageBps: { type: 'string', pattern: '^\\d+$' },
     },
     required: [ 'tokenIn', 'tokenOut', 'amountIn' ],
@@ -70,12 +74,20 @@ export const PENDLE_TOOL_DEFINITION = {
 export const RWA_TOOL_DEFINITION = {
   name: 'prepare_rwa_buy',
   description:
-    'Prepare a mock RWA purchase envelope on Robinhood Chain testnet. Requires the user to have paid the x402 challenge first.',
+    'Prepare a mock RWA purchase envelope on Robinhood Chain testnet. Call only once the user has explicitly stated both the asset and the amount - never assume either. Requires the user to have paid the x402 challenge first.',
   input_schema: {
     type: 'object',
     properties: {
-      asset: { type: 'string', enum: [ 'TSLA', 'AMZN', 'PLTR' ] },
-      amount: { type: 'string', pattern: '^\\d+$' },
+      asset: {
+        type: 'string',
+        enum: [ 'TSLA', 'AMZN', 'PLTR' ],
+        description: 'The ticker the user explicitly asked to buy. Never a default or assumed value.',
+      },
+      amount: {
+        type: 'string',
+        pattern: '^\\d+$',
+        description: 'Whole-token amount the user explicitly stated. Never a default or assumed value.',
+      },
     },
     required: [ 'asset', 'amount' ],
   },

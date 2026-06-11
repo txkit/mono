@@ -104,11 +104,13 @@ const generateNonce = (): bigint => {
 
 /**
  * Known Arbitrum Sepolia testnet tokens the yield agent can name (mirrors
- * src/agent/system-prompt.ts). Used only to render a human envelope label
+ * src/agent/system-prompt.ts). Used to render a human envelope label
  * ("Swap 100 USDC for PT-stETH") from the agent's structured args - the
- * decoded on-chain call args stay raw. Keys are lowercased addresses.
+ * decoded on-chain call args stay raw - and by the grounding guard to convert
+ * raw amounts back to the human number the user must have stated. Keys are
+ * lowercased addresses.
  */
-const KNOWN_TOKENS: Record<string, { symbol: string, decimals: number }> = {
+export const KNOWN_TOKENS: Record<string, { symbol: string, decimals: number }> = {
   '0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d': { symbol: 'USDC', decimals: 6 },
   '0x980b62da83eff3d4576c647993b0c1d7faf17c73': { symbol: 'WETH', decimals: 18 },
   '0x000000000000000000000000000000000000de01': { symbol: 'PT-stETH', decimals: 18 },
