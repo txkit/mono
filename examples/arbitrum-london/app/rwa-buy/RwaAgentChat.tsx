@@ -12,6 +12,7 @@ import { useAccount, usePublicClient, useSendTransaction, useSwitchChain, useWai
 
 import type { DemoEnvelope } from '@/src/agent/envelope-builder'
 import { ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
+import { safeSessionStorage } from '@/src/helpers/safeSessionStorage'
 import { ChatMessage } from '@/src/ui/ChatMessage'
 import { ChatShell } from '@/src/ui/ChatShell/ChatShell'
 import { useReviewScrollPin } from '@/src/ui/ChatShell/useReviewScrollPin'
@@ -19,10 +20,12 @@ import { Collapse } from '@/src/ui/Collapse'
 import { EnvelopePreview } from '@/src/ui/EnvelopePreview'
 import { Icon } from '@/src/ui/Icon'
 import { Note } from '@/src/ui/Note'
+import { useIsomorphicLayoutEffect } from '@/src/ui/useIsomorphicLayoutEffect'
 import type { SignedPaymentBody } from '@/src/x402/facilitator'
 
+import { AgentGreeting } from '../yield-swap/AgentGreeting'
 import { AgentReasoning } from '../yield-swap/AgentReasoning/AgentReasoning'
-import { PreparingCard } from '../yield-swap/AgentReasoning/PreparingCard'
+import { PreparingCard, STEP_INTERVAL_MS } from '../yield-swap/AgentReasoning/PreparingCard'
 import { ConnectWalletPrompt } from '../yield-swap/ConnectWalletPrompt'
 import { PolicyChecklist } from '../yield-swap/PolicyChecklist/PolicyChecklist'
 import { SignEnvelopeActions } from '../yield-swap/SignEnvelopeActions'
@@ -31,9 +34,11 @@ import {
   formatChainLabel,
   formatExplorerBase,
   formatTxExplorerUrl,
+  resolveDecodedForPreview,
   resolveReplyText,
   splitReasoningLines,
 } from '../yield-swap/utils/formatters'
+import { REPLY_DELAY_MS } from '../yield-swap/utils/useReplyDelay'
 import { X402Paywall } from './X402Paywall'
 
 
@@ -103,6 +108,11 @@ const PREPARING_STEPS = [
 // plain reply; the envelope-only signing step appears with the prepared turn.
 const IN_FLIGHT_STEPS = PREPARING_STEPS.slice(0, 3)
 
+// How long the in-flight narration needs to play out: the reply-delay beat
+// before the preparing card appears, then one stagger per step. A model reply
+// that lands faster is held back this long so the steps are actually read.
+const MIN_NARRATION_MS = REPLY_DELAY_MS + IN_FLIGHT_STEPS.length * STEP_INTERVAL_MS
+
 const resolveInputPlaceholder = (isReviewing: boolean, isLocked: boolean): string => {
   if (isLocked) {
     return 'Pay and unlock to start...'
@@ -138,7 +148,7 @@ type RwaAgentChatProps = {
 }
 
 /**
- * Scenario C client: x402-gated LLM tool-use loop + one-click sign on
+ * Scenario C client: x402-gated LLM tool-use turn + one-click sign on
  * Robinhood Chain testnet (chainId 46630).
  *
  * Renders <X402Paywall /> until the user signs a payment authorization and the
@@ -175,7 +185,7 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
   // disconnected (then the paywall is honest).
   const [ unlockProbe, setUnlockProbe ] = useState<'pending' | 'stored' | 'none'>('pending')
   useEffect(() => {
-    const stored = sessionStorage.getItem(X402_STORAGE_KEY)
+    const stored = safeSessionStorage.getItem(X402_STORAGE_KEY)
     let hasValidStored = false
     if (stored !== null) {
       try {
@@ -209,20 +219,49 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     error: sendError,
     reset: resetSendTx,
   } = useSendTransaction()
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash: txHash })
+  const { isLoading: isConfirming, isSuccess: isConfirmed, error: receiptError } = useWaitForTransactionReceipt({ hash: txHash })
 
-  // Restore a still-valid x402 unlock once the wallet that paid reconnects -
+  // An account switch (wallet A -> B without a disconnect event) is a session
+  // change: reset the conversation AND the x402 unlock synchronously during
+  // render (React's adjust-state-during-render pattern), so no effect ever
+  // runs with wallet A's transcript or receipt against wallet B's address -
+  // the save effect cannot re-stamp A's messages onto owner B, and B never
+  // sees A's unlocked agent ("Payment verified" belongs to the payer only).
+  // The new account starts at the paywall; a disconnect -> connect cycle is
+  // handled by the wipe effect below.
+  const [ sessionAddress, setSessionAddress ] = useState(connectedAddress)
+  if (connectedAddress !== sessionAddress) {
+    setSessionAddress(connectedAddress)
+    if (connectedAddress !== undefined && sessionAddress !== undefined) {
+      setPaymentBody(null)
+      setState(INITIAL_STATE)
+    }
+  }
+
+  // Mirrors sessionAddress for in-flight async closures: the component stays
+  // mounted through an account switch or disconnect, so a reply that resolves
+  // after the session changed would otherwise write the old session's turns
+  // (or drop the new payer's receipt via the 402 path) into the new session.
+  // Layout effect: synced in the same commit task as the reset above, before
+  // any pending fetch continuation can run.
+  const sessionAddressRef = useRef(sessionAddress)
+  useIsomorphicLayoutEffect(() => {
+    sessionAddressRef.current = sessionAddress
+  }, [ sessionAddress ])
+
+  // Restore a still-valid x402 unlock once the wallet that paid (re)connects -
   // the receipt is wallet-bound, so another payer must pay for itself and a
   // disconnected page stays locked (no paywall flash-then-vanish on mount).
-  // sessionStorage is client-only, so it hydrates after wagmi settles.
-  const hasUnlockHydratedRef = useRef(false)
-  useEffect(() => {
-    if (!isConnected || hasUnlockHydratedRef.current) {
+  // Hydration is per ADDRESS, not once per mount: switching A -> B -> A
+  // re-restores A's unlock when A returns.
+  const unlockHydratedAddressRef = useRef<`0x${string}` | undefined>(undefined)
+  useIsomorphicLayoutEffect(() => {
+    if (!isConnected || unlockHydratedAddressRef.current === connectedAddress) {
       return
     }
-    hasUnlockHydratedRef.current = true
+    unlockHydratedAddressRef.current = connectedAddress
 
-    const stored = sessionStorage.getItem(X402_STORAGE_KEY)
+    const stored = safeSessionStorage.getItem(X402_STORAGE_KEY)
     if (stored === null) {
       return
     }
@@ -232,16 +271,20 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       const isOwnUnlock = restored.payer.toLowerCase() === connectedAddress?.toLowerCase()
       const isStillValid = restored.validUntil * 1000 > Date.now()
       if (isOwnUnlock && isStillValid) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only storage hydration once the paying wallet reconnects
+
         setPaymentBody(restored)
-      } else {
-        // A foreign or expired receipt is dropped - and the probe flips so the
+      } else if (isStillValid) {
+        // Another payer's receipt: kept in storage (its owner may switch
+        // back), just never unlocks anyone else. The probe flips so the
         // paywall (held back while the receipt looked usable) appears.
-        sessionStorage.removeItem(X402_STORAGE_KEY)
+        setUnlockProbe('none')
+      } else {
+        // An expired receipt is dead weight for everyone - drop it.
+        safeSessionStorage.removeItem(X402_STORAGE_KEY)
         setUnlockProbe('none')
       }
     } catch {
-      sessionStorage.removeItem(X402_STORAGE_KEY)
+      safeSessionStorage.removeItem(X402_STORAGE_KEY)
       setUnlockProbe('none')
     }
   }, [ isConnected, connectedAddress ])
@@ -249,15 +292,18 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
   // The conversation belongs to one wallet session, so the transcript is
   // restored only once that wallet reconnects (owner-checked) - never on a
   // disconnected mount. A reload keeps it: wagmi settles reconnecting ->
-  // connected without ever reporting a disconnect transition.
-  const hasHydratedRef = useRef(false)
-  useEffect(() => {
-    if (!isConnected || hasHydratedRef.current) {
+  // connected without ever reporting a disconnect transition. Layout effect:
+  // on a client-side page switch (wagmi already connected) the restore lands
+  // before the first paint, so the page appears directly in its final state.
+  // Hydration is per ADDRESS: switching A -> B -> A restores A's transcript.
+  const hydratedAddressRef = useRef<`0x${string}` | undefined>(undefined)
+  useIsomorphicLayoutEffect(() => {
+    if (!isConnected || hydratedAddressRef.current === connectedAddress) {
       return
     }
-    hasHydratedRef.current = true
+    hydratedAddressRef.current = connectedAddress
 
-    const stored = sessionStorage.getItem(CHAT_STORAGE_KEY)
+    const stored = safeSessionStorage.getItem(CHAT_STORAGE_KEY)
     if (stored === null) {
       return
     }
@@ -265,15 +311,22 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     try {
       const restored = JSON.parse(stored) as PersistedChat
       const hasMessages = Array.isArray(restored.messages) && restored.messages.length > 0
-      if (!hasMessages || restored.owner !== connectedAddress) {
-        sessionStorage.removeItem(CHAT_STORAGE_KEY)
+      if (!hasMessages) {
+        safeSessionStorage.removeItem(CHAT_STORAGE_KEY)
+        return
+      }
+
+      // Another wallet's transcript stays in storage untouched (its owner may
+      // switch back) - it is simply not restored here. The single slot is
+      // overwritten anyway the moment this wallet sends its first message.
+      if (restored.owner !== connectedAddress) {
         return
       }
 
       // isRestored marks each turn as history, so it renders its text at once
       // instead of replaying the typing animation. A restored open review was
       // already typed in its original session, so isReplyTyped comes back true.
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only storage hydration once the owning wallet reconnects
+
       setState((previous) => ({
         ...previous,
         messages: restored.messages.map((message) => ({ ...message, isRestored: true })),
@@ -282,7 +335,7 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
         isReplyTyped: Boolean(restored.envelope),
       }))
     } catch {
-      sessionStorage.removeItem(CHAT_STORAGE_KEY)
+      safeSessionStorage.removeItem(CHAT_STORAGE_KEY)
     }
   }, [ isConnected, connectedAddress ])
 
@@ -302,9 +355,9 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     }
 
     wasConnectedRef.current = false
-    hasHydratedRef.current = false
-    hasUnlockHydratedRef.current = false
-    sessionStorage.removeItem(CHAT_STORAGE_KEY)
+    hydratedAddressRef.current = undefined
+    unlockHydratedAddressRef.current = undefined
+    safeSessionStorage.removeItem(CHAT_STORAGE_KEY)
     resetSendTx()
     setPaymentBody(null)
     setState(INITIAL_STATE)
@@ -326,7 +379,7 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       envelope: isReviewOpen ? envelope : null,
       decodedInner: isReviewOpen ? decodedInner : null,
     }
-    sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(persisted))
+    safeSessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(persisted))
   }, [ messages, envelope, decodedInner, connectedAddress ])
 
   // When the tx confirms, promote the prepared turn to 'executed' (with its tx
@@ -354,15 +407,30 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
 
   const handleUnlocked = (payment: SignedPaymentBody) => {
     setPaymentBody(payment)
-    sessionStorage.setItem(X402_STORAGE_KEY, JSON.stringify(payment))
+    safeSessionStorage.setItem(X402_STORAGE_KEY, JSON.stringify(payment))
   }
 
   const sendToAgent = async (next: Message[]) => {
+    // The session this request belongs to: every write below goes through
+    // patchSessionState (and the 402 path checks it too), so a continuation
+    // that resumes after an account switch or disconnect drops its writes
+    // instead of leaking them.
+    const requestAddress = sessionAddress
+    const patchSessionState = (patch: Partial<ChatState>) => {
+      if (sessionAddressRef.current !== requestAddress) {
+        return
+      }
+      patchState(patch)
+    }
+
     // Clear any prior envelope so a previous prepared/executed turn's review does
     // not linger while the new turn is in flight (the composer is now visible in
     // the executed state, so a new prompt can arrive on top of an old envelope).
-    patchState({ messages: next, input: '', isLoading: true, isReplyTyped: false, errorMessage: null, envelope: null, decodedInner: null })
+    patchSessionState({ messages: next, input: '', isLoading: true, isReplyTyped: false, errorMessage: null, envelope: null, decodedInner: null })
     resetSendTx()
+    // Started alongside the request, so the narration hold overlaps the
+    // round-trip instead of adding to it. Never rejects.
+    const minNarrationDelay = new Promise((resolve) => setTimeout(resolve, MIN_NARRATION_MS))
 
     try {
       // Connect-prompt turns are local UI artifacts - the model never sees
@@ -382,11 +450,25 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       const { reply, envelope: returnedEnvelope, error, hint } = json
 
       if (!response.ok) {
+        // 402 means the stored payment authorization no longer verifies (the
+        // 1h validUntil expired): drop it so the paywall re-renders and the
+        // user can sign a fresh one without reloading. Session-guarded: a
+        // stale 402 must not drop a receipt the next payer just stored.
+        if (response.status === 402 && sessionAddressRef.current === requestAddress) {
+          setPaymentBody(null)
+          safeSessionStorage.removeItem(X402_STORAGE_KEY)
+        }
+
         const baseError = error ?? 'Agent error'
         const detail = hint !== undefined ? `${baseError} - ${hint}` : baseError
-        patchState({ errorMessage: detail })
+        patchSessionState({ errorMessage: detail })
         return
       }
+
+      // Hold a fast reply until the in-flight narration has played out; a
+      // sub-second model response would otherwise replace the preparing card
+      // before a single step is read. Errors above skip the hold.
+      await minNarrationDelay
 
       const replyText = resolveReplyText(reply, returnedEnvelope !== undefined)
       // The pipeline trace persists on the turn (LLM-style: nothing shown ever
@@ -401,16 +483,16 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
         status: hasEnvelope ? 'prepared' : undefined,
         pipelineSteps: hasEnvelope ? PREPARING_STEPS : IN_FLIGHT_STEPS,
       }
-      patchState({ messages: [ ...next, assistantMessage ] })
+      patchSessionState({ messages: [ ...next, assistantMessage ] })
 
       if (returnedEnvelope !== undefined) {
         const decoded = await fetchDecoded(returnedEnvelope)
-        patchState({ envelope: returnedEnvelope, decodedInner: decoded })
+        patchSessionState({ envelope: returnedEnvelope, decodedInner: decoded })
       }
     } catch (networkError) {
-      patchState({ errorMessage: `Network error: ${String(networkError)}` })
+      patchSessionState({ errorMessage: `Network error: ${String(networkError)}` })
     } finally {
-      patchState({ isLoading: false })
+      patchSessionState({ isLoading: false })
     }
   }
 
@@ -477,42 +559,62 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     patchState({ isReplyTyped: true })
   }
 
+  // wagmi's isPending flips only after sendTransaction is reached, so during
+  // the awaits below (chain switch + fee estimation) the Sign button is still
+  // enabled - this ref closes that double-click window (two wallet popups).
+  const isSignPendingRef = useRef(false)
+
   const handleSignTransaction = async () => {
-    if (envelope === null || !isConnected) {
+    if (envelope === null || !isConnected || isSignPendingRef.current) {
       return
     }
+    isSignPendingRef.current = true
+    const requestAddress = sessionAddress
 
-    const { call, chain } = envelope
-    const chainId = Number(chain.split(':')[1])
+    try {
+      const { call, chain } = envelope
+      const chainId = Number(chain.split(':')[1])
 
-    // wagmi's sendTransaction does NOT auto-switch the wallet - it throws a chain
-    // mismatch if the wallet sits on another chain. Switch to the envelope's
-    // chain first, then sign (the x402 paywall pre-switches, but the user may
-    // have moved the wallet since unlocking).
-    patchState({ errorMessage: null })
-    if (walletChainId !== chainId) {
-      try {
-        await switchChainAsync({ chainId })
-      } catch {
-        patchState({ errorMessage: `Switch your wallet to ${formatChainLabel(chain)} to sign this transaction.` })
+      // wagmi's sendTransaction does NOT auto-switch the wallet - it throws a chain
+      // mismatch if the wallet sits on another chain. Switch to the envelope's
+      // chain first, then sign (the x402 paywall pre-switches, but the user may
+      // have moved the wallet since unlocking).
+      patchState({ errorMessage: null })
+      if (walletChainId !== chainId) {
+        try {
+          await switchChainAsync({ chainId })
+        } catch {
+          if (sessionAddressRef.current === requestAddress) {
+            patchState({ errorMessage: `Switch your wallet to ${formatChainLabel(chain)} to sign this transaction.` })
+          }
+          return
+        }
+      }
+
+      // Robinhood Chain is Arbitrum Orbit and shares Arbitrum's base-fee model, so
+      // a tight maxFeePerGas can land just under base fee and the RPC rejects the
+      // tx. Read the live fee and double the cap for headroom: the cap is a
+      // ceiling, not the price, so the tx still pays only the prevailing base fee.
+      const fees = await publicClient?.estimateFeesPerGas().catch(() => undefined)
+
+      // Wallet prompts sat open across the awaits above: if the account
+      // switched meanwhile, this envelope belongs to the previous session -
+      // never prompt the new account to sign it.
+      if (sessionAddressRef.current !== requestAddress) {
         return
       }
+
+      sendTransaction({
+        to: call.to,
+        data: call.data,
+        value: BigInt(call.value),
+        chainId,
+        maxFeePerGas: fees ? fees.maxFeePerGas * 2n : undefined,
+        maxPriorityFeePerGas: fees ? fees.maxPriorityFeePerGas : undefined,
+      })
+    } finally {
+      isSignPendingRef.current = false
     }
-
-    // Robinhood Chain is Arbitrum Orbit and shares Arbitrum's base-fee model, so
-    // a tight maxFeePerGas can land just under base fee and the RPC rejects the
-    // tx. Read the live fee and double the cap for headroom: the cap is a
-    // ceiling, not the price, so the tx still pays only the prevailing base fee.
-    const fees = await publicClient?.estimateFeesPerGas().catch(() => undefined)
-
-    sendTransaction({
-      to: call.to,
-      data: call.data,
-      value: BigInt(call.value),
-      chainId,
-      maxFeePerGas: fees ? fees.maxFeePerGas * 2n : undefined,
-      maxPriorityFeePerGas: fees ? fees.maxPriorityFeePerGas : undefined,
-    })
   }
 
   const handleReject = () => {
@@ -534,18 +636,8 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     resetSendTx()
   }
 
-  const isBusySendingTx = isSigning || isConfirming
   const envelopeChainId = envelope !== null ? Number(envelope.chain.split(':')[1]) : null
-
-  const decodedForPreview = decodedInner !== null
-    ? {
-      selector: decodedInner.selector || undefined,
-      functionName: decodedInner.functionName || undefined,
-      args: decodedInner.args?.map((arg) => ({ name: arg.name ?? '', type: arg.type, value: arg.value })),
-      source: decodedInner.source,
-      clearSigning: decodedInner.clearSigning,
-    }
-    : undefined
+  const decodedForPreview = resolveDecodedForPreview(decodedInner)
 
   const isPrepared = envelope !== null
 
@@ -622,7 +714,7 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       decoded={decodedForPreview}
       innerData={envelope.inner.data}
       policyStatus="allow"
-      policyReason="signed by agent, within policy gate limits"
+      policyReason="pre-flight check - enforced on-chain at execution"
       explorerBaseUrl={formatExplorerBase(envelopeChainId)}
       // SequencerFeeRow omitted: Robinhood Chain (46630) is not an ArbitrumChainId.
       // See comment at top of file.
@@ -634,10 +726,7 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       isConnected={isConnected}
       isSigning={isSigning}
       isConfirming={isConfirming}
-      isBusySendingTx={isBusySendingTx}
-      txHash={txHash}
-      sendError={sendError}
-      envelopeChainId={envelopeChainId}
+      sendError={sendError || receiptError}
       onReject={handleReject}
       onSign={handleSignTransaction}
     />
@@ -649,8 +738,11 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
   // animate with its content mounted). It opens only after the reply finished
   // typing, so the user reads the agent's summary before the envelope appears.
   // The composer is always mounted (locked / review states disable it).
-  const lastTurnStatus = messages[messages.length - 1]?.status
-  const isReviewing = isPrepared && !isConfirmed && lastTurnStatus === 'prepared'
+  const lastMessage = messages[messages.length - 1]
+  const isReviewing = isPrepared && !isConfirmed && lastMessage?.status === 'prepared'
+  // A review restored from storage must appear settled: the Collapse mounts
+  // already expanded and the scroll pin lands in one pre-paint jump.
+  const isReviewRestored = lastMessage?.isRestored === true
   const isReviewOpen = isReviewing && isReplyTyped
   const isComposerDisabled = isLoading || isReviewing || !isUnlocked
   const inputPlaceholder = resolveInputPlaceholder(isReviewing, !isUnlocked)
@@ -658,7 +750,7 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
   // Once the review opens, align the prepared turn card to the top of the
   // transcript so the agent's summary reads first and the envelope review sits
   // right below it (instead of the default scroll-to-bottom).
-  useReviewScrollPin(isReviewOpen)
+  useReviewScrollPin(isReviewOpen, isReviewRestored)
 
   const composerNode = (
     <div className="space-y-2">
@@ -706,7 +798,7 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
   // typed, and collapses out the same way on reject / confirmation - the
   // executed turn card carries the outcome line + explorer link itself.
   const reviewNode = isPrepared ? (
-    <Collapse isOpen={isReviewOpen}>
+    <Collapse isOpen={isReviewOpen} isInstant={isReviewRestored}>
       <div className="space-y-4">
         {previewNode}
         {checklistNode}
@@ -733,6 +825,16 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       <X402Paywall onUnlocked={handleUnlocked} />
       <div className="grow-[3]" />
     </div>
+  ) : null
+
+  // The agent speaks first once the gate opens, doubling as the unlock
+  // confirmation - nothing else visually acknowledges the payment (entrance
+  // rules live in AgentGreeting). Synthetic: not in `messages`, so it is
+  // never persisted or sent to the API.
+  const greetingNode = isUnlocked ? (
+    <AgentGreeting greetingId="rwa" isInstant={messages.length > 0}>
+      Payment verified - you are in. Which stock should I buy: TSLA, AMZN, or PLTR?
+    </AgentGreeting>
   ) : null
 
   // The transcript is meaningful only once unlocked (no messages can exist while
@@ -762,8 +864,10 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       )}
       composer={composerNode}
       scrollKey={scrollKey}
+      isFollowing={isAwaitingReply}
     >
       {note}
+      {greetingNode}
       {lockedNode}
       {transcriptNode}
     </ChatShell>

@@ -1,10 +1,10 @@
-import { useEffect } from 'react'
+import { useIsomorphicLayoutEffect } from '../useIsomorphicLayoutEffect'
 
 
-// The envelope review Collapse animates grid-template-rows over 0.32s
+// The envelope review Collapse animates grid-template-rows over 0.5s
 // (globals.css .tx-collapse); pin slightly longer so the final frames land
 // after the transition settles.
-const PIN_DURATION_MS = 500
+const PIN_DURATION_MS = 700
 
 /**
  * While the envelope review expands below the freshly prepared turn, keeps
@@ -16,9 +16,13 @@ const PIN_DURATION_MS = 500
  * transition makes the transcript follow the expansion - the card glides to
  * the top in sync with the envelope growing under it (instant per-frame
  * scrolls, so it also degrades to a single jump under reduced motion).
+ *
+ * `isInstant` (a review restored from storage): the Collapse mounts already
+ * expanded, so one pin in the layout phase - before the browser paints -
+ * lands the page directly in its final state with no visible motion.
  */
-export const useReviewScrollPin = (isReviewOpen: boolean) => {
-  useEffect(() => {
+export const useReviewScrollPin = (isReviewOpen: boolean, isInstant: boolean) => {
+  useIsomorphicLayoutEffect(() => {
     if (!isReviewOpen) {
       return
     }
@@ -28,11 +32,16 @@ export const useReviewScrollPin = (isReviewOpen: boolean) => {
       return
     }
 
+    if (isInstant) {
+      card.scrollIntoView({ block: 'start', behavior: 'instant' })
+      return
+    }
+
     let frameId = 0
     const startedAt = performance.now()
 
     const pin = (now: number) => {
-      card.scrollIntoView({ block: 'start' })
+      card.scrollIntoView({ block: 'start', behavior: 'instant' })
       if (now - startedAt < PIN_DURATION_MS) {
         frameId = requestAnimationFrame(pin)
       }
@@ -41,5 +50,5 @@ export const useReviewScrollPin = (isReviewOpen: boolean) => {
     frameId = requestAnimationFrame(pin)
 
     return () => cancelAnimationFrame(frameId)
-  }, [ isReviewOpen ])
+  }, [ isReviewOpen, isInstant ])
 }

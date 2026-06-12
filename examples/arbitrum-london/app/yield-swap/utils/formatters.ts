@@ -1,8 +1,12 @@
 /**
- * Pure presentation helpers for the Pendle flow - chain labels, explorer URLs
- * and labels, and the reply-text fallback. Module-level (no component state)
- * so they stay trivially testable and importable by the chat + action pieces.
+ * Pure presentation helpers shared by both demo flows - chain labels, explorer
+ * URLs and labels, decoded-preview mapping, and the reply-text fallback.
+ * Module-level (no component state) so they stay trivially testable and
+ * importable by the chat + action pieces.
  */
+
+import type { DecodedCall } from './fetchDecoded'
+
 
 export const formatChainLabel = (chain: `eip155:${number}`): string => {
   const chainId = Number(chain.split(':')[1])
@@ -43,18 +47,6 @@ export const formatExplorerBase = (chainId: number | null): string | undefined =
 
 export const formatTxHashShort = (txHash: string): string => {
   return `${txHash.slice(0, 6)}…${txHash.slice(-4)}`
-}
-
-export const resolveExplorerLabel = (chainId: number | null): string => {
-  if (chainId === 421614) {
-    return 'Arbiscan'
-  }
-
-  if (chainId === 46630) {
-    return 'Robinhood explorer'
-  }
-
-  return 'block explorer'
 }
 
 export const resolveReplyText = (reply: string | undefined, hasEnvelope: boolean): string => {
@@ -99,4 +91,23 @@ export const resolveSendErrorText = (error: Error): string => {
 
   const [ firstLine ] = error.message.split('\n')
   return firstLine.length > 160 ? `${firstLine.slice(0, 160)}...` : firstLine
+}
+
+
+/**
+ * Maps the decoded inner call to the shape EnvelopePreview expects, or
+ * undefined when decoding failed (the preview then renders its fallbacks).
+ */
+export const resolveDecodedForPreview = (decodedInner: DecodedCall | null) => {
+  if (decodedInner === null) {
+    return undefined
+  }
+
+  return {
+    selector: decodedInner.selector || undefined,
+    functionName: decodedInner.functionName || undefined,
+    args: decodedInner.args?.map((arg) => ({ name: arg.name || '', type: arg.type, value: arg.value })),
+    source: decodedInner.source,
+    clearSigning: decodedInner.clearSigning,
+  }
 }

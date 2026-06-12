@@ -59,7 +59,7 @@ const STATIC_REQUIREMENTS: RequirementsShape = {
       resource: X402_RESOURCE,
     },
   ],
-  settlement: 'stubbed-testnet',
+  settlement: 'simulated (testnet)',
 }
 
 // Render the x402 challenge amount as a human value. A native-asset amount is in
@@ -103,6 +103,9 @@ export const X402Paywall = (props: X402PaywallProps) => {
 
   const fetchRequirements = useCallback(async (): Promise<RequirementsShape | null> => {
     try {
+      // GET /api/x402 returns HTTP 402 by design (the body IS the x402
+      // challenge), so response.ok is intentionally not checked - only a
+      // thrown network error counts as a failure.
       const response = await fetch('/api/x402')
       const json = (await response.json()) as RequirementsShape
       return json

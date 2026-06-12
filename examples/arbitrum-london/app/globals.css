@@ -119,7 +119,7 @@ body {
 .tx-collapse {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.32s ease-out;
+  transition: grid-template-rows 0.5s ease-out;
 }
 
 .tx-collapse[data-open="true"] {

@@ -56,7 +56,7 @@ export const DemoHeader = (props: DemoHeaderProps) => {
     // One row at every width. On mobile the connect button drops its ETH
     // balance and pins to 155px (see the .tx-cw rules in globals.css) so the
     // single row still fits.
-    <header className={`demo-header flex items-center ${justifyClass} gap-3 sm:gap-4`}>
+    <header className={`flex items-center ${justifyClass} gap-3 sm:gap-4`}>
       {menuNode}
       <WalletConnectButton chainId={chainId} />
     </header>

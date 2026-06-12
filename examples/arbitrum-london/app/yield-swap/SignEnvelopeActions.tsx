@@ -1,37 +1,33 @@
-import { formatTxExplorerUrl, resolveExplorerLabel, resolveSendErrorText } from './utils/formatters'
+import { resolveSendErrorText } from './utils/formatters'
 
 
 type SignEnvelopeActionsProps = {
   isConnected: boolean,
   isSigning: boolean,
   isConfirming: boolean,
-  isBusySendingTx: boolean,
-  txHash: `0x${string}` | undefined,
   sendError: Error | null,
-  envelopeChainId: number | null,
   onReject: () => void,
   onSign: () => void | Promise<void>,
 }
 
 /**
- * Review actions for a prepared envelope: reject, sign (one click via wagmi in
- * the parent), and the pending-tx link while waiting for the receipt. Split out
- * of PendleAgentChat so the chat component stays focused on conversation state.
- * Unmounts on confirmation - the executed turn card carries the final
- * "Transaction submitted" line + explorer link itself.
+ * Review actions for a prepared envelope: reject and sign (one click via
+ * wagmi in the parent). Split out of the chat components (Pendle + RWA) so
+ * each stays focused on conversation state. Unmounts on confirmation - the
+ * executed turn card carries the final "Transaction submitted" line +
+ * explorer link itself.
  */
 export const SignEnvelopeActions = (props: SignEnvelopeActionsProps) => {
   const {
     onSign,
     onReject,
-    txHash,
     sendError,
     isSigning,
     isConnected,
     isConfirming,
-    isBusySendingTx,
-    envelopeChainId,
   } = props
+
+  const isBusySendingTx = isSigning || isConfirming
 
   const resolveTxButtonLabel = (): string => {
     if (isSigning) {
@@ -53,22 +49,6 @@ export const SignEnvelopeActions = (props: SignEnvelopeActionsProps) => {
     <div role="alert" className="rounded-md border border-error bg-error-bg px-3 py-2 text-xs text-error break-words">
       {resolveSendErrorText(sendError)}
     </div>
-  ) : null
-
-  const explorerLabel = resolveExplorerLabel(envelopeChainId)
-  const explorerUrl = txHash !== undefined && envelopeChainId !== null
-    ? formatTxExplorerUrl(envelopeChainId, txHash)
-    : null
-
-  const pendingLinkNode = txHash !== undefined && explorerUrl !== null ? (
-    <a
-      href={explorerUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block text-center text-xs font-mono text-muted hover:text-foreground underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
-    >
-      View pending tx on {explorerLabel}: {txHash}
-    </a>
   ) : null
 
   return (
@@ -93,7 +73,6 @@ export const SignEnvelopeActions = (props: SignEnvelopeActionsProps) => {
       </div>
       {notConnectedNode}
       {sendErrorNode}
-      {pendingLinkNode}
     </div>
   )
 }

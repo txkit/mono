@@ -182,12 +182,12 @@ export const EnvelopePreview = (props: EnvelopePreviewProps) => {
 
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden">
-      <div className="flex flex-col gap-2 px-5 pt-5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+      <div className="flex flex-col gap-2 px-5 pt-5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <p className="text-xs uppercase tracking-wider text-muted font-mono">Prepared envelope</p>
         {badgeNode}
       </div>
 
-      <div className="px-5 pb-5 pt-2 border-b border-border">
+      <div className="px-5 pb-5 pt-3 border-b border-border">
         <h3 className="text-xl font-semibold mb-1">{title}</h3>
         <p className="text-sm text-muted">{innerLabel}</p>
       </div>

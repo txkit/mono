@@ -5,6 +5,7 @@ import { useEffect, useState, type ReactNode, type TransitionEvent } from 'react
 
 type CollapseProps = {
   isOpen: boolean,
+  isInstant?: boolean,
   children: ReactNode,
 }
 
@@ -14,14 +15,16 @@ type CollapseProps = {
  * animates straight to the natural (auto) height. Children stay mounted
  * through the exit transition (so the envelope review collapses out with its
  * content visible, the same way it expanded in) and unmount when the close
- * finishes. Honors prefers-reduced-motion via the .tx-collapse CSS in
- * globals.css.
+ * finishes. `isInstant` mounts an open collapse already expanded (a review
+ * restored from storage must appear settled, not replay its entrance) - later
+ * toggles still animate. Honors prefers-reduced-motion via the .tx-collapse
+ * CSS in globals.css.
  */
 export const Collapse = (props: CollapseProps) => {
-  const { isOpen, children } = props
+  const { isOpen, isInstant, children } = props
   // data-open lags isOpen by one frame on open so the 0fr -> 1fr transition
-  // runs even when the component mounts already open.
-  const [ isExpanded, setIsExpanded ] = useState(false)
+  // runs even when the component mounts already open (unless isInstant).
+  const [ isExpanded, setIsExpanded ] = useState(isInstant ? isOpen : false)
   // Children stay rendered while the exit transition plays out.
   const [ isExiting, setIsExiting ] = useState(false)
   const [ wasOpen, setWasOpen ] = useState(isOpen)

@@ -6,7 +6,7 @@ import { formatTxHashShort } from '../utils/formatters'
 import { TypedText } from './TypedText'
 
 
-export type ReasoningStatus = 'preparing' | 'replied' | 'prepared' | 'rejected' | 'executed' | 'connect' | 'connected'
+export type ReasoningStatus = 'preparing' | 'replied' | 'prepared' | 'rejected' | 'executed' | 'connect' | 'connected' | 'greeting'
 
 export type ExecutedTx = {
   hash: string,
@@ -71,6 +71,7 @@ const THEME_BY_STATUS: Record<ReasoningStatus, ReasoningTheme> = {
   executed: EXECUTED_THEME,
   connect: ACTIVE_THEME,
   connected: EXECUTED_THEME,
+  greeting: ACTIVE_THEME,
 }
 
 // The card's single header line next to the status icon. Every status has
@@ -83,6 +84,7 @@ const STATUS_HEADINGS: Record<ReasoningStatus, string> = {
   executed: 'Transaction confirmed',
   connect: 'Wallet required',
   connected: 'Wallet connected',
+  greeting: 'Agent ready',
 }
 
 /**
