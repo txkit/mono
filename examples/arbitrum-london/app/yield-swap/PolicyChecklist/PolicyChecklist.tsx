@@ -1,3 +1,7 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+
 import { Icon } from '@/src/ui/Icon'
 
 
@@ -20,14 +24,49 @@ const POLICY_CHECKS: ReadonlyArray<PolicyCheckItem> = [
   { id: 'signature', label: 'Agent signature valid (EIP-712)' },
 ]
 
+// Reveal pacing: a beat before the first check, then one check per beat -
+// slow enough that each invariant registers as it lands instead of the whole
+// list flashing in at once.
+const FIRST_CHECK_DELAY_S = 0.5
+const CHECK_STAGGER_S = 0.4
+
+// The cascade starts only once half the card is actually on screen: the
+// checklist sits low in the review panel, so a mount-time animation would
+// finish below the fold and read as "already all green" after the scroll.
+const REVEAL_THRESHOLD = 0.5
+
 /**
  * Pre-flight view of the policy-gate checks for a prepared envelope. Each check
  * pops in green, staggered, as a reveal of constraints the envelope already
- * satisfies - not a live verification with fake latency.
+ * satisfies - not a live verification with fake latency. The reveal waits for
+ * the card to scroll into view, so the cascade always plays in front of the
+ * user.
  */
 export const PolicyChecklist = () => {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [ isRevealed, setRevealed ] = useState(false)
+
+  useEffect(() => {
+    const node = cardRef.current
+    if (node === null) {
+      return
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) {
+        setRevealed(true)
+        observer.disconnect()
+      }
+    }, { threshold: REVEAL_THRESHOLD })
+
+    observer.observe(node)
+
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div
+      ref={cardRef}
       role="status"
       aria-live="polite"
       className="overflow-hidden rounded-lg border border-border-hover bg-card p-5 tx-anim-card-in"
@@ -46,10 +85,13 @@ export const PolicyChecklist = () => {
         {POLICY_CHECKS.map((check, index) => (
           <li
             key={check.id}
-            className="flex items-start gap-3 tx-anim-enter-y"
-            style={{ animationDelay: `${index * 0.12}s` }}
+            className={`flex items-start gap-3 ${isRevealed ? 'tx-anim-enter-y' : 'opacity-0'}`}
+            style={isRevealed ? { animationDelay: `${FIRST_CHECK_DELAY_S + index * CHECK_STAGGER_S}s` } : undefined}
           >
-            <span className="tx-anim-pop" style={{ animationDelay: `${index * 0.12 + 0.1}s` }}>
+            <span
+              className={isRevealed ? 'tx-anim-pop' : 'opacity-0'}
+              style={isRevealed ? { animationDelay: `${FIRST_CHECK_DELAY_S + index * CHECK_STAGGER_S + 0.1}s` } : undefined}
+            >
               <Icon name="check-circle" className="mt-0.5 size-5 text-success" />
             </span>
             <p className="text-sm leading-relaxed text-foreground">{check.label}</p>
