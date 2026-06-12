@@ -71,11 +71,17 @@ export type UseWalletStateReturn = {
   isBalanceLoading: boolean
 }
 
+// Module-level: the settle grace window is needed once per app load (it covers
+// the SSR-hydration + reconnect-start gap). Later mounts - e.g. a header
+// remounting on a route change - start settled, so the button shows its real
+// state immediately instead of flashing the skeleton on every page switch.
+let hasSettledOnce = false
+
 const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateReturn => {
   const { chainId, showBalance = true, showEns = true, connectingConnectorId } = options
 
   const [ isTimedOut, setTimedOut ] = useState(false)
-  const [ isSettled, setSettled ] = useState(false)
+  const [ isSettled, setSettled ] = useState(hasSettledOnce)
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const { mutate: disconnect } = useDisconnect()
@@ -105,7 +111,10 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
     // flashes the disconnected "Connect" label in the one-render gap before
     // wagmi's reconnect starts. A genuine connection resolves earlier via
     // isConnected, so connected wallets are not delayed by this.
-    const settleTimer = setTimeout(() => setSettled(true), 350)
+    const settleTimer = setTimeout(() => {
+      hasSettledOnce = true
+      setSettled(true)
+    }, 350)
 
     return () => clearTimeout(settleTimer)
   }, [])
