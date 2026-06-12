@@ -1,10 +1,14 @@
+'use client'
+
 import { openConnectWalletModal } from '@/src/ui/openConnectWalletModal'
 
+import { BotTurnEntrance } from './BotTurnEntrance'
 import { AgentReasoning } from './AgentReasoning/AgentReasoning'
 
 
 type ConnectWalletPromptProps = {
   isResolved?: boolean,
+  isInstant?: boolean,
 }
 
 /**
@@ -12,25 +16,25 @@ type ConnectWalletPromptProps = {
  * wallet. The chat stays open (composer never locks on connection state); this
  * turn answers locally with a "connect wallet" link instead of calling the
  * agent, since no signable envelope can be produced without a receiver. Styled
- * as the same AgentReasoning card every other bot turn uses. Once the wallet
- * connects, the card resolves in place (green "Wallet connected", the fulfilled
- * CTA swaps to a thank-you) and the chat auto-resumes the pending request.
+ * as the same AgentReasoning card every other bot turn uses, entering via
+ * BotTurnEntrance (the turn lands in the same commit as the user's message,
+ * so it holds the reply beat; `isInstant` restores render settled). Once the
+ * wallet connects, the card resolves in place (green "Wallet connected", the
+ * fulfilled CTA swaps to a thank-you) with no replayed entrance, and the chat
+ * auto-resumes the pending request.
  */
 export const ConnectWalletPrompt = (props: ConnectWalletPromptProps) => {
-  const { isResolved } = props
+  const { isResolved, isInstant } = props
 
-  if (isResolved) {
+  const resolvedCardNode = (
+    <AgentReasoning reasoningLines={[]} status="connected">
+      <p className="text-sm leading-relaxed text-foreground">
+        Thanks for connecting.
+      </p>
+    </AgentReasoning>
+  )
 
-    return (
-      <AgentReasoning reasoningLines={[]} status="connected">
-        <p className="text-sm leading-relaxed text-foreground">
-          Thanks for connecting.
-        </p>
-      </AgentReasoning>
-    )
-  }
-
-  return (
+  const promptCardNode = (
     <AgentReasoning reasoningLines={[]} status="connect">
       <p className="text-sm leading-relaxed text-foreground">
         Please{' '}
@@ -44,5 +48,11 @@ export const ConnectWalletPrompt = (props: ConnectWalletPromptProps) => {
         {' '}to continue.
       </p>
     </AgentReasoning>
+  )
+
+  return (
+    <BotTurnEntrance isInstant={isInstant}>
+      {isResolved ? resolvedCardNode : promptCardNode}
+    </BotTurnEntrance>
   )
 }

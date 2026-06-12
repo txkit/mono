@@ -86,14 +86,12 @@ export const ChatShell = (props: ChatShellProps) => {
         {header}
       </div>
       {pinnedNode}
-      {/* min-h-full + flex column lets a child claim the leftover height with
-          flex-1 (the RWA paywall centers itself vertically that way). The first
-          child is always the page note - it stays at the top; mt-auto on the
-          SECOND child (the first conversation turn) bottom-anchors a short
+      {/* min-h-full flex column: the first child is always the page note - it
+          stays at the top; mt-auto on the SECOND child (the first conversation
+          turn, or the locked-state paywall turn) bottom-anchors a short
           transcript, so new messages appear right above the composer. Once
-          content overflows - or a flex-1 child like the paywall absorbs the
-          free space - the auto margin collapses to zero and the column flows
-          top-down. */}
+          content overflows, the auto margin collapses to zero and the column
+          flows top-down. */}
       <div ref={scrollRef} className="tx-chat-scroll min-h-0 flex-1">
         <div ref={contentRef} className="flex min-h-full flex-col space-y-4 pt-3 pb-4 [&>:nth-child(2)]:mt-auto">
           {children}

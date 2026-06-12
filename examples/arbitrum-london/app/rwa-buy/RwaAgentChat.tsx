@@ -431,6 +431,10 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     // Started alongside the request, so the narration hold overlaps the
     // round-trip instead of adding to it. Never rejects.
     const minNarrationDelay = new Promise((resolve) => setTimeout(resolve, MIN_NARRATION_MS))
+    // Errors skip the narration hold but still respect the reply beat: a
+    // sub-beat failure (instant 4xx, refused fetch) must not pop a card in
+    // the same frame as the user's message.
+    const replyBeat = new Promise((resolve) => setTimeout(resolve, REPLY_DELAY_MS))
 
     try {
       // Connect-prompt turns are local UI artifacts - the model never sees
@@ -450,6 +454,7 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       const { reply, envelope: returnedEnvelope, error, hint } = json
 
       if (!response.ok) {
+        await replyBeat
         // 402 means the stored payment authorization no longer verifies (the
         // 1h validUntil expired): drop it so the paywall re-renders and the
         // user can sign a fresh one without reloading. Session-guarded: a
@@ -490,6 +495,7 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
         patchSessionState({ envelope: returnedEnvelope, decodedInner: decoded })
       }
     } catch (networkError) {
+      await replyBeat
       patchSessionState({ errorMessage: `Network error: ${String(networkError)}` })
     } finally {
       patchSessionState({ isLoading: false })
@@ -650,7 +656,7 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       return <ChatMessage key={message.id} role="user" content={message.content} />
     }
     if (message.isConnectPrompt) {
-      return <ConnectWalletPrompt key={message.id} isResolved={message.isConnectResolved} />
+      return <ConnectWalletPrompt key={message.id} isResolved={message.isConnectResolved} isInstant={message.isRestored} />
     }
 
     // An executed turn carries its own tx hash, so the card voices the outcome
@@ -686,6 +692,12 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
   const isAwaitingReply = isLoading && messages[messages.length - 1]?.role !== 'assistant'
   const preparingNode = isAwaitingReply ? <PreparingCard steps={IN_FLIGHT_STEPS} /> : null
 
+  // The connect-prompt turn holds the reply beat before sliding in (see
+  // ConnectWalletPrompt), so the transcript keeps following growth through
+  // that window too - the card lands in view like any other reply.
+  const pendingTurn = messages[messages.length - 1]
+  const isAwaitingConnectTurn = Boolean(pendingTurn?.isConnectPrompt) && pendingTurn?.isConnectResolved !== true
+
   const checklistNode = isPrepared ? <PolicyChecklist /> : null
 
   const mockNoticeNode = isPrepared ? (
@@ -697,8 +709,10 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     </Note>
   ) : null
 
+  // Errors are transient (never persisted), so the card always enters live -
+  // same slide-in as every other fresh bot turn.
   const errorNode = errorMessage !== null ? (
-    <div role="alert" className="rounded-md border border-error bg-error-bg px-3 py-2 text-sm text-error">
+    <div role="alert" className="tx-anim-enter-y rounded-md border border-error bg-error-bg px-3 py-2 text-sm text-error">
       {errorMessage}
     </div>
   ) : null
@@ -819,13 +833,10 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
     || (unlockProbe === 'stored' && accountStatus !== 'disconnected')
   const isAwaitingStoredUnlock = isUnlockStillSettling && !hasUnlockWaitExpired
   const isPaywallVisible = !isUnlocked && !isAwaitingStoredUnlock
-  const lockedNode = isPaywallVisible ? (
-    <div className="flex flex-1 flex-col">
-      <div className="grow-[2]" />
-      <X402Paywall onUnlocked={handleUnlocked} />
-      <div className="grow-[3]" />
-    </div>
-  ) : null
+  // The paywall is the agent's locked-state turn: it sits at the bottom of the
+  // chat like any other message (the column's mt-auto anchor), not as a
+  // centered empty-state.
+  const lockedNode = isPaywallVisible ? <X402Paywall onUnlocked={handleUnlocked} /> : null
 
   // The agent speaks first once the gate opens, doubling as the unlock
   // confirmation - nothing else visually acknowledges the payment (entrance
@@ -833,7 +844,9 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
   // never persisted or sent to the API.
   const greetingNode = isUnlocked ? (
     <AgentGreeting greetingId="rwa" isInstant={messages.length > 0}>
-      Payment verified - you are in. Which stock should I buy: TSLA, AMZN, or PLTR?
+      <p className="text-sm leading-relaxed text-foreground">
+        Payment verified - you are in. Which stock should I buy: TSLA, AMZN, or PLTR?
+      </p>
     </AgentGreeting>
   ) : null
 
@@ -864,7 +877,7 @@ export const RwaAgentChat = (props: RwaAgentChatProps) => {
       )}
       composer={composerNode}
       scrollKey={scrollKey}
-      isFollowing={isAwaitingReply}
+      isFollowing={isAwaitingReply || isAwaitingConnectTurn}
     >
       {note}
       {greetingNode}

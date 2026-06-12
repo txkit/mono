@@ -318,6 +318,10 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
     // Started alongside the request, so the narration hold overlaps the
     // round-trip instead of adding to it. Never rejects.
     const minNarrationDelay = new Promise((resolve) => setTimeout(resolve, MIN_NARRATION_MS))
+    // Errors skip the narration hold but still respect the reply beat: a
+    // sub-beat failure (instant 4xx, refused fetch) must not pop a card in
+    // the same frame as the user's message.
+    const replyBeat = new Promise((resolve) => setTimeout(resolve, REPLY_DELAY_MS))
 
     try {
       // Connect-prompt turns are local UI artifacts - the model never sees
@@ -332,6 +336,7 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
       const { reply, envelope: returnedEnvelope, error, hint } = json
 
       if (!response.ok) {
+        await replyBeat
         const baseError = error ?? 'Agent error'
         const detail = hint !== undefined ? `${baseError} - ${hint}` : baseError
         patchSessionState({ errorMessage: detail })
@@ -363,6 +368,7 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
         patchSessionState({ envelope: returnedEnvelope, decodedInner: decoded })
       }
     } catch (networkError) {
+      await replyBeat
       patchSessionState({ errorMessage: `Network error: ${String(networkError)}` })
     } finally {
       patchSessionState({ isLoading: false })
@@ -523,7 +529,7 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
       return <ChatMessage key={message.id} role="user" content={message.content} />
     }
     if (message.isConnectPrompt) {
-      return <ConnectWalletPrompt key={message.id} isResolved={message.isConnectResolved} />
+      return <ConnectWalletPrompt key={message.id} isResolved={message.isConnectResolved} isInstant={message.isRestored} />
     }
 
     // An executed turn carries its own tx hash, so the card voices the outcome
@@ -559,6 +565,12 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
   const isAwaitingReply = isLoading && messages[messages.length - 1]?.role !== 'assistant'
   const preparingNode = isAwaitingReply ? <PreparingCard steps={IN_FLIGHT_STEPS} /> : null
 
+  // The connect-prompt turn holds the reply beat before sliding in (see
+  // ConnectWalletPrompt), so the transcript keeps following growth through
+  // that window too - the card lands in view like any other reply.
+  const pendingTurn = messages[messages.length - 1]
+  const isAwaitingConnectTurn = Boolean(pendingTurn?.isConnectPrompt) && pendingTurn?.isConnectResolved !== true
+
   const checklistNode = isPrepared ? <PolicyChecklist /> : null
 
   const mockNoticeNode = isPrepared ? (
@@ -570,8 +582,10 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
     </Note>
   ) : null
 
+  // Errors are transient (never persisted), so the card always enters live -
+  // same slide-in as every other fresh bot turn.
   const errorNode = errorMessage !== null ? (
-    <div role="alert" className="rounded-md border border-error bg-error-bg px-3 py-2 text-sm text-error">
+    <div role="alert" className="tx-anim-enter-y rounded-md border border-error bg-error-bg px-3 py-2 text-sm text-error">
       {errorMessage}
     </div>
   ) : null
@@ -694,8 +708,10 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
   // not in `messages`, so it is never persisted or sent to the API.
   const greetingNode = (
     <AgentGreeting greetingId="pendle" isInstant={messages.length > 0}>
-      Hi - I prepare Pendle yield swaps on Arbitrum Sepolia. Tell me what to
-      rotate, or tap a suggestion below.
+      <p className="text-sm leading-relaxed text-foreground">
+        Hi - I prepare Pendle yield swaps on Arbitrum Sepolia. Tell me what to
+        rotate, or tap a suggestion below.
+      </p>
     </AgentGreeting>
   )
 
@@ -710,7 +726,7 @@ export const PendleAgentChat = (props: PendleAgentChatProps) => {
       )}
       composer={composerNode}
       scrollKey={scrollKey}
-      isFollowing={isAwaitingReply}
+      isFollowing={isAwaitingReply || isAwaitingConnectTurn}
     >
       {note}
       {greetingNode}

@@ -6,6 +6,7 @@ import { formatUnits, keccak256, toBytes } from 'viem'
 
 import { robinhoodTestnet, ROBINHOOD_TESTNET_CHAIN_ID } from '@/src/chains'
 import { openConnectWalletModal } from '@/src/ui/openConnectWalletModal'
+import { AgentGreeting } from '../yield-swap/AgentGreeting'
 import { resolveSendErrorText } from '../yield-swap/utils/formatters'
 import {
   X402_ASSET,
@@ -87,7 +88,9 @@ const formatAcceptAmount = (asset: string, rawAmount: string): string => {
  * no on-chain transfer occurs. The verify step (EIP-712 signer recovery,
  * amount + expiry checks) is real.
  *
- * Design mirrors the yield-swap empty-state card.
+ * Rendered as the agent's locked-state turn: the same AgentReasoning card
+ * every bot message uses (via the AgentGreeting entrance), pinned to the
+ * bottom of the chat like a fresh message rather than a centered empty-state.
  */
 export const X402Paywall = (props: X402PaywallProps) => {
   const { onUnlocked } = props
@@ -98,6 +101,21 @@ export const X402Paywall = (props: X402PaywallProps) => {
   const [ isPending, setIsPending ] = useState(false)
   const [ errorMessage, setErrorMessage ] = useState<string | null>(null)
   const [ requirements, setRequirements ] = useState<RequirementsShape | null>(STATIC_REQUIREMENTS)
+  // Set when "Pay and unlock" is clicked while disconnected: the click opens
+  // the connect modal, and once the wallet actually connects the payment flow
+  // resumes by itself - connecting was just the missing prerequisite (the
+  // same auto-resume contract as the chat's connect prompt).
+  const [ isAwaitingConnect, setAwaitingConnect ] = useState(false)
+
+  // A wallet change is a session change for the paywall too: an error from
+  // the previous wallet ("User rejected the request", a failed switch) must
+  // not linger under the next session. Adjust-during-render, same pattern as
+  // the chats - disconnect and account switch both clear it synchronously.
+  const [ sessionAddress, setSessionAddress ] = useState(connectedAddress)
+  if (connectedAddress !== sessionAddress) {
+    setSessionAddress(connectedAddress)
+    setErrorMessage(null)
+  }
 
   const { signTypedDataAsync } = useSignTypedData()
 
@@ -135,12 +153,15 @@ export const X402Paywall = (props: X402PaywallProps) => {
   const handlePayAndUnlock = async () => {
     // The button stays active while disconnected: the first thing paying
     // requires is a wallet, so the click opens the connect modal instead of
-    // showing a dead disabled state.
+    // showing a dead disabled state - and the connect resume below finishes
+    // the flow.
     if (!isConnected || connectedAddress === undefined) {
+      setAwaitingConnect(true)
       openConnectWalletModal()
       return
     }
 
+    setAwaitingConnect(false)
     setIsPending(true)
     setErrorMessage(null)
 
@@ -228,6 +249,18 @@ export const X402Paywall = (props: X402PaywallProps) => {
     }
   }
 
+  // Resume the payment once the wallet the user was asked for is actually
+  // connected: chain switch + EIP-712 prompt fire without a second click.
+  useEffect(() => {
+    if (!isAwaitingConnect || !isConnected || connectedAddress === undefined) {
+      return
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing the external wagmi connect event into the payment flow: consume the pending intent and resume the signature the user already asked for
+    void handlePayAndUnlock()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handlePayAndUnlock is an unstable closure; the guard above makes the effect idempotent (the handler clears the flag), so reacting to connection changes is sufficient
+  }, [ isAwaitingConnect, isConnected, connectedAddress ])
+
   const requirementsNode = requirements !== null ? (
     <div className="mt-3 rounded-md bg-card-sunken px-4 py-3 font-mono text-xs space-y-1">
       {requirements.accepts.map((accept) => (
@@ -250,18 +283,13 @@ export const X402Paywall = (props: X402PaywallProps) => {
   ) : null
 
   return (
-    <div className="rounded-lg border border-border bg-card/40 px-5 py-8 text-center space-y-4">
-      <div>
-        <p className="text-sm font-medium text-foreground mb-1">
-          x402 payment required
-        </p>
-        <p className="text-xs text-muted">
-          Sign a payment authorization to unlock the RWA agent.
-        </p>
-        <p className="mt-1.5 text-xs text-muted">
-          Verification is real (EIP-712 signer recovery); settlement is mocked for this testnet demo.
-        </p>
-      </div>
+    <AgentGreeting greetingId="rwa-paywall" status="locked">
+      <p className="text-sm leading-relaxed text-foreground">
+        This agent is paid - sign an x402 payment authorization to unlock it.
+      </p>
+      <p className="mt-1.5 text-sm leading-relaxed text-muted">
+        Verification is real (EIP-712 signer recovery); settlement is mocked for this testnet demo.
+      </p>
 
       {requirementsNode}
 
@@ -269,12 +297,12 @@ export const X402Paywall = (props: X402PaywallProps) => {
         type="button"
         disabled={isPending}
         onClick={handlePayAndUnlock}
-        className="rounded-md bg-accent px-6 py-2.5 text-sm text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-4 w-full rounded-md bg-accent px-6 py-3 text-sm text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isPending ? 'Signing...' : 'Pay and unlock'}
       </button>
 
       {errorNode}
-    </div>
+    </AgentGreeting>
   )
 }
