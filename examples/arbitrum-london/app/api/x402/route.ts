@@ -37,7 +37,7 @@ const paymentRequired = () => ({
       resource: X402_RESOURCE,
     },
   ],
-  settlement: 'stubbed-testnet',
+  settlement: 'simulated (testnet)',
 })
 
 export const GET = async () => {
@@ -66,5 +66,5 @@ export const POST = async (request: NextRequest) => {
     return NextResponse.json({ ...paymentRequired(), error: result.reason }, { status: 402 })
   }
 
-  return NextResponse.json({ verified: true, settlement: 'stubbed-testnet', proof: result.proof })
+  return NextResponse.json({ verified: true, settlement: 'simulated (testnet)', proof: result.proof })
 }

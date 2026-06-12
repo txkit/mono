@@ -3,8 +3,10 @@ import { z } from 'zod'
 
 
 /**
- * Tool schemas for Claude Agent SDK. Each tool has a zod-validated arg
- * shape so the envelope builder can trust the inputs without re-parsing.
+ * Tool schemas for the agent turn, authored in Anthropic input_schema shape
+ * and translated to the OpenAI function shape for Groq in llm.ts. Each tool
+ * has a zod-validated arg shape so the envelope builder can trust the inputs
+ * without re-parsing.
  *
  * Scenario A: prepare_pendle_yield_swap (Arbitrum Sepolia)
  * Scenario C: prepare_rwa_buy (Robinhood Chain testnet)
@@ -48,8 +50,8 @@ export const prepareRwaBuyArgs = z.object({
 export type PrepareRwaBuyArgs = z.infer<typeof prepareRwaBuyArgs>
 
 /**
- * Anthropic tool definitions. Passed to the Claude SDK so the model
- * understands what is callable.
+ * Tool definitions in Anthropic shape - the single source of truth that
+ * llm.ts adapts per provider.
  */
 export const PENDLE_TOOL_DEFINITION = {
   name: 'prepare_pendle_yield_swap',
@@ -65,7 +67,11 @@ export const PENDLE_TOOL_DEFINITION = {
         pattern: '^\\d+$',
         description: 'Raw token units converted from the amount the user explicitly stated. Never a default or assumed value.',
       },
-      slippageBps: { type: 'string', pattern: '^\\d+$' },
+      slippageBps: {
+        type: 'string',
+        pattern: '^\\d+$',
+        description: 'Slippage tolerance in basis points (default 50 = 0.5%, max 1000 = 10%). Omit to use the default.',
+      },
     },
     required: [ 'tokenIn', 'tokenOut', 'amountIn' ],
   },

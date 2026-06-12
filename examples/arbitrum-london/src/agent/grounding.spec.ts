@@ -20,7 +20,7 @@ describe('resolvePendleClarify', () => {
   })
 
   it('asks for the amount when the model invented it', () => {
-    expect(resolvePendleClarify(pendleArgs('100000000'), 'Swap usdc fot pt-steth'))
+    expect(resolvePendleClarify(pendleArgs('100000000'), 'Swap usdc for pt-steth'))
       .toBe('How much USDC would you like to swap?')
   })
 

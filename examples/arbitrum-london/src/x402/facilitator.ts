@@ -77,8 +77,9 @@ const nowSeconds = (): number => Math.floor(Date.now() / 1000)
 
 /**
  * Opaque hash of the 402 challenge requirements - the x402
- * `paymentRequirementsHash`. Binds payee, amount, validity, a server nonce, and
- * the chain so a signature for one challenge cannot be replayed against another.
+ * `paymentRequirementsHash`. Binds payee, amount, validity, a client-generated
+ * nonce, and the chain so a signature for one challenge cannot be replayed
+ * against another.
  */
 export const hashPaymentRequirements = (requirements: PaymentRequirements): `0x${string}` => {
   return keccak256(

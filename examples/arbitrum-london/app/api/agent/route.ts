@@ -34,9 +34,11 @@ import { verifyPayment, type SignedPaymentBody } from '@/src/x402/facilitator'
 
 
 export const runtime = 'nodejs'
+// Covers the 30s per-provider LLM fetch timeout plus response shaping.
+export const maxDuration = 35
 
 /**
- * Agent tool-use loop + EIP-712 envelope signing for both buildathon scenarios.
+ * Agent tool-use turn + EIP-712 envelope signing for both buildathon scenarios.
  *
  *   POST /api/agent { messages, scenario?, receiverAddress?, payment? }
  *   -> { reply, envelope?, scenario, x402Proof? }

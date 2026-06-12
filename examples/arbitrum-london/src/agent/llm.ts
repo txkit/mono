@@ -116,6 +116,7 @@ const runKieTurn = async (params: RunAgentTurnParams): Promise<AgentTurn> => {
 
   const response = await fetch(KIE_CLAUDE_URL, {
     method: 'POST',
+    signal: AbortSignal.timeout(30_000),
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'anthropic-version': '2023-06-01',
@@ -162,11 +163,13 @@ type GroqResponse = {
   error?: { message?: string },
 }
 
+// Throws (instead of returning {}) so the route's provider loop falls back to
+// the next provider; a silent {} would only die later as a 422 to the user.
 const parseToolArguments = (raw: string): Record<string, unknown> => {
   try {
     return JSON.parse(raw) as Record<string, unknown>
   } catch {
-    return {}
+    throw new Error(`unparseable tool arguments: ${raw.slice(0, 200)}`)
   }
 }
 
@@ -188,6 +191,7 @@ const runGroqTurn = async (params: RunAgentTurnParams): Promise<AgentTurn> => {
 
   const response = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
     method: 'POST',
+    signal: AbortSignal.timeout(30_000),
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
