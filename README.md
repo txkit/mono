@@ -27,6 +27,8 @@
 
 > Reference implementation of [**ERC-8265 Prepared Transaction Envelope**](https://github.com/ethereum/ERCs/pull/1753) - a proposed open standard for pre-execution transaction validation between AI agents, MCP tools, and wallets. Apache-2.0 SDK shipped, ERC draft open in `ethereum/ERCs` (CI green), public discussion live on [Ethereum Magicians](https://ethereum-magicians.org/t/erc-8265-prepared-transaction-envelope/28557).
 
+> **Arbitrum Buildathon 2026 submission:** [`examples/arbitrum-london`](./examples/arbitrum-london) - an AI agent prepares ERC-8265 envelopes, an on-chain `AgentPolicyGate` enforces them on Arbitrum Sepolia + Robinhood Chain. Live at [demo.txkit.dev](https://demo.txkit.dev).
+
 ---
 
 > **v0.1.0-alpha** - published under the `alpha` npm tag while we refine the public surface. API may shift before v1.0.

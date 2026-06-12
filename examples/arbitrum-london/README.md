@@ -2,6 +2,9 @@
 
 [![ERC-8265 - Active Ethereum proposal (PR #1753)](https://img.shields.io/badge/ERC--8265-Active_Ethereum_proposal_(PR_%231753)-4338CA)](https://github.com/ethereum/ERCs/pull/1753)
 
+**Live demo, no setup: [demo.txkit.dev](https://demo.txkit.dev)** - [/yield-swap](https://demo.txkit.dev/yield-swap)
+(Pendle, Arbitrum Sepolia) and [/rwa-buy](https://demo.txkit.dev/rwa-buy) (x402-paid RWA, Robinhood Chain).
+
 ## The problem
 
 AI agents are starting to initiate real on-chain transactions, and the only thing between an
@@ -23,6 +26,7 @@ the rules.
 
 - **Scenario A (live):** Pendle yield swap on Arbitrum Sepolia (`/yield-swap`).
 - **Scenario C (live):** x402-paid RWA stock buy on Robinhood Chain testnet (`/rwa-buy`).
+  (Scenario B - an EVM batch flow - is reserved for a future protocol kind, hence the lettering gap.)
 
 > **Why Arbitrum.** The decoded preview is Arbitrum-native: the fee row splits the L2 execution
 > fee from the L1 calldata-posting fee by reading `NodeInterface.gasEstimateComponents` (the 0xC8
@@ -82,8 +86,11 @@ and the RWA `executeEnvelope` was broadcast via `cast send --gas-limit` from the
 
 ## What this proves
 
-1. An autonomous agent **prepares** a transaction from natural-language intent (an LLM tool-use
-   loop produces an ERC-8265 envelope).
+1. An autonomous agent **prepares** a transaction from natural-language intent (a single LLM
+   tool-use turn produces an ERC-8265 envelope). A deterministic grounding guard
+   (`src/agent/grounding.ts`) rejects any parameter the user never literally stated, before the
+   envelope is built - the same trust-nothing principle as the on-chain gate, applied at the
+   LLM layer.
 2. The human **sees** a typed, decoded preview - function, arguments, sequencer-fee breakdown,
    expiry, policy verdict - before signing, not blind calldata.
 3. An on-chain gate **enforces** the rules, so a rogue or compromised agent cannot move value
@@ -96,6 +103,7 @@ The verification layer - not agent autonomy - is the point. It scales to any age
 
 ## Run it
 
+- **Hosted:** [demo.txkit.dev](https://demo.txkit.dev) - the deployed demo, nothing to install.
 - **Deploy + capture tx hashes:** [`DEPLOY.md`](./DEPLOY.md) - one funded testnet key, copy-paste.
 - **Local dev:** `pnpm dev`, then open `/yield-swap` (Pendle, Arbitrum) or `/rwa-buy` (x402-paid RWA,
   Robinhood). Until the contracts are deployed a flow runs in preview mode (a banner explains, and
