@@ -5,7 +5,7 @@
   "description": "txKit Arbitrum London Buildathon scaffold. Shipped: AgentPolicyGate Solidity contract with EIP-712 binding + 15 Foundry tests, chain configs for Arbitrum Sepolia + Robinhood Chain testnet, decoder data under decoder-data/, Next.js 15 App Router scaffold with Claude SDK echo route. Pending: Pendle yield swap demo (scenario A), x402 RWA agent on Robinhood Chain (scenario C), live AgentPolicyGate deploy.",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

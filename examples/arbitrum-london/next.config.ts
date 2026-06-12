@@ -1,3 +1,5 @@
+import path from 'node:path'
+
 import type { NextConfig } from 'next'
 
 
@@ -22,6 +24,16 @@ const nextConfig: NextConfig = {
   // Force Node runtime on all API routes by default; individual routes can
   // override with `export const runtime = 'edge'` if they really need it.
   serverExternalPackages: [ '@anthropic-ai/claude-agent-sdk' ],
+  // Monorepo: trace server files from the workspace root so the function
+  // bundle includes next's runtime from the root pnpm store.
+  outputFileTracingRoot: path.resolve(__dirname, '../..'),
+  // wagmi's tempo connector references an optional 'accounts' module that is
+  // not installed; webpack (unlike turbopack) fails the build on it.
+  webpack: (config) => {
+    config.resolve.alias = { ...config.resolve.alias, accounts: false }
+
+    return config
+  },
 }
 
 export default nextConfig
