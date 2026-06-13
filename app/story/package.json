@@ -17,7 +17,7 @@
     "react-dom": "^19.2.7",
     "react-syntax-highlighter": "^16.1.1",
     "viem": "^2.52.0",
-    "wagmi": "^3.6.5"
+    "wagmi": "^3.6.16"
   },
   "devDependencies": {
     "@paulmillr/qr": "^0.3.0",

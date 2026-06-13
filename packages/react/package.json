@@ -100,7 +100,7 @@
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
     "viem": "^2.52.0",
-    "wagmi": "^3.6.5"
+    "wagmi": "^3.6.16"
   },
   "sideEffects": [
     "*.css"
