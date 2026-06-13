@@ -1,6 +1,6 @@
 # Deploy runbook - txKit Arbitrum London Buildathon demo
 
-Copy-paste deploy of the demo's on-chain pieces to Arbitrum Sepolia (scenario A, Pendle yield swap) and Robinhood Chain testnet (scenario C, x402-paid RWA buy). Both scenarios are live on both chains. Every command below is meant to be pasted as-is after you fill the env vars and the captured addresses.
+Copy-paste deploy of the demo's on-chain pieces to Arbitrum Sepolia (scenario A, Pendle yield swap) and Robinhood Chain testnet (scenario B, x402-paid RWA buy). Both scenarios are live on both chains. Every command below is meant to be pasted as-is after you fill the env vars and the captured addresses.
 
 Verified state (2026-06-11): `forge build` + `forge test` green (27 tests: 15 AgentPolicyGate + 5 MockPendleRouter + 7 MockRwaRouter incl. end-to-end gate->router integration and the x402 settlement-leg tests), app `tsc --noEmit` + `next build` + 10 vitest clean. The deployed addresses + real tx hashes are in the README "Live on-chain" tables and `contracts/deployed.json`; this runbook reproduces them from a funded key you hold.
 
@@ -8,12 +8,12 @@ Verified state (2026-06-11): `forge build` + `forge test` green (27 tests: 15 Ag
 
 | Contract | Chain | Why | Verify on explorer |
 |---|---|---|---|
-| `AgentPolicyGate` | Arbitrum Sepolia (421614) | scenario A + C policy enforcement point | yes (Arbiscan) |
+| `AgentPolicyGate` | Arbitrum Sepolia (421614) | scenario A + B policy enforcement point | yes (Arbiscan) |
 | `MockPendleRouter` | Arbitrum Sepolia (421614) | scenario A inner swap target | yes (Arbiscan) |
-| `MockRwaRouter` | Arbitrum Sepolia (421614) | scenario C inner buy target (bonus proof) | yes (Arbiscan) |
-| `AgentPolicyGate` | Robinhood Chain testnet (46630) | scenario A + C gate (sponsor chain) | yes (Blockscout, 2026-06-11) |
+| `MockRwaRouter` | Arbitrum Sepolia (421614) | scenario B inner buy target (bonus proof) | yes (Arbiscan) |
+| `AgentPolicyGate` | Robinhood Chain testnet (46630) | scenario A + B gate (sponsor chain) | yes (Blockscout, 2026-06-11) |
 | `MockPendleRouter` | Robinhood Chain testnet (46630) | scenario A inner target (proof) | yes (Blockscout, 2026-06-11) |
-| `MockRwaRouter` | Robinhood Chain testnet (46630) | scenario C inner buy target (live /rwa-buy) | yes (Blockscout, 2026-06-11) |
+| `MockRwaRouter` | Robinhood Chain testnet (46630) | scenario B inner buy target (live /rwa-buy) | yes (Blockscout, 2026-06-11) |
 
 Both scenarios are live: `buildPendleEnvelope` targets Arbitrum Sepolia (`/yield-swap`), `buildRwaEnvelope` targets Robinhood Chain (`/rwa-buy`, x402-gated). The RWA router was also deployed on Arbitrum as a bonus proof. See section 3d for the Robinhood RWA deploy and the Orbit gas gotcha.
 
@@ -66,7 +66,7 @@ Confirm tests green and balances funded:
 ```bash
 cd examples/arbitrum-london/contracts
 forge build
-forge test            # expect: 25 passed
+forge test            # expect: 27 passed
 
 DEPLOYER=$(cast wallet address --private-key $DEPLOYER_PRIVATE_KEY)
 cast balance $DEPLOYER --rpc-url arbitrum_sepolia
@@ -161,7 +161,7 @@ cast send $GATE_ROBINHOOD "setAllowedRecipient(address,bool)" $ROUTER_ROBINHOOD 
   --private-key $DEPLOYER_PRIVATE_KEY
 ```
 
-### 3d. MockRwaRouter (scenario C, live /rwa-buy)
+### 3d. MockRwaRouter (scenario B, live /rwa-buy)
 
 Deploy via `forge create` (not `forge script`) because of the Orbit gas gotcha above:
 
@@ -266,7 +266,7 @@ That is the recordable Loom path for scenario A.
 
 ## 7. Capture real tx hashes (required - AI Agentic category)
 
-The UI sign button already lands a real `executeEnvelope` tx (the recordable Loom moment). For a reproducible, no-wallet artifact - and the only way to land a tx on Robinhood Chain, where scenario C has no UI yet - run the smoke script. It reproduces exactly what the dApp does: the agent signs an envelope, then it executes through the gate. The full path (deploy -> allow-list -> smoke tx) was rehearsed on a local anvil before shipping.
+The UI sign button already lands a real `executeEnvelope` tx (the recordable Loom moment). For a reproducible, no-wallet artifact - a scriptable way to land a tx on Robinhood Chain (scenario B) - run the smoke script. It reproduces exactly what the dApp does: the agent signs an envelope, then it executes through the gate. The full path (deploy -> allow-list -> smoke tx) was rehearsed on a local anvil before shipping.
 
 Arbitrum Sepolia:
 
@@ -283,7 +283,7 @@ GATE_ADDRESS=$GATE_ROBINHOOD ROUTER_ADDRESS=$ROUTER_ROBINHOOD \
 forge script script/SmokeExecuteEnvelope.s.sol --rpc-url robinhood_testnet --broadcast
 ```
 
-RWA buy (scenario C). On Robinhood, `forge script --broadcast` OOGs (Orbit gas gotcha), so dry-run to compute the signed calldata, then send it with `cast` (which honours `--gas-limit`). On Arbitrum the script broadcast is fine.
+RWA buy (scenario B). On Robinhood, `forge script --broadcast` OOGs (Orbit gas gotcha), so dry-run to compute the signed calldata, then send it with `cast` (which honours `--gas-limit`). On Arbitrum the script broadcast is fine.
 
 ```bash
 # Robinhood RWA buy (dry-run then cast send)

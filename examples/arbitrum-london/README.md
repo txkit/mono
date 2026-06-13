@@ -25,8 +25,7 @@ binding - before anything executes. Even a rogue or compromised agent cannot mov
 the rules.
 
 - **Scenario A (live):** Pendle yield swap on Arbitrum Sepolia (`/yield-swap`).
-- **Scenario C (live):** x402-paid RWA stock buy on Robinhood Chain testnet (`/rwa-buy`).
-  (Scenario B - an EVM batch flow - is reserved for a future protocol kind, hence the lettering gap.)
+- **Scenario B (live):** x402-paid RWA stock buy on Robinhood Chain testnet (`/rwa-buy`).
 
 > **Why Arbitrum.** The decoded preview is Arbitrum-native: the fee row splits the L2 execution
 > fee from the L1 calldata-posting fee by reading `NodeInterface.gasEstimateComponents` (the 0xC8
@@ -126,7 +125,7 @@ The verification layer - not agent autonomy - is the point. It scales to any age
 - Scenario A is live end to end. The swap target is a deterministic `MockPendleRouter` (flat
   1:0.995, no token custody) so the gate path executes on a testnet without funding real input
   tokens - real plumbing, mock payload.
-- Scenario C is live end to end on Robinhood Chain: an x402 paywall (real EIP-712 payment-auth
+- Scenario B is live end to end on Robinhood Chain: an x402 paywall (real EIP-712 payment-auth
   verify with signer recovery, via a self-hosted facilitator - Coinbase's x402 facilitator does
   not support Arbitrum Orbit chains), the agent prepares the RWA buy, and the gate executes it
   on-chain.
