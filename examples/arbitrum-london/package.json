@@ -13,8 +13,8 @@
     "test:contracts": "cd contracts && forge test"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.100.1",
-    "@tanstack/react-query": "^5.100.14",
+    "@anthropic-ai/sdk": "^0.104.1",
+    "@tanstack/react-query": "^5.101.0",
     "@txkit/arbitrum-adapter": "workspace:^",
     "@txkit/core": "workspace:^",
     "@txkit/react": "workspace:^",
@@ -25,8 +25,8 @@
     "next": "15.5.18",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "viem": "^2.52.0",
-    "wagmi": "^3.6.5",
+    "viem": "^2.52.2",
+    "wagmi": "^3.6.16",
     "zod": "^4.4.3"
   },
   "devDependencies": {
