@@ -21,12 +21,12 @@
   },
   "devDependencies": {
     "@paulmillr/qr": "^0.3.0",
-    "@types/react": "^19.2.16",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.0.0",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "@vitejs/plugin-react": "^6.0.0",
+    "@vitejs/plugin-react": "^6.0.3",
     "typescript": "^6.0.3",
-    "vite": "^8.0.0",
+    "vite": "^8.1.3",
     "vite-plugin-node-polyfills": "^0.28.0"
   }
 }
