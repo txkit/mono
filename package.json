@@ -62,12 +62,12 @@
     "@size-limit/preset-small-lib": "^12.1.0",
     "eslint": "^10.1.0",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "postcss": "^8.5.15",
+    "postcss": "^8.5.18",
     "postcss-cli": "^11.0.1",
     "postcss-import": "^16.1.1",
     "size-limit": "^12.1.0",
-    "turbo": "^2.9.16",
-    "typescript-eslint": "^8.60.1",
-    "vitest": "^4.1.8"
+    "turbo": "^2.10.4",
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.10"
   }
 }
