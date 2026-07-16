@@ -29,8 +29,6 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = (props) => {
     chain,
     requiredChain,
     connectors,
-    groupedConnectors,
-    recentIds,
     connectingWallet,
     isTimedOut,
     isBalanceLoading,
@@ -135,8 +133,6 @@ const ConnectWalletDefault: React.FC<ConnectWalletDefaultProps> = (props) => {
         <WalletModal
           labels={mergedLabels}
           connectors={connectors}
-          groupedConnectors={groupedConnectors}
-          recentIds={recentIds}
           connectingWallet={connectingWallet}
           isTimedOut={isTimedOut}
           onClose={onModalClose}

@@ -481,7 +481,6 @@
 /* Wallet list */
 
 .tx-cw-modal-list {
-  padding: var(--tx-space-sm);
   margin: 0;
   list-style: none;
 }
@@ -497,16 +496,12 @@
 /* Group label */
 
 .tx-cw-group-label {
-  padding: var(--tx-space-sm) var(--tx-space-md);
+  padding: var(--tx-space-sm) 0;
   font-size: var(--tx-font-size-xs);
   font-weight: 600;
   color: var(--tx-color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-}
-
-.tx-cw-group-label[data-variant="accent"] {
-  color: var(--tx-color-primary);
 }
 
 /* Wallet item in modal */
@@ -1133,43 +1128,6 @@ a.tx-cw-dropdown-identity-link:focus-visible {
   text-align: center;
 }
 
-.tx-cw-qr-actions {
-  display: flex;
-  gap: var(--tx-space-sm);
-}
-
-.tx-cw-qr-copy {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  padding: var(--tx-space-xs) var(--tx-space-md);
-  border: 1px solid var(--tx-color-border);
-  border-radius: var(--tx-radius-md);
-  background: var(--tx-color-bg-secondary);
-  color: var(--tx-color-text-secondary);
-  cursor: pointer;
-  font-size: var(--tx-font-size-sm);
-  font-family: inherit;
-  transition: all var(--tx-duration-fast) var(--tx-ease-default);
-}
-
-.tx-cw-qr-copy:hover:not(:disabled) {
-  color: var(--tx-color-text);
-  border-color: var(--tx-color-text-tertiary);
-}
-
-.tx-cw-qr-copy:focus-visible {
-  outline: 2px solid var(--tx-color-primary);
-  outline-offset: 2px;
-}
-
-.tx-cw-qr-copy:disabled {
-  color: var(--tx-color-text-tertiary);
-  border-color: var(--tx-color-border);
-  cursor: not-allowed;
-}
-
 /* Reduced motion */
 
 @media (prefers-reduced-motion: reduce) {
@@ -1181,7 +1139,6 @@ a.tx-cw-dropdown-identity-link:focus-visible {
   .tx-cw-search,
   .tx-cw-chain-option,
   .tx-cw-timeout-btn,
-  .tx-cw-qr-copy,
   .tx-cw-dropdown-item,
   .tx-cw-dropdown-switch-cta,
   .tx-cw-dropdown-identity-link {

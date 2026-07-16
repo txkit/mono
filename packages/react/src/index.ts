@@ -2,9 +2,11 @@ export { default as TxKitProvider, useTxKit } from './components/TxKitProvider/T
 export type { TxKitProviderProps } from './components/TxKitProvider/TxKitProvider'
 
 export { default as ConnectWallet } from './components/ConnectWallet/ConnectWallet'
+export { default as WalletList } from './components/ConnectWallet/WalletList/WalletList'
 export { default as useWalletState } from './hooks/useWalletState'
 export { default as useDisplayUri } from './components/ConnectWallet/utils/useDisplayUri'
 export type { ConnectWalletLabels } from './components/ConnectWallet/labels'
+export type { WalletListProps } from './components/ConnectWallet/WalletList/WalletList'
 export type { ConnectWalletProps, ConnectWalletRenderData } from './types/connect'
 export type { UseDisplayUriReturn } from './components/ConnectWallet/utils/useDisplayUri'
 export type { WalletState, UseWalletStateOptions, UseWalletStateReturn } from './hooks/useWalletState'

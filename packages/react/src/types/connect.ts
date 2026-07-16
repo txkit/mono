@@ -39,6 +39,8 @@ export type ConnectWalletRenderData = {
   connect: (connector: Connector) => void
   /** Disconnect and close panel */
   disconnect: () => void
+  /** Cancel an in-progress connection - resets pending state and tears down the connector (e.g. WalletConnect pairing) */
+  cancelConnect: () => void
   /** Switch to a different chain */
   switchChain: (chainId: number) => void
   /** Open wallet selection modal */
@@ -71,8 +73,6 @@ export type ConnectWalletDefaultProps = {
   requiredChain: Chain | undefined
   chains: readonly Chain[]
   connectors: readonly Connector[]
-  groupedConnectors: WalletGroups
-  recentIds: string[]
   connectingWallet: string | undefined
   isTimedOut: boolean
   isBalanceLoading: boolean

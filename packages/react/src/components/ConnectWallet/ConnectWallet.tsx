@@ -68,6 +68,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
     error,
     address,
     connect,
+    reset,
     ensName,
     ensAvatar,
     connector,
@@ -112,7 +113,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
       ?? chains.find((chain) => chain.id === chainId)
   }, [ chainId, chains, config.chains ])
 
-  const { recentIds, addRecent } = useRecentWallets()
+  const { recentIds } = useRecentWallets()
   const groupedConnectors = useWalletGroups({ connectors, recentIds })
 
   useEffect(() => {
@@ -171,8 +172,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
   const handleModalSelect = useCallback((modalConnector: Connector) => {
     setSelectedConnector(modalConnector)
     connect({ connector: modalConnector })
-    addRecent(modalConnector.id)
-  }, [ connect, addRecent ])
+  }, [ connect ])
 
   const handleModalClose = useCallback(() => {
     setPanel('closed')
@@ -180,8 +180,9 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
   }, [])
 
   const handleCancelConnect = useCallback(() => {
-    disconnect()
-  }, [ disconnect ])
+    reset()
+    selectedConnector?.disconnect().catch(() => undefined)
+  }, [ reset, selectedConnector ])
 
   const handleDisconnect = useCallback(() => {
     disconnect()
@@ -220,10 +221,10 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
   const openModal = useCallback(() => setPanel('modal'), [])
   const closePanel = useCallback(() => setPanel('closed'), [])
 
-  const handleConnect = useCallback(
-    (connector: Connector) => connect({ connector }),
-    [ connect ],
-  )
+  const handleConnect = useCallback((connector: Connector) => {
+    setSelectedConnector(connector)
+    connect({ connector })
+  }, [ connect ])
 
   const handleSwitchChain = useCallback(
     (id: number) => switchChain({ chainId: id }),
@@ -246,6 +247,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
     connectingWallet,
     connect: handleConnect,
     disconnect: handleDisconnect,
+    cancelConnect: handleCancelConnect,
     switchChain: handleSwitchChain,
     openModal,
     closePanel,
@@ -255,7 +257,7 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
     isWrongChain: state === 'wrong-chain',
   }), [
     chain, chains, state, error, address, ensName, ensAvatar, openModal,
-    connectors, closePanel, isTimedOut, handleConnect, handleDisconnect,
+    connectors, closePanel, isTimedOut, handleConnect, handleDisconnect, handleCancelConnect,
     connectingWallet, formattedBalance, groupedConnectors, handleSwitchChain,
     resolvedDisplayAddress, requiredChain, fiatBalance,
   ])
@@ -288,8 +290,6 @@ const ConnectWallet = forwardRef<HTMLDivElement, ConnectWalletProps>(({
               requiredChain={requiredChain}
               chains={chains}
               connectors={connectors}
-              groupedConnectors={groupedConnectors}
-              recentIds={recentIds}
               connectingWallet={connectingWallet}
               isTimedOut={isTimedOut}
               isBalanceLoading={isBalanceLoading}

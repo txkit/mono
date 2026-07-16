@@ -57,6 +57,8 @@ export type UseWalletStateReturn = {
   connectors: readonly Connector[]
   /** Initiate wallet connection */
   connect: ReturnType<typeof useConnect>['mutate']
+  /** Reset the connect mutation - clears the pending/error state back to idle */
+  reset: ReturnType<typeof useConnect>['reset']
   /** Disconnect wallet */
   disconnect: ReturnType<typeof useDisconnect>['mutate']
   /** Switch to a different chain */
@@ -88,7 +90,7 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
   const { mutate: switchChain } = useSwitchChain()
   const { address, isConnected, chainId: connectedChainId, chain, connector, isReconnecting } = useConnection()
   const connectors = useConnectors()
-  const { mutate: connect, isPending, error: connectError } = useConnect()
+  const { mutate: connect, isPending, error: connectError, reset } = useConnect()
 
   // Connection timeout detection - WalletConnect QR flow needs longer timeout
   const timeoutMs = connectingConnectorId === 'walletConnect' ? QR_TIMEOUT_MS : CONNECTION_TIMEOUT_MS
@@ -206,6 +208,7 @@ const useWalletState = (options: UseWalletStateOptions = {}): UseWalletStateRetu
     connector,
     connectors,
     connect,
+    reset,
     disconnect,
     switchChain,
     error: isUserRejection ? null : connectError,

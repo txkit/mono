@@ -1,7 +1,6 @@
 'use client'
-import React, { useRef, useState, useMemo, useEffect, useCallback } from 'react'
+import React, { useMemo } from 'react'
 import encodeQR from '@paulmillr/qr'
-import { copyToClipboard } from '@txkit/core'
 
 import type { ConnectWalletLabels } from '../labels'
 
@@ -15,8 +14,6 @@ type WalletQRCodeProps = {
   onRetry: () => void
 }
 
-const COPIED_FEEDBACK_MS = 2000
-
 const WalletQRCode: React.FC<WalletQRCodeProps> = (props) => {
   const {
     uri,
@@ -26,13 +23,6 @@ const WalletQRCode: React.FC<WalletQRCodeProps> = (props) => {
     isTimedOut,
     isLoading,
   } = props
-
-  const [ copied, setCopied ] = useState(false)
-  const copiedTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
-
-  useEffect(() => {
-    return () => clearTimeout(copiedTimerRef.current)
-  }, [])
 
   const qrDataUri = useMemo(() => {
     if (!uri) {
@@ -45,20 +35,6 @@ const WalletQRCode: React.FC<WalletQRCodeProps> = (props) => {
     }
     catch {
       return undefined
-    }
-  }, [ uri ])
-
-  const handleCopy = useCallback(async () => {
-    if (!uri) {
-      return
-    }
-
-    const success = await copyToClipboard(uri)
-
-    if (success) {
-      setCopied(true)
-      clearTimeout(copiedTimerRef.current)
-      copiedTimerRef.current = setTimeout(() => setCopied(false), COPIED_FEEDBACK_MS)
     }
   }, [ uri ])
 
@@ -98,18 +74,6 @@ const WalletQRCode: React.FC<WalletQRCodeProps> = (props) => {
       }
 
       <span className="tx-cw-qr-label">{labels.scanWithPhone}</span>
-
-      <div className="tx-cw-qr-actions">
-        <button
-          type="button"
-          className="tx-cw-qr-copy"
-          onClick={handleCopy}
-          disabled={!uri}
-          aria-live="polite"
-        >
-          {copied ? labels.copied : labels.copyLink}
-        </button>
-      </div>
 
       {
         isTimedOut && (

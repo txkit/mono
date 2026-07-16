@@ -7,7 +7,6 @@ import WalletItem from '../WalletItem'
 type WalletGroupSectionProps = {
   label: string
   labelId: string
-  variant?: 'accent' | 'default'
   connectors: Connector[]
   recentIds: string[]
   activeIndex: number
@@ -20,7 +19,6 @@ const WalletGroupSection: React.FC<WalletGroupSectionProps> = (props) => {
   const {
     label,
     labelId,
-    variant = 'default',
     connectors,
     recentIds,
     activeIndex,
@@ -39,7 +37,6 @@ const WalletGroupSection: React.FC<WalletGroupSectionProps> = (props) => {
         role="presentation"
         id={labelId}
         className="tx-cw-group-label"
-        data-variant={variant}
       >
         {label}
       </div>
