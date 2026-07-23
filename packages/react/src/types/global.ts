@@ -45,6 +45,8 @@ declare global {
 
       /** Reconnect to the last-used wallet on page reload. @default true */
       autoConnect?: boolean
+      /** Persist the wallet connection to a cookie and hydrate it synchronously on the first render - removes the reconnect flash in client-only SPAs. @default false */
+      cookiePersistence?: boolean
       /** Polling interval for balance / chain queries in ms. @default 4000 */
       pollingInterval?: number
 
@@ -101,6 +103,8 @@ declare global {
       wallets: WalletConfig[]
       /** Reconnect to the last-used wallet on page reload. */
       autoConnect: boolean
+      /** Persist the wallet connection to a cookie and hydrate it synchronously on the first render. */
+      cookiePersistence: boolean
       /** Polling interval for balance / chain queries in ms. */
       pollingInterval: number
       /** Block-based balance invalidation - resolved with defaults applied. */

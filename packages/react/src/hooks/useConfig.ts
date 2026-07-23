@@ -56,6 +56,7 @@ const useConfig = (config: TxKit.Config): TxKit.ResolvedConfig => {
     walletConnectProjectId: config.walletConnectProjectId ?? null,
     wallets: config.wallets ?? defaultWallets(config.walletConnectProjectId ?? null),
     autoConnect: config.autoConnect ?? true,
+    cookiePersistence: config.cookiePersistence ?? false,
     pollingInterval,
     blockWatching: {
       enabled: config.blockWatching?.enabled ?? true,
@@ -70,6 +71,7 @@ const useConfig = (config: TxKit.Config): TxKit.ResolvedConfig => {
       config.walletConnectProjectId,
       config.wallets,
       config.autoConnect,
+      config.cookiePersistence,
       config.blockWatching?.enabled,
       config.blockWatching?.throttleMs,
       config.licenseKey,

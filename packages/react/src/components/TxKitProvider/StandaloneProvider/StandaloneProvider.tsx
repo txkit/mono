@@ -1,6 +1,6 @@
 'use client'
 import React, { useId, useState, useMemo, type ReactNode } from 'react'
-import { createConfig, createStorage, WagmiProvider } from 'wagmi'
+import { createConfig, createStorage, cookieStorage, cookieToInitialState, WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import '../../../types/global'
@@ -21,6 +21,11 @@ const StandaloneProvider = ({ children, config }: { children: ReactNode; config:
   // on the same page from corrupting each other's wagmi store.
   const instanceId = useId()
 
+  // Snapshot the cookie BEFORE createConfig runs: createConfig persists the fresh
+  // (disconnected) store to the cookie synchronously, which would overwrite the real
+  // connection we need to read back for initialState in a client-only SPA.
+  const [ cookieSnapshot ] = useState(() => (typeof document === 'undefined' ? '' : document.cookie))
+
   const [ wagmiConfig ] = useState(() =>
     createConfig({
       chains: resolvedConfig.chains,
@@ -30,12 +35,28 @@ const StandaloneProvider = ({ children, config }: { children: ReactNode; config:
       // infinite update loops caused by wagmi's onMount() creating new Map()
       // references on every render via useSyncExternalStore.
       ssr: true,
-      storage: createStorage({
-        storage: safeStorage,
-        key: `wagmi${instanceId}`,
-      }),
+      // cookiePersistence: cookie storage + a stable key lets cookieToInitialState()
+      // hydrate the connection synchronously on the first render, removing the reconnect
+      // flash in client-only SPAs. A per-mount useId key would not match the cookie
+      // written last session, so the key must be stable when this is enabled.
+      storage: resolvedConfig.cookiePersistence
+        ? createStorage({ storage: cookieStorage, key: 'wagmi' })
+        : createStorage({ storage: safeStorage, key: `wagmi${instanceId}` }),
     }),
   )
+
+  const [ initialState ] = useState(() => {
+    if (!resolvedConfig.cookiePersistence) {
+      return undefined
+    }
+
+    // Only seed initialState when there is a connection to restore. An empty cookie
+    // (current: null) would otherwise force status:'reconnecting' on the first render
+    // and flash a loading state for genuinely disconnected users.
+    const restored = cookieToInitialState(wagmiConfig, cookieSnapshot)
+
+    return restored?.current ? restored : undefined
+  })
 
   const [ queryClient ] = useState(
     () =>
@@ -54,6 +75,7 @@ const StandaloneProvider = ({ children, config }: { children: ReactNode; config:
   return (
     <WagmiProvider
       config={wagmiConfig}
+      initialState={initialState}
       reconnectOnMount={resolvedConfig.autoConnect}
     >
       <QueryClientProvider client={queryClient}>
