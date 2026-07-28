@@ -1,6 +1,6 @@
 {
   "name": "@txkit/themes",
-  "version": "0.1.0-alpha.3",
+  "version": "0.1.0-alpha.5",
   "description": "CSS themes for txKit components",
   "license": "Apache-2.0",
   "author": "Michael Diamond",
@@ -43,7 +43,12 @@
     "./variants/sharp": "./dist/variants/sharp.css",
     "./variants/rounded": "./dist/variants/rounded.css"
   },
-  "files": ["dist", "LICENSE", "README.md", "CHANGELOG.md"],
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "prepublishOnly": "pnpm run build",
     "build": "mkdir -p dist dist/variants && postcss src/index.css -o dist/index.css && cp src/base.css src/dark.css src/forced-colors.css dist/ && cp src/variants/*.css dist/variants/",
@@ -54,5 +59,7 @@
     "tsup": "^8.4.0",
     "typescript": "^6.0.3"
   },
-  "sideEffects": ["*.css"]
+  "sideEffects": [
+    "*.css"
+  ]
 }

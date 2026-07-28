@@ -12,9 +12,11 @@
     "@txkit/themes": "0.1.0-alpha.3",
     "@txkit/tx-decoder": "0.1.0-alpha.3",
     "@txkit/tx-protocol": "0.1.0-alpha.3",
-    "@txkit/x402-adapter": "0.1.0-alpha.3"
+    "@txkit/x402-adapter": "0.1.0-alpha.3",
+    "@txkit/arbitrum-adapter": "0.1.0-alpha.0"
   },
   "changesets": [
-    "decoder-registry-mvp"
+    "decoder-registry-mvp",
+    "wallet-ux-and-boot"
   ]
 }
